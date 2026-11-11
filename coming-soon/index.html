@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LEXIDO — Opening Soon</title>
+  <meta name="description" content="LEXIDO — Crafted for those who move different. Opening November 30, 2026." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Clash Display from Fontshare -->
+  <link href="https://api.fontshare.com/v2/css?f[]=clash-display@200,300,400,500,600,700&display=swap" rel="stylesheet" />
+  <!-- Satoshi for body text -->
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <section id="coming-soon" class="hero">
+
+    <!-- Background image -->
+    <div class="hero__bg">
+      <img src="curtain-bg.jpg" alt="" class="hero__bg-img" />
+    </div>
+
+    <!-- Dark overlay -->
+    <div class="hero__overlay"></div>
+
+    <!-- Main content — centered -->
+    <div class="hero__content">
+
+      <!-- Brand -->
+      <p class="brand" id="brand">LEXIDO</p>
+
+      <!-- Season tag -->
+      <p class="season" id="season">SS / 26 &mdash; VOLUME ONE</p>
+
+      <!-- Headline -->
+      <h1 class="headline" id="headline">COMING<br />SOON</h1>
+
+      <!-- Tagline -->
+      <p class="tagline" id="tagline">Crafted For Those Who Move Different</p>
+
+      <!-- Opening date badge -->
+      <div class="soon-badge" id="soonBadge">
+        <span class="soon-badge__dot"></span>
+        <span class="soon-badge__text">Opening 30 November 2026</span>
+      </div>
+
+      <!-- Countdown -->
+      <div class="countdown" id="countdown" role="timer" aria-live="polite">
+        <div class="countdown__block">
+          <span class="countdown__number" id="days">00</span>
+          <span class="countdown__label">Days</span>
+        </div>
+        <div class="countdown__sep"></div>
+        <div class="countdown__block">
+          <span class="countdown__number" id="hours">00</span>
+          <span class="countdown__label">Hours</span>
+        </div>
+        <div class="countdown__sep"></div>
+        <div class="countdown__block">
+          <span class="countdown__number" id="minutes">00</span>
+          <span class="countdown__label">Min</span>
+        </div>
+        <div class="countdown__sep"></div>
+        <div class="countdown__block">
+          <span class="countdown__number" id="seconds">00</span>
+          <span class="countdown__label">Sec</span>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <p class="footnote">&copy; 2026 LEXIDO &mdash; All rights reserved.</p>
+
+    </div>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
