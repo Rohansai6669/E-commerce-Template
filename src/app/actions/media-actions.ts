@@ -22,6 +22,114 @@ export interface MediaFileRecord {
 
 const DEFAULT_MEDIA_ASSETS: MediaFileRecord[] = [
   {
+    id: 'seed-cat-streetwear',
+    name: 'streetwear-editorial-collection.jpg',
+    url: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=1200&auto=format&fit=crop',
+    folder: 'categories',
+    mimeType: 'image/jpeg',
+    sizeBytes: 1024 * 620,
+    altText: 'Streetwear Editorial Collection Cover',
+    width: 1200,
+    height: 1500,
+    createdAt: new Date('2026-11-01T08:00:00Z'),
+  },
+  {
+    id: 'seed-cat-gymwear',
+    name: 'gym-athletic-activewear.jpg',
+    url: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1200&auto=format&fit=crop',
+    folder: 'categories',
+    mimeType: 'image/jpeg',
+    sizeBytes: 1024 * 580,
+    altText: 'Gym Wear & Athletic Performance Cover',
+    width: 1200,
+    height: 1500,
+    createdAt: new Date('2026-11-01T08:30:00Z'),
+  },
+  {
+    id: 'seed-cat-oldmoney',
+    name: 'old-money-tailoring-polo.jpg',
+    url: 'https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?q=80&w=1200&auto=format&fit=crop',
+    folder: 'categories',
+    mimeType: 'image/jpeg',
+    sizeBytes: 1024 * 710,
+    altText: 'Old Money Heritage Tailored Classics Cover',
+    width: 1200,
+    height: 1500,
+    createdAt: new Date('2026-11-01T09:00:00Z'),
+  },
+  {
+    id: 'seed-cat-casual',
+    name: 'casual-modern-street-cut.jpg',
+    url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1200&auto=format&fit=crop',
+    folder: 'categories',
+    mimeType: 'image/jpeg',
+    sizeBytes: 1024 * 490,
+    altText: 'Modern Casual Essentials Cover',
+    width: 1200,
+    height: 1500,
+    createdAt: new Date('2026-11-01T09:30:00Z'),
+  },
+  {
+    id: 'seed-cat-formal',
+    name: 'formal-milanese-suiting.jpg',
+    url: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=1200&auto=format&fit=crop',
+    folder: 'categories',
+    mimeType: 'image/jpeg',
+    sizeBytes: 1024 * 840,
+    altText: 'Milanese Formal Suiting & Blazers Cover',
+    width: 1200,
+    height: 1500,
+    createdAt: new Date('2026-11-01T10:00:00Z'),
+  },
+  {
+    id: 'seed-cat-winter',
+    name: 'winter-collection-overcoats.jpg',
+    url: 'https://images.unsplash.com/photo-1544441893-675973e31985?q=80&w=1200&auto=format&fit=crop',
+    folder: 'categories',
+    mimeType: 'image/jpeg',
+    sizeBytes: 1024 * 670,
+    altText: 'Winter Collection Heavy Overcoats & Cashmere Cover',
+    width: 1200,
+    height: 1500,
+    createdAt: new Date('2026-11-01T10:30:00Z'),
+  },
+  {
+    id: 'seed-cat-accessories',
+    name: 'mens-accessories-leather-chrono.jpg',
+    url: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1200&auto=format&fit=crop',
+    folder: 'categories',
+    mimeType: 'image/jpeg',
+    sizeBytes: 1024 * 460,
+    altText: 'Men Accessories Chrono & Fine Leather Cover',
+    width: 1200,
+    height: 1500,
+    createdAt: new Date('2026-11-01T11:00:00Z'),
+  },
+  {
+    id: 'seed-cat-hoodies',
+    name: 'oversized-heavyweight-hoodies.jpg',
+    url: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1200&auto=format&fit=crop',
+    folder: 'categories',
+    mimeType: 'image/jpeg',
+    sizeBytes: 1024 * 510,
+    altText: 'Oversized Hoodies & Sweatshirts Cover',
+    width: 1200,
+    height: 1500,
+    createdAt: new Date('2026-11-01T11:30:00Z'),
+  },
+  {
+    id: 'seed-cat-denim',
+    name: 'wide-leg-japanese-denim.jpg',
+    url: 'https://images.unsplash.com/photo-1542272604-780c96856592?q=80&w=1200&auto=format&fit=crop',
+    folder: 'categories',
+    mimeType: 'image/jpeg',
+    sizeBytes: 1024 * 530,
+    altText: 'Wide-Leg & Baggy Denim Jeans Cover',
+    width: 1200,
+    height: 1500,
+    createdAt: new Date('2026-11-01T12:00:00Z'),
+  },
+  {
     id: 'seed-banner-1',
     name: 'hero-editorial-luxury.jpg',
     url: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop',
@@ -223,20 +331,39 @@ export async function uploadMediaAction(formData: FormData): Promise<{
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Try Cloudflare R2 Upload
-    const result = await storageClient.uploadFile({
-      bucket: storageConfig.r2.bucketName || 'storage',
-      path: objectPath,
-      file: buffer,
-      contentType: file.type || 'image/jpeg',
-    });
+    let mediaUrl: string | undefined = undefined;
 
-    let mediaUrl = result.url;
-    if (!result.success || !mediaUrl) {
-      // Dev Fallback URL using direct data URL
-      const base64 = buffer.toString('base64');
-      const mimeType = file.type || 'image/jpeg';
-      mediaUrl = `data:${mimeType};base64,${base64}`;
+    // 1. Try Cloudflare R2 Upload
+    try {
+      const result = await storageClient.uploadFile({
+        bucket: storageConfig.r2.bucketName || 'storage',
+        path: objectPath,
+        file: buffer,
+        contentType: file.type || 'image/jpeg',
+      });
+      if (result.success && result.url) {
+        mediaUrl = result.url;
+      }
+    } catch (r2Err) {
+      console.warn('Cloudflare R2 upload attempt encountered an issue, falling back to local storage:', r2Err);
+    }
+
+    // 2. Resilient Fallback: Save to public/uploads directory so we have a persistent, fast, clean HTTP URL
+    if (!mediaUrl) {
+      try {
+        const fs = await import('fs/promises');
+        const path = await import('path');
+        const uploadDir = path.join(process.cwd(), 'public', 'uploads', folder);
+        await fs.mkdir(uploadDir, { recursive: true });
+        const filePath = path.join(uploadDir, `${timestamp}-${cleanFilename}`);
+        await fs.writeFile(filePath, buffer);
+        mediaUrl = `/uploads/${folder}/${timestamp}-${cleanFilename}`;
+      } catch (fsErr) {
+        console.warn('Local disk write failed, falling back to base64 data URI:', fsErr);
+        const base64 = buffer.toString('base64');
+        const mimeType = file.type || 'image/jpeg';
+        mediaUrl = `data:${mimeType};base64,${base64}`;
+      }
     }
 
     // Insert record into PostgreSQL DB
@@ -344,12 +471,10 @@ export async function getMediaFilesAction(params?: {
       combinedMap.set(f.id, f);
     }
 
-    // 3. If total catalog is small or empty, populate default seed assets so picker is never empty
-    if (combinedMap.size < 5) {
-      for (const f of DEFAULT_MEDIA_ASSETS) {
-        if (!combinedMap.has(f.id)) {
-          combinedMap.set(f.id, f);
-        }
+    // 3. Always ensure default curated assets are available across all folders (categories, banners, products)
+    for (const f of DEFAULT_MEDIA_ASSETS) {
+      if (!combinedMap.has(f.id)) {
+        combinedMap.set(f.id, f);
       }
     }
 

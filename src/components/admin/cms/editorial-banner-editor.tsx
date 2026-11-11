@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { ImagePreviewInput } from '@/components/ui/image-preview-input';
+import { NineAlignmentMatrix } from '@/components/ui/nine-alignment-matrix';
 import {
   Sparkles,
   Sliders,
@@ -36,6 +37,8 @@ export interface EditorialBannerConfig {
   checklistItems?: string[];
   cardRadius?: 'none' | 'small' | 'medium' | 'large' | 'xlarge' | 'full';
   cardRadiusPx?: number;
+  contentAlignment?: string;
+  headingAlignment?: string;
   [key: string]: unknown;
 }
 
@@ -230,6 +233,19 @@ export function EditorialBannerEditor({
             {cfg.cardRadiusPx ?? 0}px
           </span>
         </div>
+      </div>
+
+      {/* 2b. 9-Point Text & Content Alignment Matrix (Figma & Word Style) */}
+      <div className="p-3.5 rounded-xl border border-slate-200 bg-white space-y-2 shadow-2xs">
+        <NineAlignmentMatrix
+          label="Card Content Alignment (9-Point Matrix)"
+          description="Position editorial text, quotes, and buttons across the card canvas"
+          value={(cfg.contentAlignment as string) || 'middle-left'}
+          onChange={(val) => {
+            onChange('contentAlignment', val);
+            onChange('headingAlignment', val);
+          }}
+        />
       </div>
 
       {/* 3. Editorial Media Asset & 1-Click Fashion Presets */}

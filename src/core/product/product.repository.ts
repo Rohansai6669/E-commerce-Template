@@ -216,7 +216,8 @@ export class ProductRepository {
     const total = countResult[0]?.count || 0;
 
     // Attach universal product attributes for downstream storefront and CMS visual builder grids
-    if (items.length > 0) {
+    // Skip in admin catalog view where attributes are not displayed, saving an expensive 4-table join roundtrip
+    if (items.length > 0 && filters.visibility !== 'admin') {
       const prodIds = items.map((i) => i.product.id);
       const attrs = await db
         .select({

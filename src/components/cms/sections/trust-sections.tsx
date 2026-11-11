@@ -7,6 +7,7 @@ import { SectionShell } from '../primitives/section-shell';
 import { SectionHeading } from '../primitives/heading';
 import { ThemeButton } from '../primitives/button';
 import { Star, ShieldCheck, Truck, RefreshCw, Headset, ChevronDown, Camera, CheckCircle, ArrowRight } from 'lucide-react';
+import { getNineAlignmentClasses } from '@/components/ui/nine-alignment-matrix';
 
 export function TestimonialsSection({ config }: { config: BaseSectionConfig & any }) {
   const radiusMap: Record<string, string> = {
@@ -341,6 +342,8 @@ export function EditorialBannerSection({ config }: { config: EditorialBannerConf
     ? config.checklistText.split('\n').map((s: string) => s.trim()).filter(Boolean)
     : ['LUXURY MAGNETIC BOX', 'EMBOSSED BRAND TAGS', 'HAND-SIGNED THANK-YOU CARD'];
 
+  const alignClass = getNineAlignmentClasses(config.contentAlignment || config.headingAlignment || 'middle-left').all;
+
   // Variation 1: Manifesto Card (Dark Box Split - Screenshot 1)
   if (layout === 'manifesto-card' || layout === 'dark-split') {
     return (
@@ -350,7 +353,7 @@ export function EditorialBannerSection({ config }: { config: EditorialBannerConf
           style={radiusStyle}
         >
           {/* Black Manifesto Card */}
-          <div className="bg-black text-white p-8 sm:p-12 lg:p-16 flex flex-col justify-center">
+          <div className={`bg-black text-white p-8 sm:p-12 lg:p-16 flex flex-col ${alignClass}`}>
             {config.eyebrow && (
               <span className="text-xs font-semibold tracking-[0.25em] uppercase text-zinc-400 mb-4 block">
                 {config.eyebrow}
@@ -412,7 +415,7 @@ export function EditorialBannerSection({ config }: { config: EditorialBannerConf
           </div>
 
           {/* Right White Content Box */}
-          <div className="bg-white text-black p-8 sm:p-12 lg:p-16 flex flex-col justify-center order-1 lg:order-2">
+          <div className={`bg-white text-black p-8 sm:p-12 lg:p-16 flex flex-col ${alignClass} order-1 lg:order-2`}>
             {config.eyebrow && (
               <span className="text-xs font-semibold tracking-[0.25em] uppercase text-zinc-500 mb-4 block">
                 {config.eyebrow}

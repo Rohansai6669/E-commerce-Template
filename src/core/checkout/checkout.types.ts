@@ -59,6 +59,7 @@ export interface CheckoutState {
  */
 export type CheckoutAction =
   | { type: 'SET_ADDRESS'; address: CheckoutAddress }
+  | { type: 'PREFILL_ADDRESS'; address: CheckoutAddress }
   | { type: 'SET_SHIPPING_METHOD'; method: ShippingMethod }
   | { type: 'SET_PAYMENT_METHOD'; method: PaymentMethod }
   | { type: 'SET_ORDER_NOTES'; notes: string }

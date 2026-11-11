@@ -5,6 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import { getStorefrontNavigationAction } from '@/app/actions/navigation-actions';
+import { NavAppearanceConfig } from '@/types/navigation-appearance';
+import { useNavAppearance } from '@/hooks/use-nav-appearance';
+import { getNineAlignmentClasses } from '@/components/ui/nine-alignment-matrix';
 
 export interface MegamenuSubitem {
   label: string;
@@ -190,12 +193,59 @@ export const FALLBACK_MEGAMENU_DATA: Record<string, MegamenuCollection[]> = {
   ],
 };
 
+const RADIUS_MAP: Record<string, string> = {
+  none: 'rounded-none',
+  md: 'rounded-md',
+  lg: 'rounded-lg',
+  xl: 'rounded-xl',
+  '2xl': 'rounded-2xl',
+};
+
+const SHADOW_MAP: Record<string, string> = {
+  none: 'shadow-none',
+  sm: 'shadow-sm',
+  md: 'shadow-md',
+  lg: 'shadow-lg',
+  xl: 'shadow-xl',
+  '2xl': 'shadow-2xl',
+};
+
+const POSITION_MAP: Record<string, string> = {
+  center: 'object-center',
+  top: 'object-top',
+  bottom: 'object-bottom',
+  left: 'object-left',
+  right: 'object-right',
+};
+
+const PADDING_Y_MAP: Record<string, string> = {
+  compact: 'py-4',
+  standard: 'py-8',
+  relaxed: 'py-12',
+};
+
+const CATEGORY_GAP_MAP: Record<string, string> = {
+  compact: 'space-y-2',
+  standard: 'space-y-3.5',
+  relaxed: 'space-y-5',
+};
+
+const SUBITEM_GAP_MAP: Record<string, string> = {
+  compact: 'space-y-2',
+  standard: 'space-y-3',
+  relaxed: 'space-y-4.5',
+};
+
 interface MegamenuPanelProps {
   category: string;
   onClose: () => void;
+  appearance?: NavAppearanceConfig;
 }
 
-export function MegamenuPanel({ category, onClose }: MegamenuPanelProps) {
+export function MegamenuPanel({ category, onClose, appearance }: MegamenuPanelProps) {
+  const { navConfig: liveConfig } = useNavAppearance(appearance);
+  const config = appearance || liveConfig;
+
   const fallback = FALLBACK_MEGAMENU_DATA[category.toUpperCase()] || FALLBACK_MEGAMENU_DATA.MEN;
   const [collections, setCollections] = useState<MegamenuCollection[]>(fallback);
   const [activeCollectionId, setActiveCollectionId] = useState<string>(fallback[0]?.id || '');
@@ -226,23 +276,205 @@ export function MegamenuPanel({ category, onClose }: MegamenuPanelProps) {
   const col2Items = activeCollection?.subitems?.filter((s) => s.columnNumber === 2) || [];
   const hasSplitColumns = col1Items.length > 0 && col2Items.length > 0;
 
+  // Visual appearance tokens
+  const bgColor = config.megaMenuBgColor || '#ffffff';
+  const textColor = config.megaMenuTextColor || '#0f172a';
+  const mutedColor = config.megaMenuMutedColor || '#94a3b8';
+  const borderColor = config.megaMenuBorderColor || '#e2e8f0';
+  const tabStyle = config.megaMenuActiveTabStyle || 'border-left';
+  const activeTabColor = config.megaMenuActiveTabColor || '#020617';
+
+  // Height & Spacing Controls
+  const minHeight = config.megaMenuMinHeightPx || 460;
+  const paddingYClass = PADDING_Y_MAP[config.megaMenuPaddingY || 'standard'] || 'py-8';
+  const categoryGapClass = CATEGORY_GAP_MAP[config.categoryRowSpacing || 'standard'] || 'space-y-3.5';
+  const subitemGapClass = SUBITEM_GAP_MAP[config.subitemRowSpacing || 'standard'] || 'space-y-3';
+  const promoCardHeight = config.promoCardHeightPx || 390;
+
+  // Promo Banner Dynamic Category Resolution
+  const showPromo = config.showPromoBanner !== false;
+  const useCatImage = config.useCategoryImagesInMegaMenu !== false;
+  const currentCategoryPromo = activeCollection?.featured;
+
+  const promoTitle =
+    useCatImage && currentCategoryPromo?.title
+      ? currentCategoryPromo.title
+      : config.promoBannerTitle || currentCategoryPromo?.title || 'STREETWEAR';
+
+  const promoEyebrow = config.promoBannerEyebrow || 'DISCOVER';
+
+  const promoImage =
+    useCatImage && currentCategoryPromo?.imageUrl
+      ? currentCategoryPromo.imageUrl
+      : config.promoBannerImageUrl ||
+        currentCategoryPromo?.imageUrl ||
+        'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=1000&auto=format&fit=crop';
+
+  const promoCta =
+    config.promoBannerActionLabel || currentCategoryPromo?.actionLabel || 'SHOP THE EDIT';
+
+  const promoHref =
+    useCatImage && currentCategoryPromo?.href
+      ? currentCategoryPromo.href
+      : config.promoBannerHref || currentCategoryPromo?.href || '/products';
+
+  const promoOpacity = config.promoBannerOverlayOpacity ?? 0.4;
+  const promoRadiusClass = RADIUS_MAP[config.promoBannerBorderRadius || 'xl'] || 'rounded-xl';
+  const promoShadowClass = SHADOW_MAP[config.promoBannerShadow || 'xl'] || 'shadow-xl';
+  const objectFitClass = config.promoBannerObjectFit === 'contain' ? 'object-contain' : 'object-cover';
+  const objectPosClass = POSITION_MAP[config.promoBannerPosition || 'center'] || 'object-center';
+
+  // Gradient style computation
+  let gradientBackground = `linear-gradient(to top, rgba(0,0,0,${Math.min(
+    1,
+    promoOpacity + 0.55
+  )}) 0%, rgba(0,0,0,${promoOpacity}) 45%, transparent 100%)`;
+
+  if (config.promoBannerGradientStyle === 'dark-full') {
+    gradientBackground = `rgba(0,0,0,${Math.min(0.9, promoOpacity + 0.35)})`;
+  } else if (config.promoBannerGradientStyle === 'subtle-bottom') {
+    gradientBackground = `linear-gradient(to top, rgba(0,0,0,${promoOpacity}) 0%, transparent 60%)`;
+  } else if (config.promoBannerGradientStyle === 'radial') {
+    gradientBackground = `radial-gradient(circle at center, transparent 20%, rgba(0,0,0,${Math.min(
+      1,
+      promoOpacity + 0.5
+    )}) 100%)`;
+  } else if (config.promoBannerGradientStyle === 'none') {
+    gradientBackground = 'transparent';
+  }
+
+  // 9-Point Content alignment (Figma & Word style)
+  const alignmentClass = getNineAlignmentClasses(config.promoBannerAlignment || 'bottom-left').all;
+
+  // Category Hover Effect Class
+  const getCategoryHoverClasses = (isActive: boolean) => {
+    if (isActive) return '';
+    switch (config.categoryHoverEffect) {
+      case 'slide-right':
+        return 'hover:translate-x-1.5 transition-transform';
+      case 'border-reveal':
+        return 'hover:border-l-2 hover:pl-2 transition-all';
+      case 'pill':
+        return 'hover:bg-slate-100 dark:hover:bg-slate-800 hover:px-2 rounded-lg transition-all';
+      case 'color-shift':
+      default:
+        return 'hover:opacity-100 transition-colors';
+    }
+  };
+
+  // Subitem Hover Effect Class
+  const getSubitemHoverClasses = () => {
+    switch (config.subitemHoverEffect) {
+      case 'arrow':
+        return 'group/sub flex items-center justify-between hover:translate-x-1 transition-transform';
+      case 'pill':
+        return 'hover:bg-slate-100 dark:hover:bg-slate-800 px-2 py-1 rounded-md transition-colors block';
+      case 'bold':
+        return 'hover:font-extrabold transition-all block';
+      case 'color-shift':
+        return 'hover:opacity-100 transition-colors block';
+      case 'underline':
+      default:
+        return 'hover:underline transition-all block';
+    }
+  };
+
   return (
-    <div className="w-full bg-white text-slate-900 shadow-2xl border-b border-slate-200 animate-in fade-in slide-in-from-top-1 duration-200">
-      <div className="max-w-[1600px] mx-auto px-8 lg:px-14 py-8 grid grid-cols-12 gap-8 min-h-[460px]">
+    <div
+      className="w-full shadow-2xl animate-in fade-in slide-in-from-top-1 duration-200"
+      style={{
+        backgroundColor: bgColor,
+        color: textColor,
+        borderBottom: `1px solid ${borderColor}`,
+      }}
+    >
+      <div
+        style={{ minHeight: `${minHeight}px` }}
+        className={`max-w-[1600px] mx-auto px-8 lg:px-14 ${paddingYClass} grid grid-cols-12 gap-8`}
+      >
         {/* Left Column: Vertical Category List */}
-        <div className="col-span-3 flex flex-col space-y-4 pr-6 border-r border-slate-100">
+        <div
+          className={`col-span-3 flex flex-col ${categoryGapClass} pr-6`}
+          style={{ borderRight: `1px solid ${borderColor}` }}
+        >
           {collections.map((col) => {
             const isActive = col.id === activeCollection?.id;
+            const hoverClass = getCategoryHoverClasses(isActive);
+
+            if (tabStyle === 'pill') {
+              return (
+                <button
+                  type="button"
+                  suppressHydrationWarning
+                  key={col.id}
+                  onMouseEnter={() => setActiveCollectionId(col.id)}
+                  onClick={() => setActiveCollectionId(col.id)}
+                  style={{
+                    backgroundColor: isActive ? activeTabColor : 'transparent',
+                    color: isActive ? '#ffffff' : mutedColor,
+                  }}
+                  className={`text-left text-sm lg:text-base tracking-tight cursor-pointer px-3.5 py-2 rounded-lg font-bold uppercase ${hoverClass}`}
+                >
+                  {col.name}
+                </button>
+              );
+            }
+
+            if (tabStyle === 'underline') {
+              return (
+                <button
+                  type="button"
+                  suppressHydrationWarning
+                  key={col.id}
+                  onMouseEnter={() => setActiveCollectionId(col.id)}
+                  onClick={() => setActiveCollectionId(col.id)}
+                  style={{
+                    color: isActive ? activeTabColor : mutedColor,
+                    borderBottom: isActive ? `2px solid ${activeTabColor}` : '2px solid transparent',
+                  }}
+                  className={`text-left text-lg lg:text-xl tracking-tight cursor-pointer pb-1 uppercase inline-block self-start font-bold ${hoverClass}`}
+                >
+                  {col.name}
+                </button>
+              );
+            }
+
+            if (tabStyle === 'bold-only') {
+              return (
+                <button
+                  type="button"
+                  suppressHydrationWarning
+                  key={col.id}
+                  onMouseEnter={() => setActiveCollectionId(col.id)}
+                  onClick={() => setActiveCollectionId(col.id)}
+                  style={{
+                    color: isActive ? activeTabColor : mutedColor,
+                  }}
+                  className={`text-left text-lg lg:text-xl tracking-tight cursor-pointer uppercase ${
+                    isActive ? 'font-black' : 'font-semibold'
+                  } ${hoverClass}`}
+                >
+                  {col.name}
+                </button>
+              );
+            }
+
+            // Default 'border-left'
             return (
               <button
+                type="button"
+                suppressHydrationWarning
                 key={col.id}
                 onMouseEnter={() => setActiveCollectionId(col.id)}
                 onClick={() => setActiveCollectionId(col.id)}
-                className={`text-left text-lg lg:text-xl tracking-tight transition-all cursor-pointer ${
-                  isActive
-                    ? 'font-black text-slate-950 border-l-2 border-slate-950 pl-3 uppercase'
-                    : 'font-semibold text-slate-400 hover:text-slate-800 pl-0 uppercase'
-                }`}
+                style={{
+                  color: isActive ? activeTabColor : mutedColor,
+                  borderLeft: isActive ? `2px solid ${activeTabColor}` : '2px solid transparent',
+                  paddingLeft: isActive ? '0.75rem' : '0rem',
+                }}
+                className={`text-left text-lg lg:text-xl tracking-tight cursor-pointer ${
+                  isActive ? 'font-black uppercase' : 'font-semibold uppercase'
+                } ${hoverClass}`}
               >
                 {col.name}
               </button>
@@ -250,49 +482,64 @@ export function MegamenuPanel({ category, onClose }: MegamenuPanelProps) {
           })}
         </div>
 
-        {/* Middle Column: 2-Column Subitem Grid */}
-        <div className="col-span-5 px-6">
-          <p className="text-[11px] font-extrabold tracking-[0.25em] text-slate-400 uppercase mb-6">
+        {/* Middle Column: Subitem Grid (expands to 9 cols if promo banner hidden) */}
+        <div className={`${showPromo ? 'col-span-5' : 'col-span-9'} px-6`}>
+          <p
+            className="text-[11px] font-extrabold tracking-[0.25em] uppercase mb-5"
+            style={{ color: mutedColor }}
+          >
             {activeCollection?.name}
           </p>
 
           {hasSplitColumns ? (
-            <div className="grid grid-cols-2 gap-x-8 gap-y-3.5">
-              <div className="flex flex-col space-y-3">
+            <div className={`grid ${showPromo ? 'grid-cols-2' : 'grid-cols-3'} gap-x-8 gap-y-3.5`}>
+              <div className={`flex flex-col ${subitemGapClass}`}>
                 {col1Items.map((sub, idx) => (
                   <Link
                     key={idx}
                     href={sub.href}
                     onClick={onClose}
-                    className="text-xs font-semibold text-slate-700 hover:text-slate-950 hover:underline transition-colors line-clamp-1 block"
+                    style={{ color: textColor }}
+                    className={`text-xs font-semibold ${getSubitemHoverClasses()} line-clamp-1`}
                   >
-                    {sub.label}
+                    <span>{sub.label}</span>
+                    {config.subitemHoverEffect === 'arrow' && (
+                      <ArrowRight className="w-3 h-3 opacity-0 group-hover/sub:opacity-100 transition-opacity shrink-0" />
+                    )}
                   </Link>
                 ))}
               </div>
-              <div className="flex flex-col space-y-3">
+              <div className={`flex flex-col ${subitemGapClass}`}>
                 {col2Items.map((sub, idx) => (
                   <Link
                     key={idx}
                     href={sub.href}
                     onClick={onClose}
-                    className="text-xs font-semibold text-slate-700 hover:text-slate-950 hover:underline transition-colors line-clamp-1 block"
+                    style={{ color: textColor }}
+                    className={`text-xs font-semibold ${getSubitemHoverClasses()} line-clamp-1`}
                   >
-                    {sub.label}
+                    <span>{sub.label}</span>
+                    {config.subitemHoverEffect === 'arrow' && (
+                      <ArrowRight className="w-3 h-3 opacity-0 group-hover/sub:opacity-100 transition-opacity shrink-0" />
+                    )}
                   </Link>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-x-6 gap-y-3.5">
+            <div className={`grid ${showPromo ? 'grid-cols-2' : 'grid-cols-3'} gap-x-6 gap-y-3.5`}>
               {(activeCollection?.subitems || []).map((sub, idx) => (
                 <Link
                   key={idx}
                   href={sub.href}
                   onClick={onClose}
-                  className="text-xs font-semibold text-slate-700 hover:text-slate-950 hover:underline transition-colors line-clamp-1 block"
+                  style={{ color: textColor }}
+                  className={`text-xs font-semibold ${getSubitemHoverClasses()} line-clamp-1`}
                 >
-                  {sub.label}
+                  <span>{sub.label}</span>
+                  {config.subitemHoverEffect === 'arrow' && (
+                    <ArrowRight className="w-3 h-3 opacity-0 group-hover/sub:opacity-100 transition-opacity shrink-0" />
+                  )}
                 </Link>
               ))}
             </div>
@@ -300,36 +547,47 @@ export function MegamenuPanel({ category, onClose }: MegamenuPanelProps) {
         </div>
 
         {/* Right Column: Featured Editorial Promotional Card */}
-        <div className="col-span-4 pl-4">
-          {activeCollection?.featured && (
+        {showPromo && (
+          <div className="col-span-4 pl-4">
             <Link
-              href={activeCollection.featured.href}
+              href={promoHref}
               onClick={onClose}
-              className="group relative block w-full h-[390px] rounded-xl overflow-hidden shadow-xl border border-slate-200/80"
+              style={{
+                height: `${promoCardHeight}px`,
+                border: `1px solid ${borderColor}`,
+              }}
+              className={`group relative block w-full ${promoRadiusClass} ${promoShadowClass} overflow-hidden`}
             >
               <Image
-                src={activeCollection.featured.imageUrl}
-                alt={activeCollection.featured.title}
+                key={promoImage}
+                src={promoImage}
+                alt={promoTitle}
                 fill
                 priority
-                className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                className={`${objectFitClass} ${objectPosClass} transition-all duration-700 ${
+                  config.promoCardHoverZoom !== false ? 'group-hover:scale-105' : ''
+                }`}
                 sizes="(max-width: 1200px) 35vw, 28vw"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/30 to-transparent flex flex-col justify-end p-6 text-white">
+              <div
+                className={`absolute inset-0 flex flex-col ${alignmentClass} p-6 text-white transition-opacity duration-300`}
+                style={{
+                  background: gradientBackground,
+                }}
+              >
                 <span className="text-[10px] font-extrabold tracking-[0.25em] text-slate-300 uppercase mb-1">
-                  DISCOVER
+                  {promoEyebrow}
                 </span>
                 <h4 className="text-2xl lg:text-3xl font-black font-heading uppercase tracking-tight text-white mb-2 leading-none">
-                  {activeCollection.featured.title}
+                  {promoTitle}
                 </h4>
                 <div className="flex items-center text-xs font-bold text-white group-hover:translate-x-1.5 transition-transform">
-                  {activeCollection.featured.actionLabel || 'SHOP THE EDIT'}{' '}
-                  <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+                  {promoCta} <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
                 </div>
               </div>
             </Link>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

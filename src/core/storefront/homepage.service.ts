@@ -2,6 +2,7 @@ import { db } from '@/lib/db';
 import { salesCampaigns } from '@/lib/db/schema/catalog/promotions';
 import { products as productsTable } from '@/lib/db/schema/catalog/products';
 import { productRepository } from '../product/product.repository';
+import { getCachedFeaturedProducts, getCachedCategories } from '../performance/cache';
 import { ProductMapper } from '../product/product.mapper';
 import { type ProductCardModel } from '../product/product.types';
 import { PricingEngine } from '../pricing/pricing-engine';
@@ -38,12 +39,12 @@ export class HomepageService {
   }
 
   async getFeaturedProducts(limit = 8): Promise<ProductCardModel[]> {
-    const rawProducts = await productRepository.getFeaturedProducts(limit);
+    const rawProducts = await getCachedFeaturedProducts(limit);
     return rawProducts.map((row) => ProductMapper.toProductCardModel(row));
   }
 
   async getFeaturedCategories() {
-    const rawCategories = await productRepository.getCategories();
+    const rawCategories = await getCachedCategories();
     // Maps active categories for landing visual grids
     return rawCategories.slice(0, 4).map((cat) => {
       return {
@@ -59,8 +60,9 @@ export class HomepageService {
   /**
    * Dynamically loads active seasonal sale campaigns (e.g. "Dussehra Special", "Daily Sale")
    * and calculates discount pricing via PricingEngine.
+   * Accepts optional pre-fetched products to prevent duplicate database calls.
    */
-  async getSeasonalSaleSections(): Promise<SeasonalCampaignData[]> {
+  async getSeasonalSaleSections(providedProducts?: ProductCardModel[]): Promise<SeasonalCampaignData[]> {
     await connection();
     let activeCampaigns = await safeQuery(
       () =>
@@ -144,7 +146,7 @@ export class HomepageService {
     }
     const uniqueCampaigns = Array.from(uniqueCampaignsMap.values());
 
-    const catalogProducts = await this.getFeaturedProducts(8);
+    const catalogProducts = providedProducts || (await this.getFeaturedProducts(8));
 
     // If active campaigns exist in database, map them with catalog products
     if (uniqueCampaigns.length > 0) {
@@ -302,12 +304,14 @@ export class HomepageService {
    * Aggregates homepage data feeds in parallel.
    */
   async getHomepageData() {
-    const [hero, featuredProducts, featuredCategories, seasonalSections] = await Promise.all([
+    const [hero, featuredProducts, featuredCategories] = await Promise.all([
       this.getHero(),
-      this.getFeaturedProducts(),
+      this.getFeaturedProducts(8),
       this.getFeaturedCategories(),
-      this.getSeasonalSaleSections(),
     ]);
+
+    // Reuse pre-fetched featured products to eliminate duplicate database roundtrip
+    const seasonalSections = await this.getSeasonalSaleSections(featuredProducts);
 
     return {
       hero,

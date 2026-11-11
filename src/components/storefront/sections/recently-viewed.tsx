@@ -88,24 +88,35 @@ export function RecentlyViewedSection() {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full">
+      <div className="flex flex-wrap gap-4 sm:gap-6 items-stretch w-full">
         {products.map((item) => (
-          <ConfigurableProductCard
+          <div
             key={item.product.id}
-            product={{
-              id: item.product.id,
-              name: item.product.name,
-              slug: item.product.slug,
-              price: typeof item.product.price === 'string' ? parseFloat(item.product.price) : item.product.price,
-              compareAtPrice: item.product.compareAtPrice ? (typeof item.product.compareAtPrice === 'string' ? parseFloat(item.product.compareAtPrice) : item.product.compareAtPrice) : undefined,
-              category: item.product.categoryName ?? undefined,
-              rating: item.product.rating ?? undefined,
-              reviewCount: item.product.reviewsCount,
-              images: item.product.imageUrl ? [item.product.imageUrl] : [],
-              badges: item.product.isNew ? ['NEW'] : [],
-              inStock: item.product.quantity > 0,
-            }}
-          />
+            className="w-[calc(50%-8px)] sm:w-[calc(33.333%-16px)] lg:w-[calc(25%-18px)] min-w-[150px] max-w-[280px]"
+          >
+            <ConfigurableProductCard
+              product={{
+                id: item.product.id,
+                name: item.product.name,
+                slug: item.product.slug,
+                price:
+                  typeof item.product.price === 'string'
+                    ? parseFloat(item.product.price)
+                    : item.product.price,
+                compareAtPrice: item.product.compareAtPrice
+                  ? typeof item.product.compareAtPrice === 'string'
+                    ? parseFloat(item.product.compareAtPrice)
+                    : item.product.compareAtPrice
+                  : undefined,
+                category: item.product.categoryName ?? undefined,
+                rating: item.product.rating ?? undefined,
+                reviewCount: item.product.reviewsCount,
+                images: item.product.imageUrl ? [item.product.imageUrl] : [],
+                badges: item.product.isNew ? ['NEW'] : [],
+                inStock: item.product.quantity > 0,
+              }}
+            />
+          </div>
         ))}
       </div>
     </Container>

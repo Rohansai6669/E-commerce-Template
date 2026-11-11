@@ -86,14 +86,14 @@ if (!databaseUrl) {
   throw new Error('DATABASE_URL is not set in environment variables');
 }
 
-// Establish a singleton connection pool with max connection controls to prevent EMAXCONN in dev mode
+// Establish a singleton connection pool optimized for low-latency with Supabase Transaction pooler
 const globalForDb = globalThis as unknown as { client: ReturnType<typeof postgres> | undefined };
 const client =
   globalForDb.client ||
   postgres(databaseUrl, {
-    max: 25,
-    idle_timeout: 30,
-    max_lifetime: 60,
+    max: 12,
+    idle_timeout: 120,
+    max_lifetime: 1800,
     connect_timeout: 10,
     prepare: false,
   });

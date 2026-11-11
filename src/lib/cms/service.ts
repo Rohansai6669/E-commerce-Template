@@ -4,6 +4,7 @@ import {
   AnnouncementBarConfig,
   SiteDesignTokens,
   InstagramSettingsConfig,
+  NavAppearanceConfig,
 } from '@/types/cms';
 import {
   defaultHomepageConfig,
@@ -11,10 +12,13 @@ import {
   defaultAnnouncementBar,
   defaultSiteDesignTokens,
   defaultInstagramSettings,
+  defaultNavAppearanceConfig,
 } from './defaults';
 import {
   saveCmsPageConfigAction,
   saveSiteDesignTokensAction,
+  saveNavAppearanceConfigAction,
+  getNavAppearanceConfigServer,
 } from '@/app/actions/cms-actions';
 
 // In-memory / client storage state keys
@@ -23,6 +27,7 @@ const STORAGE_KEY_TABLE_PREFIX = 'cms_table_config_';
 const STORAGE_KEY_ANNOUNCEMENT = 'cms_announcement_bar';
 const STORAGE_KEY_DESIGN_TOKENS = 'cms_design_tokens';
 const STORAGE_KEY_INSTAGRAM = 'cms_instagram_settings';
+const STORAGE_KEY_NAV_APPEARANCE = 'cms_nav_appearance';
 
 export async function getCmsPageConfig(slug: string = '/'): Promise<PageConfig> {
   if (typeof window !== 'undefined') {
@@ -155,4 +160,33 @@ export async function saveInstagramSettings(config: InstagramSettingsConfig): Pr
     }
   }
   return false;
+}
+
+export async function getNavAppearanceConfig(): Promise<NavAppearanceConfig> {
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY_NAV_APPEARANCE);
+      if (stored) {
+        return {
+          ...defaultNavAppearanceConfig,
+          ...JSON.parse(stored),
+        };
+      }
+    } catch (e) {
+      console.warn('Failed to read nav appearance config from storage:', e);
+    }
+  }
+  return defaultNavAppearanceConfig;
+}
+
+export async function saveNavAppearanceConfig(config: NavAppearanceConfig): Promise<boolean> {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(STORAGE_KEY_NAV_APPEARANCE, JSON.stringify(config));
+      window.dispatchEvent(new Event('cms-nav-appearance-updated'));
+    } catch (e) {
+      console.error('Failed to save nav appearance to localStorage:', e);
+    }
+  }
+  return await saveNavAppearanceConfigAction(config);
 }

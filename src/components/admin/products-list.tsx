@@ -70,7 +70,7 @@ interface ProductsListProps {
   products: ProductRowItem[];
   activeSuppliers: SuppliersItem[];
   mappedLinks: SuppliersMappedItem[];
-  allVariants: VariantItem[];
+  allVariants?: VariantItem[];
   categories: { id: string; name: string }[];
   brands: { id: string; name: string }[];
 }

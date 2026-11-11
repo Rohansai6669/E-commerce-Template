@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import { Rating } from '@/components/commerce/rating';
 import { Price } from '@/components/commerce/price';
@@ -31,28 +33,38 @@ export function ProductSummary({ product }: ProductSummaryProps) {
       </Heading>
 
       {/* Review trigger anchors */}
-      {product.rating !== null && (
-        <a href="#reviews" className="flex items-center gap-2 w-fit cursor-pointer hover:opacity-85 transition-opacity">
-          <Rating value={product.rating} count={product.reviewsCount} size="sm" />
-          <span className="text-xs font-semibold text-primary underline">
-            View all reviews
-          </span>
-        </a>
-      )}
+      <a
+        href="#reviews"
+        className="flex items-center gap-2 w-fit cursor-pointer hover:opacity-85 transition-opacity"
+      >
+        <Rating value={product.rating || 0} count={product.reviewsCount || 0} size="sm" />
+        <span className="text-xs font-semibold text-muted-foreground hover:text-primary underline-offset-4 hover:underline transition-colors">
+          {product.reviewsCount && product.reviewsCount > 0
+            ? `${product.reviewsCount} customer review${product.reviewsCount !== 1 ? 's' : ''}`
+            : 'Write first review'}
+        </span>
+      </a>
 
-      <Separator />
+      <Separator className="opacity-60" />
 
       {/* Formatting rates comparison details */}
-      <div>
-        <Price
-          amount={product.price}
-          compareAtAmount={product.compareAtPrice || undefined}
-          showDiscountBadge
-          className="text-2xl font-bold"
-        />
-        <p className="text-[11px] text-muted-foreground font-medium mt-1">
-          Inclusive of all taxes (GST)
-        </p>
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <div>
+          <Price
+            amount={product.price}
+            compareAtAmount={product.compareAtPrice || undefined}
+            showDiscountBadge
+            className="text-2xl sm:text-3xl font-extrabold tracking-tight"
+          />
+          <p className="text-[11px] text-muted-foreground font-medium mt-1">
+            Inclusive of all taxes (GST)
+          </p>
+        </div>
+        {product.price >= 1999 && (
+          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            Free Express Shipping
+          </span>
+        )}
       </div>
     </Stack>
   );

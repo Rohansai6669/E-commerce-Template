@@ -13,6 +13,7 @@ import { productVariants } from '@/lib/db/schema/catalog/variants';
 import { payments } from '@/lib/db/schema/payment';
 import { inArray } from 'drizzle-orm';
 import { couponService } from '@/core/coupon/coupon.service';
+import { getCurrentUser } from '@/core/auth/session';
 
 /**
  * Server action to process and persist an order.
@@ -118,6 +119,7 @@ export async function placeOrderAction(params: {
     tax: totals.tax,
     total: totals.total,
     guestEmail: params.address.email,
+    profileId: (await getCurrentUser())?.id ?? null,
   };
 
   try {

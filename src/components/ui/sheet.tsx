@@ -28,7 +28,7 @@ SheetOverlay.displayName = DialogPrimitive.Overlay.displayName;
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+>(({ className, children, onPointerDownOutside, onInteractOutside, ...props }, ref) => (
   <SheetPortal>
     <SheetOverlay />
     <DialogPrimitive.Content
@@ -37,6 +37,28 @@ const SheetContent = React.forwardRef<
         'fixed inset-y-0 left-0 z-[1110] h-full w-full max-w-md border-r border-slate-200 bg-white p-6 shadow-xl transition-transform duration-300 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
         className
       )}
+      onPointerDownOutside={(e) => {
+        const target = e.target as HTMLElement | null;
+        if (
+          target?.closest?.('[data-media-picker-modal]') ||
+          document.querySelector('[data-media-picker-modal]')
+        ) {
+          e.preventDefault();
+          return;
+        }
+        onPointerDownOutside?.(e);
+      }}
+      onInteractOutside={(e) => {
+        const target = e.target as HTMLElement | null;
+        if (
+          target?.closest?.('[data-media-picker-modal]') ||
+          document.querySelector('[data-media-picker-modal]')
+        ) {
+          e.preventDefault();
+          return;
+        }
+        onInteractOutside?.(e);
+      }}
       {...props}
     >
       {children}

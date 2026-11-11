@@ -23,6 +23,7 @@ import { auditLogs } from '@/lib/db/schema/audit';
 import { getCurrentProfile } from '@/core/auth/session';
 import { eq, and, sql, inArray } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { invalidateProductCache } from '@/core/performance/cache';
 
 /**
  * Ensures caller is an Admin or Staff.
@@ -282,6 +283,7 @@ export async function createProductAction(productData: {
       newValue: { name, sku, productType, price, status },
     });
 
+    invalidateProductCache();
     revalidatePath('/admin/products');
     return { success: true, productId: newProduct.id };
   } catch (error: any) {
@@ -418,6 +420,7 @@ export async function updateProductAction(
       });
     });
 
+    invalidateProductCache();
     revalidatePath('/admin/products');
     revalidatePath('/products');
     return { success: true };
@@ -845,6 +848,7 @@ export async function deleteProductAction(productId: string): Promise<{ success:
       newValue: { deleted: true },
     });
 
+    invalidateProductCache();
     revalidatePath('/admin');
     revalidatePath('/admin/products');
     revalidatePath('/products');
@@ -883,6 +887,7 @@ export async function toggleProductStatusAction(
       newValue: { status: newStatus },
     });
 
+    invalidateProductCache();
     revalidatePath('/admin');
     revalidatePath('/admin/products');
     revalidatePath('/products');
@@ -940,6 +945,7 @@ export async function bulkUpdateProductStatusAction(
       }
     }
 
+    invalidateProductCache();
     revalidatePath('/admin');
     revalidatePath('/admin/products');
     revalidatePath('/products');

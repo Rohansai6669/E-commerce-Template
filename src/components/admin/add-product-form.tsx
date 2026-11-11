@@ -10,6 +10,7 @@ import { FormField } from '@/components/forms/form-field';
 import { AttributeSelector } from '@/components/admin/catalog/products/attribute-selector';
 import { VariantMatrix } from '@/components/admin/catalog/products/variant-matrix';
 import { ProductGalleryManager } from '@/components/admin/media/product-gallery-manager';
+import { ImagePreviewInput } from '@/components/ui/image-preview-input';
 import { toast } from 'sonner';
 import { createCategoryAction } from '@/app/actions/category-actions';
 import { createBrandAction } from '@/app/actions/brand-actions';
@@ -41,6 +42,7 @@ export function AddProductForm({ categories, brands, redirectOnSuccess }: AddPro
   // Direct Add Category State
   const [isAddingCategory, setIsAddingCategory] = React.useState(false);
   const [newCategoryName, setNewCategoryName] = React.useState('');
+  const [newCategoryImageUrl, setNewCategoryImageUrl] = React.useState('');
   const [isCategoryPending, setIsCategoryPending] = React.useState(false);
 
   // Direct Add Brand State
@@ -100,6 +102,9 @@ export function AddProductForm({ categories, brands, redirectOnSuccess }: AddPro
     setIsCategoryPending(true);
     const formData = new FormData();
     formData.append('name', newCategoryName.trim());
+    if (newCategoryImageUrl.trim()) {
+      formData.append('imageUrl', newCategoryImageUrl.trim());
+    }
 
     const res = await createCategoryAction(formData);
     setIsCategoryPending(false);
@@ -109,6 +114,7 @@ export function AddProductForm({ categories, brands, redirectOnSuccess }: AddPro
       setCategoriesList((prev) => [...prev, created]);
       setCategoryId(created.id);
       setNewCategoryName('');
+      setNewCategoryImageUrl('');
       setIsAddingCategory(false);
       toast.success(`Category "${created.name}" created and selected!`);
     } else {
@@ -459,30 +465,47 @@ export function AddProductForm({ categories, brands, redirectOnSuccess }: AddPro
           </div>
 
           {isAddingCategory ? (
-            <div className="flex items-center gap-2 bg-indigo-50/50 p-2 border border-indigo-200 rounded-md animate-in fade-in duration-150">
-              <Input
-                type="text"
-                value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
-                placeholder="Enter new category name..."
-                disabled={isCategoryPending}
-                className="h-9 text-xs bg-white border-slate-300 focus:border-indigo-600"
-                autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleDirectAddCategory();
-                  }
-                }}
-              />
-              <Button
-                type="button"
-                onClick={handleDirectAddCategory}
-                disabled={isCategoryPending || !newCategoryName.trim()}
-                className="h-9 px-3 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold cursor-pointer shrink-0"
-              >
-                {isCategoryPending ? 'Adding...' : 'Add'}
-              </Button>
+            <div className="flex flex-col gap-2.5 bg-indigo-50/50 p-3 border border-indigo-200 rounded-md animate-in fade-in duration-150">
+              <div className="flex items-center gap-2">
+                <Input
+                  type="text"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="Enter new category name..."
+                  disabled={isCategoryPending}
+                  className="h-9 text-xs bg-white border-slate-300 focus:border-indigo-600 font-semibold"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleDirectAddCategory();
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  onClick={handleDirectAddCategory}
+                  disabled={isCategoryPending || !newCategoryName.trim()}
+                  className="h-9 px-4 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold cursor-pointer shrink-0"
+                >
+                  {isCategoryPending ? 'Adding...' : 'Save & Select'}
+                </Button>
+              </div>
+
+              <div>
+                <span className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
+                  Category Photo / Media (Optional)
+                </span>
+                <ImagePreviewInput
+                  name="newCategoryImageUrl"
+                  value={newCategoryImageUrl}
+                  onChange={setNewCategoryImageUrl}
+                  placeholder="Upload category photo or paste URL"
+                  aspectRatio="square"
+                  folder="categories"
+                  description="Featured category image used in mega menu banners and catalog headers"
+                />
+              </div>
             </div>
           ) : (
             <select

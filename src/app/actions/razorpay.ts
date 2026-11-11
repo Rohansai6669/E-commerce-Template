@@ -15,6 +15,7 @@ import { orders } from '@/lib/db/schema/order';
 import { inArray, eq } from 'drizzle-orm';
 import { couponService } from '@/core/coupon/coupon.service';
 import { logger } from '@/core/logger';
+import { getCurrentUser } from '@/core/auth/session';
 
 /**
  * Creates a Razorpay checkout order with authoritative server totals.
@@ -245,6 +246,7 @@ export async function verifyAndPlaceRazorpayOrderAction(params: {
     tax: totals.tax,
     total: totals.total,
     guestEmail: params.address.email,
+    profileId: (await getCurrentUser())?.id ?? null,
   };
 
   try {

@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Rating } from '@/components/commerce/rating';
 import { Text } from '@/components/ui/typography';
 import { Stack } from '@/components/layout/stack';
+import { MessageSquarePlus } from 'lucide-react';
 
 export interface ReviewSummaryProps {
   reviews: Array<{ rating: number }>;
@@ -24,8 +25,30 @@ export function ReviewSummary({ reviews, rating, reviewsCount }: ReviewSummaryPr
     }
   });
 
+  if (reviewsCount === 0) {
+    return (
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 border border-border bg-card rounded-xl shadow-xs w-full">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+            <MessageSquarePlus className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-foreground">No customer reviews yet</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Be the first to review this product and help other shoppers.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Rating value={0} size="sm" />
+          <span className="text-xs font-semibold text-muted-foreground">0.0 (0 reviews)</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center border border-border p-6 bg-card rounded-md shadow-sm w-full">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center border border-border p-6 bg-card rounded-xl shadow-xs w-full">
       {/* Left Ratings Average summary */}
       <Stack gap="2" align="center" className="text-center md:border-r border-border md:pr-6 last:border-0">
         <Text className="text-4xl font-extrabold tracking-tight text-foreground font-heading">
@@ -33,7 +56,7 @@ export function ReviewSummary({ reviews, rating, reviewsCount }: ReviewSummaryPr
         </Text>
         <Rating value={rating || 0} size="md" />
         <Text className="text-xs text-muted-foreground font-medium">
-          Based on {reviewsCount} customer reviews
+          Based on {reviewsCount} customer review{reviewsCount !== 1 ? 's' : ''}
         </Text>
       </Stack>
 
@@ -64,4 +87,5 @@ export function ReviewSummary({ reviews, rating, reviewsCount }: ReviewSummaryPr
     </div>
   );
 }
+
 export default ReviewSummary;

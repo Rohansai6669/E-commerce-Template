@@ -3,13 +3,15 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { PageConfig, AnySectionConfig, SiteDesignTokens } from '@/types/cms';
-import { saveCmsPageConfig, saveSiteDesignTokens } from '@/lib/cms/service';
+import { NavAppearanceConfig, defaultNavAppearanceConfig } from '@/types/navigation-appearance';
+import { saveCmsPageConfig, saveSiteDesignTokens, saveNavAppearanceConfig } from '@/lib/cms/service';
 import { useThemeVariables } from '@/providers/ThemeVariableProvider';
 import { BuilderPreviewCanvas, type DeviceViewport } from './builder-preview-canvas';
 import { SECTION_REGISTRY, RegistryEntry } from '@/lib/cms/registry';
 import { SectionPicker } from './section-picker';
 import { DynamicEditorForm } from './dynamic-editor-form';
 import { ThemeEditorPanel } from './theme-editor-panel';
+import { NavEditorPanel } from './nav-editor-panel';
 import { ThemePreset } from '@/lib/cms/theme/presets';
 import { SectionEditorModal } from './section-editor-modal';
 import { DirectSectionInspector } from './direct-section-inspector';
@@ -45,12 +47,14 @@ import {
   Split,
   ExternalLink,
   Columns2,
+  Compass,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface VisualBuilderStudioProps {
   initialPageConfig: PageConfig;
   initialThemeTokens: SiteDesignTokens;
+  initialNavConfig?: NavAppearanceConfig;
   products: ProductData[];
   seasonalSections: SeasonalCampaignData[];
   categories?: { id: string; name: string; parentId?: string | null; slug?: string; imageUrl?: string | null; description?: string | null }[];
@@ -62,6 +66,7 @@ interface VisualBuilderStudioProps {
 export function VisualBuilderStudio({
   initialPageConfig,
   initialThemeTokens,
+  initialNavConfig,
   products,
   seasonalSections,
   categories = [],
@@ -73,8 +78,12 @@ export function VisualBuilderStudio({
 
   const [pageConfig, setPageConfig] = useState<PageConfig>(initialPageConfig);
   const [themeTokens, setThemeTokens] = useState<SiteDesignTokens>(initialThemeTokens);
+  const [navConfig, setNavConfig] = useState<NavAppearanceConfig>(
+    initialNavConfig || defaultNavAppearanceConfig
+  );
+  const [previewMegamenuCategory, setPreviewMegamenuCategory] = useState<string | null>(null);
   const [device, setDevice] = useState<DeviceViewport>('desktop');
-  const [activeTab, setActiveTab] = useState<'sections' | 'products' | 'theme'>('sections');
+  const [activeTab, setActiveTab] = useState<'sections' | 'nav' | 'products' | 'theme'>('sections');
   const [showSectionPicker, setShowSectionPicker] = useState(false);
   const [editingModalSection, setEditingModalSection] = useState<AnySectionConfig | null>(null);
 
@@ -107,8 +116,11 @@ export function VisualBuilderStudio({
         await saveSiteDesignTokens(themeTokens);
         applyLiveTheme(themeTokens);
       }
+      if (navConfig) {
+        await saveNavAppearanceConfig(navConfig);
+      }
       setSavedSuccess(true);
-      toast.success('Visual Storefront & Theme Tokens Published Successfully!');
+      toast.success('Storefront Sections, Navigation Appearance & Theme Tokens Published Successfully!');
       setTimeout(() => setSavedSuccess(false), 3000);
     } catch (err) {
       toast.error('Failed to publish storefront changes');
@@ -360,6 +372,25 @@ export function VisualBuilderStudio({
               <span className="hidden xl:inline text-[10px] font-extrabold">MOBILE</span>
             </button>
           </div>
+
+          {/* Quick Mega Menu Dropdown Preview Pin Toggle */}
+          <div className="hidden sm:flex items-center">
+            <button
+              type="button"
+              onClick={() => setPreviewMegamenuCategory(previewMegamenuCategory ? null : 'MEN')}
+              title="Toggle Mega Menu Dropdown in Live Preview Canvas"
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border ${
+                previewMegamenuCategory
+                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span className="text-[10px] font-extrabold uppercase">
+                {previewMegamenuCategory ? `MEGAMENU (${previewMegamenuCategory})` : 'PREVIEW MEGAMENU'}
+              </span>
+            </button>
+          </div>
         </div>
 
         {/* Right Actions: Live Store Link + Publish Action Button */}
@@ -409,38 +440,53 @@ export function VisualBuilderStudio({
             } bg-white border-slate-200 flex flex-col z-20 overflow-hidden shadow-xs transition-all duration-200`}
           >
             {/* Studio Inspector Tab Selector */}
-            <div className="flex border-b border-slate-200 bg-slate-50 p-1.5 gap-1.5">
+            <div className="flex border-b border-slate-200 bg-slate-100 p-2 gap-1.5">
               <button
+                type="button"
                 onClick={() => setActiveTab('sections')}
                 className={`flex-1 py-2 rounded-lg text-[11px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   activeTab === 'sections'
-                    ? 'bg-white text-slate-950 shadow-2xs border border-slate-200'
-                    : 'text-slate-400 hover:text-slate-700'
+                    ? 'bg-slate-950 text-white shadow-xs'
+                    : 'bg-white text-slate-700 hover:text-slate-950 hover:bg-slate-50 border border-slate-200'
                 }`}
               >
-                <Sliders className="w-3.5 h-3.5 text-slate-900" />
+                <Sliders className="w-3.5 h-3.5" />
                 <span>SECTIONS</span>
               </button>
               <button
+                type="button"
+                onClick={() => setActiveTab('nav')}
+                className={`flex-1 py-2 rounded-lg text-[11px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  activeTab === 'nav'
+                    ? 'bg-slate-950 text-white shadow-xs'
+                    : 'bg-white text-slate-700 hover:text-slate-950 hover:bg-slate-50 border border-slate-200'
+                }`}
+              >
+                <Compass className="w-3.5 h-3.5" />
+                <span>NAV</span>
+              </button>
+              <button
+                type="button"
                 onClick={() => setActiveTab('products')}
                 className={`flex-1 py-2 rounded-lg text-[11px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   activeTab === 'products'
-                    ? 'bg-white text-slate-950 shadow-2xs border border-slate-200'
-                    : 'text-slate-400 hover:text-slate-700'
+                    ? 'bg-slate-950 text-white shadow-xs'
+                    : 'bg-white text-slate-700 hover:text-slate-950 hover:bg-slate-50 border border-slate-200'
                 }`}
               >
-                <Box className="w-3.5 h-3.5 text-slate-900" />
+                <Box className="w-3.5 h-3.5" />
                 <span>CATALOG</span>
               </button>
               <button
+                type="button"
                 onClick={() => setActiveTab('theme')}
                 className={`flex-1 py-2 rounded-lg text-[11px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   activeTab === 'theme'
-                    ? 'bg-white text-slate-950 shadow-2xs border border-slate-200'
-                    : 'text-slate-400 hover:text-slate-700'
+                    ? 'bg-slate-950 text-white shadow-xs'
+                    : 'bg-white text-slate-700 hover:text-slate-950 hover:bg-slate-50 border border-slate-200'
                 }`}
               >
-                <Palette className="w-3.5 h-3.5 text-slate-900" />
+                <Palette className="w-3.5 h-3.5" />
                 <span>THEME</span>
               </button>
             </div>
@@ -664,6 +710,16 @@ export function VisualBuilderStudio({
             </div>
           )}
 
+          {/* Tab 2: Navigation Appearance Studio */}
+          {activeTab === 'nav' && (
+            <NavEditorPanel
+              config={navConfig}
+              onChange={setNavConfig}
+              previewMegamenuCategory={previewMegamenuCategory}
+              onPreviewMegamenuChange={setPreviewMegamenuCategory}
+            />
+          )}
+
           {/* Tab 3: Theme Presets & Color Token Inspector */}
           {activeTab === 'theme' && (
             <div className="flex-1 overflow-y-auto bg-slate-50/50">
@@ -699,6 +755,9 @@ export function VisualBuilderStudio({
             seasonalSections={seasonalSections}
             device={device}
             themeTokens={themeTokens}
+            navConfig={navConfig}
+            previewActiveCategory={previewMegamenuCategory}
+            onPreviewCategoryChange={setPreviewMegamenuCategory}
             selectedSectionId={selectedSectionId}
             onSelectSection={(id) => {
               if (viewMode === 'canvas') {

@@ -52,4 +52,5 @@ export interface CreateOrderParams {
   tax: number;
   total: number;
   guestEmail: string;
+  profileId?: string | null;
 }

@@ -344,3 +344,5 @@ export const defaultOrdersTableConfig: TableConfig = {
     export: true,
   },
 };
+
+export { defaultNavAppearanceConfig } from '@/types/navigation-appearance';

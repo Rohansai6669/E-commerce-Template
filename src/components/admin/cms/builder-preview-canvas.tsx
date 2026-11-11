@@ -2,10 +2,12 @@
 
 import React from 'react';
 import { PageRenderer } from '@/components/cms/page-renderer';
+import { Header } from '@/components/navigation/Header/header';
 import { type AnySectionConfig } from '@/types/cms';
 import { type ProductData } from '@/components/commerce/configurable-product-card';
 import { type SeasonalSaleCampaignProps } from '@/components/cms/sections/cms-seasonal-sale-grid';
 import { type SiteDesignTokens } from '@/types/cms';
+import { type NavAppearanceConfig } from '@/types/navigation-appearance';
 
 export type DeviceViewport = 'desktop' | 'tablet' | 'mobile';
 
@@ -15,6 +17,9 @@ interface BuilderPreviewCanvasProps {
   seasonalSections: SeasonalSaleCampaignProps[];
   device: DeviceViewport;
   themeTokens: SiteDesignTokens;
+  navConfig?: NavAppearanceConfig;
+  previewActiveCategory?: string | null;
+  onPreviewCategoryChange?: (category: string | null) => void;
   selectedSectionId?: string | null;
   onSelectSection?: (id: string) => void;
 }
@@ -25,6 +30,9 @@ export function BuilderPreviewCanvas({
   seasonalSections,
   device,
   themeTokens,
+  navConfig,
+  previewActiveCategory,
+  onPreviewCategoryChange,
   selectedSectionId,
   onSelectSection,
 }: BuilderPreviewCanvasProps) {
@@ -69,16 +77,25 @@ export function BuilderPreviewCanvas({
   if (device === 'desktop') {
     return (
       <div
-        className="w-full h-full overflow-y-auto overflow-x-hidden bg-[var(--background,#ffffff)] font-sans text-[var(--foreground,#020617)]"
+        className="w-full h-full overflow-y-auto overflow-x-hidden bg-[var(--background,#ffffff)] font-sans text-[var(--foreground,#020617)] flex flex-col"
         style={cssVariables}
       >
-        <PageRenderer
-          sections={sections}
-          products={products}
-          seasonalSections={seasonalSections}
-          selectedSectionId={selectedSectionId}
-          onSelectSection={onSelectSection}
+        {/* Live Storefront Header in Builder Canvas */}
+        <Header
+          previewConfig={navConfig}
+          previewActiveCategory={previewActiveCategory}
+          onPreviewCategoryChange={onPreviewCategoryChange}
         />
+
+        <main className="flex-1 w-full flex flex-col">
+          <PageRenderer
+            sections={sections}
+            products={products}
+            seasonalSections={seasonalSections}
+            selectedSectionId={selectedSectionId}
+            onSelectSection={onSelectSection}
+          />
+        </main>
       </div>
     );
   }
@@ -113,14 +130,22 @@ export function BuilderPreviewCanvas({
         )}
 
         {/* Live Storefront Renderer Inside Device Frame */}
-        <div className="w-full flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-[var(--background,#ffffff)] font-sans text-[var(--foreground,#020617)]">
-          <PageRenderer
-            sections={sections}
-            products={products}
-            seasonalSections={seasonalSections}
-            selectedSectionId={selectedSectionId}
-            onSelectSection={onSelectSection}
+        <div className="w-full flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-[var(--background,#ffffff)] font-sans text-[var(--foreground,#020617)] flex flex-col">
+          <Header
+            previewConfig={navConfig}
+            previewActiveCategory={previewActiveCategory}
+            onPreviewCategoryChange={onPreviewCategoryChange}
           />
+
+          <main className="flex-1 w-full flex flex-col">
+            <PageRenderer
+              sections={sections}
+              products={products}
+              seasonalSections={seasonalSections}
+              selectedSectionId={selectedSectionId}
+              onSelectSection={onSelectSection}
+            />
+          </main>
         </div>
       </div>
     </div>

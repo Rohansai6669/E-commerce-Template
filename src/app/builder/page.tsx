@@ -1,7 +1,7 @@
 import React from 'react';
 import { redirect } from 'next/navigation';
 import { getCurrentUser, getCurrentProfile } from '@/core/auth/session';
-import { getCmsPageConfigServer, getSiteDesignTokensServer } from '@/lib/cms/cms-server';
+import { getCmsPageConfigServer, getSiteDesignTokensServer, getNavAppearanceConfigServer } from '@/lib/cms/cms-server';
 import { defaultSiteDesignTokens } from '@/lib/cms/defaults';
 import { fetchHomepageVisualBuilderData } from '@/app/actions/cms-actions';
 import { VisualBuilderStudio } from '@/components/admin/cms/visual-builder-studio';
@@ -13,6 +13,7 @@ import { brands } from '@/lib/db/schema/catalog/brands';
 import { collections } from '@/lib/db/schema/catalog/collections';
 import { globalAttributes } from '@/lib/db/schema/catalog/variants';
 import { productRepository } from '@/core/product/product.repository';
+import { getCachedProducts } from '@/core/performance/cache';
 import { ProductMapper } from '@/core/product/product.mapper';
 import { type ProductData } from '@/components/commerce/configurable-product-card';
 import { sql } from 'drizzle-orm';
@@ -33,6 +34,7 @@ export default async function VisualBuilderPage() {
   const [
     pageConfig,
     themeTokens,
+    navConfig,
     builderData,
     categoriesList,
     brandsList,
@@ -42,6 +44,7 @@ export default async function VisualBuilderPage() {
   ] = await Promise.all([
     getCmsPageConfigServer('/'),
     getSiteDesignTokensServer().then((t) => t || defaultSiteDesignTokens),
+    getNavAppearanceConfigServer(),
     fetchHomepageVisualBuilderData(),
     safeQuery(
       () =>
@@ -90,7 +93,7 @@ export default async function VisualBuilderPage() {
           .where(sql`${globalAttributes.deletedAt} IS NULL`),
       'builder_attributes_list'
     ),
-    productRepository.getProducts({ page: 1, limit: 100, visibility: 'admin' }).catch(() => ({ items: [] })),
+    getCachedProducts({ page: 1, limit: 50, visibility: 'admin' }).catch(() => ({ items: [] })),
   ]);
 
   let mappedProducts: ProductData[] = [];
@@ -162,6 +165,7 @@ export default async function VisualBuilderPage() {
       <VisualBuilderStudio
         initialPageConfig={pageConfig}
         initialThemeTokens={themeTokens}
+        initialNavConfig={navConfig}
         products={mappedProducts}
         seasonalSections={builderData.seasonalSections}
         categories={categoriesList || []}

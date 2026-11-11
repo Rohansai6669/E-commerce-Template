@@ -1,10 +1,11 @@
 import React from 'react';
+import { normalizeNineAlignment, getNineAlignmentClasses, type NineAlignment } from '@/components/ui/nine-alignment-matrix';
 
 interface SectionHeadingProps {
   eyebrow?: string;
   heading?: string;
   description?: string;
-  alignment?: 'left' | 'center' | 'right';
+  alignment?: 'left' | 'center' | 'right' | NineAlignment | string;
   className?: string;
 }
 
@@ -17,14 +18,20 @@ export function SectionHeading({
 }: SectionHeadingProps) {
   if (!eyebrow && !heading && !description) return null;
 
-  const alignClass = {
-    left: 'text-left items-start',
-    center: 'text-center items-center',
-    right: 'text-right items-end',
-  }[alignment];
+  const norm = normalizeNineAlignment(alignment);
+  const alignInfo = getNineAlignmentClasses(norm);
+
+  const containerMargin =
+    alignInfo.horizontal === 'center'
+      ? 'mx-auto'
+      : alignInfo.horizontal === 'right'
+      ? 'ml-auto'
+      : 'mr-auto';
 
   return (
-    <div className={`flex flex-col mb-4 sm:mb-6 max-w-3xl ${alignment === 'center' ? 'mx-auto' : ''} ${alignClass} ${className}`}>
+    <div
+      className={`flex flex-col mb-4 sm:mb-6 max-w-3xl ${containerMargin} ${alignInfo.horizontal} ${alignInfo.text} ${className}`}
+    >
       {eyebrow && (
         <span className="text-xs font-semibold tracking-[0.25em] uppercase text-muted-foreground mb-2 inline-block">
           {eyebrow}

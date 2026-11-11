@@ -3,7 +3,7 @@ import { getCmsPageConfigServer } from '@/lib/cms/cms-server';
 import { PageRenderer } from '@/components/cms/page-renderer';
 import { homepageService, type SeasonalCampaignData } from '@/core/storefront/homepage.service';
 import { type ProductData } from '@/components/commerce/configurable-product-card';
-import { productRepository } from '@/core/product/product.repository';
+import { getCachedProducts } from '@/core/performance/cache';
 import { ProductMapper } from '@/core/product/product.mapper';
 import { connection } from 'next/server';
 
@@ -19,7 +19,7 @@ export default async function HomePage() {
       console.warn('Could not fetch homepage data from DB:', err);
       return { seasonalSections: [], featuredProducts: [], categories: [] };
     }),
-    productRepository.getProducts({ page: 1, limit: 100 }).catch(() => ({ items: [] })),
+    getCachedProducts({ page: 1, limit: 16 }).catch(() => ({ items: [] })),
   ]);
 
   const seasonalSections = homepageData.seasonalSections || [];

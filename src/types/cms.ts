@@ -167,8 +167,8 @@ export interface BaseSectionConfig {
   eyebrow?: string;
   heading?: string;
   description?: string;
-  headingAlignment?: 'left' | 'center' | 'right';
-  contentAlignment?: 'left' | 'center' | 'right';
+  headingAlignment?: 'left' | 'center' | 'right' | 'top-left' | 'top-center' | 'top-right' | 'middle-left' | 'center' | 'middle-right' | 'bottom-left' | 'bottom-center' | 'bottom-right' | string;
+  contentAlignment?: 'left' | 'center' | 'right' | 'top-left' | 'top-center' | 'top-right' | 'middle-left' | 'center' | 'middle-right' | 'bottom-left' | 'bottom-center' | 'bottom-right' | string;
   primaryCtaText?: string;
   primaryCtaUrl?: string;
   secondaryCtaText?: string;
@@ -445,4 +445,24 @@ export interface PageConfig {
   ogImage?: string;
   sections: AnySectionConfig[];
 }
+
+export type {
+  NavAppearanceConfig,
+  NavLinkItem,
+  HeaderHeightOption,
+  HeaderWidthOption,
+  LogoFontOption,
+  LogoSizeOption,
+  LogoWeightOption,
+  LogoSpacingOption,
+  LinksAlignOption,
+  LinksSpacingOption,
+  LinksFontSizeOption,
+  LinksFontWeightOption,
+  LinksTransformOption,
+  MegamenuTabStyleOption,
+  IconStyleOption,
+  PromoBannerRadiusOption,
+  NavAppearancePreset,
+} from './navigation-appearance';
 

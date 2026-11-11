@@ -53,6 +53,7 @@ export function Search() {
       {/* Search Icon Trigger in Header */}
       <button
         type="button"
+        suppressHydrationWarning
         onClick={() => setIsOpen(true)}
         className="flex items-center justify-center h-9 w-9 rounded-full border border-border bg-background hover:bg-accent text-foreground transition-colors cursor-pointer"
         aria-label="Open search bar"

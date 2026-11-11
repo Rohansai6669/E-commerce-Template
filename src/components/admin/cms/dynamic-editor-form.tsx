@@ -18,6 +18,7 @@ import {
   Sliders,
 } from 'lucide-react';
 import { ImagePreviewInput } from '@/components/ui/image-preview-input';
+import { NineAlignmentMatrix } from '@/components/ui/nine-alignment-matrix';
 import { ProductAttributeFilterForm } from './product-attribute-filter-form';
 import { type ProductData } from '@/components/commerce/configurable-product-card';
 
@@ -301,6 +302,22 @@ export function DynamicEditorForm({
         );
 
       case 'select':
+        if (field.key.toLowerCase().includes('align') || field.key.toLowerCase().includes('position')) {
+          const hasOnlyHorizontal = field.options && field.options.length > 0 && field.options.every((o) => ['left', 'center', 'right'].includes(o.value));
+          return (
+            <div key={field.key} className="space-y-1 p-3 rounded-xl border border-slate-200 bg-white shadow-2xs">
+              <NineAlignmentMatrix
+                label={field.label}
+                description={field.description}
+                value={value}
+                onChange={(val, h) => {
+                  onChange(field.key, hasOnlyHorizontal ? h : val);
+                }}
+              />
+            </div>
+          );
+        }
+
         return (
           <div key={field.key} className="space-y-1">
             <label className="text-[11px] font-bold text-slate-900 uppercase tracking-tight">{field.label}</label>

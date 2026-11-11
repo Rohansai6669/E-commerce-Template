@@ -6,6 +6,7 @@ import { products } from '@/lib/db/schema/catalog/products';
 import { SupplierBrandService } from '@/lib/services/supplier-brand-service';
 import { eq, and, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { invalidateBrandCache } from '@/core/performance/cache';
 
 /**
  * Creates a new brand and assigns fulfilling suppliers if provided.
@@ -41,6 +42,7 @@ export async function createBrandAction(
     });
 
     console.log(`[Brand Created] ${name} (${slug})`);
+    invalidateBrandCache();
     revalidatePath('/admin/brands');
     revalidatePath('/products');
     return { success: true, data: createdBrand };
@@ -82,6 +84,7 @@ export async function updateBrandAction(
     });
 
     console.log(`[Brand Updated] ID: ${id}, Name: ${name}`);
+    invalidateBrandCache();
     revalidatePath('/admin/brands');
     revalidatePath('/products');
     return { success: true };
@@ -103,6 +106,7 @@ export async function updateBrandSuppliersAction(
       await SupplierBrandService.syncBrandSuppliers(brandId, supplierIds, tx);
     });
 
+    invalidateBrandCache();
     revalidatePath('/admin/brands');
     revalidatePath('/admin/suppliers');
     revalidatePath('/admin/products');
@@ -140,6 +144,7 @@ export async function deleteBrandAction(id: string): Promise<{ success: boolean;
       .where(eq(brands.id, id));
 
     console.log(`[Brand Soft-Deleted] ID: ${id}`);
+    invalidateBrandCache();
     revalidatePath('/admin/brands');
     revalidatePath('/products');
     return { success: true };

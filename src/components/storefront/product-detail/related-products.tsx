@@ -28,11 +28,16 @@ export function RelatedProducts({ products }: RelatedProductsProps) {
         </Text>
       </Stack>
 
-      <ProductGrid cols="1" colsSm="2" colsMd="4" gap="6">
+      <div className="flex flex-wrap gap-4 sm:gap-6 items-stretch w-full">
         {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <div
+            key={product.id}
+            className="w-[calc(50%-8px)] sm:w-[calc(33.333%-16px)] lg:w-[calc(25%-18px)] min-w-[150px] max-w-[320px] flex-1"
+          >
+            <ProductCard product={product} />
+          </div>
         ))}
-      </ProductGrid>
+      </div>
     </Stack>
   );
 }

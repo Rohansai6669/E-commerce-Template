@@ -37,6 +37,7 @@ import {
 } from './category-cards-editor';
 import { EditorialBannerEditor } from './editorial-banner-editor';
 import { DynamicEditorForm } from './dynamic-editor-form';
+import { NineAlignmentMatrix } from '@/components/ui/nine-alignment-matrix';
 
 type CategoryItem = CategoryItemOption;
 
@@ -530,6 +531,12 @@ export function DirectSectionInspector({
                           placeholder="Image URL or Cloudflare R2"
                           onChange={(url) => handleSlideChange(idx, 'mediaUrl', url)}
                           aspectRatio="banner"
+                        />
+                        <NineAlignmentMatrix
+                          label="Slide Text Alignment (9-Point)"
+                          value={slide.contentPosition || 'center'}
+                          size="sm"
+                          onChange={(val) => handleSlideChange(idx, 'contentPosition', val)}
                         />
                       </div>
                     </div>
@@ -1159,27 +1166,18 @@ export function DirectSectionInspector({
               </div>
             </div>
 
-            {/* Text Alignment */}
+            {/* 9-Point Text & Heading Alignment Matrix (Figma / Word Inspired) */}
             <div className="p-3.5 rounded-xl border border-slate-200 bg-white space-y-2 shadow-2xs">
-              <label className="text-[11px] font-extrabold uppercase tracking-tight text-slate-900 block">
-                Heading & Text Alignment
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {(['left', 'center', 'right'] as const).map((align) => (
-                  <button
-                    key={align}
-                    type="button"
-                    onClick={() => onUpdateField('headingAlignment', align)}
-                    className={`py-2 rounded-lg text-xs font-bold uppercase transition cursor-pointer ${
-                      (section.headingAlignment || 'center') === align
-                        ? 'bg-slate-950 text-white'
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                    }`}
-                  >
-                    {align}
-                  </button>
-                ))}
-              </div>
+              <NineAlignmentMatrix
+                label="Heading & Content Alignment (9-Point)"
+                description="Fine-tune horizontal and vertical text placement (Figma / Word matrix)"
+                value={section.headingAlignment || 'center'}
+                onChange={(val, h) => {
+                  onUpdateField('headingAlignment', val);
+                  onUpdateField('contentAlignment', val);
+                  onUpdateField('contentPosition', val);
+                }}
+              />
             </div>
           </div>
         )}

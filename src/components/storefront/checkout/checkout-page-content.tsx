@@ -14,6 +14,7 @@ import { ReviewOrder } from './review-order';
 import { PaymentMethodForm } from './payment-method';
 import { OrderConfirmation } from './order-confirmation';
 import { type CheckoutState, type CheckoutAction, type CheckoutTotals } from '@/core/checkout/checkout.types';
+import { type CustomerAddress } from '@/core/address/address.types';
 import { checkoutService } from '@/core/checkout/checkout.service';
 import { type PlacedOrder } from '@/core/order/order.types';
 import { placeOrderAction } from '@/app/actions/order';
@@ -55,6 +56,8 @@ const initialState: CheckoutState = {
  */
 function checkoutReducer(state: CheckoutState, action: CheckoutAction): CheckoutState {
   switch (action.type) {
+    case 'PREFILL_ADDRESS':
+      return { ...state, address: action.address };
     case 'SET_ADDRESS':
       return { ...state, address: action.address, step: 'shipping' };
     case 'SET_SHIPPING_METHOD':
@@ -72,14 +75,49 @@ function checkoutReducer(state: CheckoutState, action: CheckoutAction): Checkout
   }
 }
 
+export interface CheckoutPageContentProps {
+  user?: { id: string; email: string } | null;
+  initialProfile?: { fullName?: string | null; phone?: string | null } | null;
+  initialAddresses?: CustomerAddress[];
+}
+
 /**
  * Multi-step checkout page coordinator.
  */
-export function CheckoutPageContent() {
+export function CheckoutPageContent({
+  user,
+  initialProfile,
+  initialAddresses = [],
+}: CheckoutPageContentProps = {}) {
   const { items, coupon, applyCoupon, removeCoupon, clearCart, isHydrated } = useCart();
   const [state, dispatch] = React.useReducer(checkoutReducer, initialState);
+  const [savedAddresses, setSavedAddresses] = React.useState<CustomerAddress[]>(initialAddresses);
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [placedOrder, setPlacedOrder] = React.useState<PlacedOrder | null>(null);
+
+  // Pre-fill default saved address if present and no address selected yet
+  React.useEffect(() => {
+    if (!state.address && savedAddresses.length > 0) {
+      const defaultAddr = savedAddresses.find((a) => a.isDefault) || savedAddresses[0];
+      if (defaultAddr) {
+        dispatch({
+          type: 'PREFILL_ADDRESS',
+          address: {
+            firstName: defaultAddr.firstName,
+            lastName: defaultAddr.lastName,
+            email: user?.email || '',
+            phone: defaultAddr.phone,
+            addressLine1: defaultAddr.addressLine1,
+            addressLine2: defaultAddr.addressLine2 || '',
+            city: defaultAddr.city,
+            state: defaultAddr.state,
+            postalCode: defaultAddr.postalCode,
+            country: defaultAddr.country,
+          },
+        });
+      }
+    }
+  }, [savedAddresses, user, state.address]);
 
   // Compute totals independently when we have a shipping method
   const totals: CheckoutTotals | null = React.useMemo(() => {
@@ -259,7 +297,13 @@ export function CheckoutPageContent() {
         {state.step === 'address' && (
           <AddressForm
             defaultValues={state.address}
+            savedAddresses={savedAddresses}
+            user={user}
+            profile={initialProfile}
             onSubmit={(address) => dispatch({ type: 'SET_ADDRESS', address })}
+            onAddressSaved={(newAddr) => {
+              setSavedAddresses((prev) => [newAddr, ...prev]);
+            }}
           />
         )}
 

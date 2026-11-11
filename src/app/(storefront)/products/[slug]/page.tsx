@@ -81,7 +81,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const breadcrumbsJsonLd = getBreadcrumbsSchema(breadcrumbs);
 
   return (
-    <Container className="py-8">
+    <Container className="py-6 sm:py-10">
       {/* Tracker mounts */}
       <RecentlyViewedTracker slug={product.slug} />
 
@@ -95,25 +95,29 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsJsonLd) }}
       />
 
-      <Stack gap="8">
+      <div className="space-y-10 sm:space-y-14 w-full">
         <Breadcrumb items={breadcrumbs} />
 
         {/* Top visual detail grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 items-start w-full">
-          <ProductGallery images={product.images} alt={product.name} />
-          
-          <Stack gap="6" className="w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start w-full">
+          {/* Left Column: Image Gallery (7 cols on lg) */}
+          <div className="w-full lg:col-span-7">
+            <ProductGallery images={product.images} alt={product.name} />
+          </div>
+
+          {/* Right Column: Sticky Summary & Purchase Details (5 cols on lg) */}
+          <div className="w-full lg:col-span-5 lg:sticky lg:top-24 lg:self-start space-y-6">
             <ProductSummary product={product} />
             <ProductInfo product={product} initialIsSaved={initialIsSaved} />
-          </Stack>
+          </div>
         </div>
 
-        <Separator />
+        <Separator className="opacity-60" />
 
         {/* Descriptions and Specs tab */}
         <ProductSpecifications product={product} />
 
-        <Separator />
+        <Separator className="opacity-60" />
 
         {/* Customer review sections */}
         <div id="reviews" className="w-full scroll-mt-20">
@@ -127,14 +131,14 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         {/* Category suggestions strip */}
         {relatedProducts.length > 0 && (
           <>
-            <Separator />
+            <Separator className="opacity-60" />
             <RelatedProducts products={relatedProducts} />
           </>
         )}
 
         {/* Recently viewed carousel strip */}
         <RecentlyViewedSection />
-      </Stack>
+      </div>
     </Container>
   );
 }
