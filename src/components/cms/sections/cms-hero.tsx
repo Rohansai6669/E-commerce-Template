@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { HeroConfig, HeroSlide, DescriptionLayout } from '@/types/cms';
 import Link from 'next/link';
 import { ArrowRight, ChevronLeft, ChevronRight, Play, Quote } from 'lucide-react';
+import { normalizeNineAlignment, getNineAlignmentClasses } from '@/components/ui/nine-alignment-matrix';
 
 export function CmsHero({ config }: { config: HeroConfig }) {
   const [currentSlideIdx, setCurrentSlideIdx] = useState(0);
@@ -62,19 +63,14 @@ export function CmsHero({ config }: { config: HeroConfig }) {
     screen: 'min-h-[85vh]',
   }[config.heroHeight || 'medium'];
 
-  const contentPosClasses = {
-    'top-left': 'items-start justify-start text-left p-6 sm:p-10',
-    'top-center': 'items-start justify-center text-center p-6 sm:p-10',
-    'top-right': 'items-start justify-end text-right p-6 sm:p-10',
-    'center-left': 'items-center justify-start text-left p-6 sm:p-10',
-    'middle-left': 'items-center justify-start text-left p-6 sm:p-10',
-    'center': 'items-center justify-center text-center p-6 sm:p-10',
-    'center-right': 'items-center justify-end text-right p-6 sm:p-10',
-    'middle-right': 'items-center justify-end text-right p-6 sm:p-10',
-    'bottom-left': 'items-end justify-start text-left p-6 sm:p-10',
-    'bottom-center': 'items-end justify-center text-center p-6 sm:p-10',
-    'bottom-right': 'items-end justify-end text-right p-6 sm:p-10',
-  }[activeSlide.contentPosition || config.contentPosition || 'center'];
+  const currentPos = normalizeNineAlignment(activeSlide.contentPosition || config.contentPosition || 'center');
+  const align = getNineAlignmentClasses(currentPos);
+  const ctaAlignClass =
+    align.horizontal === 'items-start'
+      ? 'justify-start'
+      : align.horizontal === 'items-end'
+      ? 'justify-end'
+      : 'justify-center';
 
   const renderDescriptionLayout = (descLayout: DescriptionLayout = 'boxed-glass') => {
     if (!activeSlide.description && !activeSlide.subTitle) return null;
@@ -133,15 +129,9 @@ export function CmsHero({ config }: { config: HeroConfig }) {
     );
   };
 
-  const currentPos = activeSlide.contentPosition || config.contentPosition || 'center';
-  const isLeft = currentPos.includes('left');
-  const isRight = currentPos.includes('right');
-  const ctaAlignClass = isLeft ? 'justify-start' : isRight ? 'justify-end' : 'justify-center';
-  const textAlignClass = isLeft ? 'text-left' : isRight ? 'text-right' : 'text-center';
-
   return (
     <section 
-      className={`relative w-full flex ${heightClasses} ${contentPosClasses} overflow-hidden text-white select-none`}
+      className={`relative w-full flex flex-col ${heightClasses} ${align.vertical} ${align.horizontal} ${align.text} p-6 sm:p-12 md:p-16 overflow-hidden text-white select-none`}
       style={{ backgroundColor: config.backgroundColor || '#0f172a' }}
     >
       {/* Media Layer (Image or Video) */}
@@ -172,7 +162,7 @@ export function CmsHero({ config }: { config: HeroConfig }) {
       />
 
       {/* Content Box */}
-      <div className={`relative z-10 max-w-3xl space-y-5 animate-in fade-in slide-in-from-bottom-6 duration-700 flex flex-col ${isLeft ? 'items-start' : isRight ? 'items-end' : 'items-center'} ${textAlignClass}`}>
+      <div className={`relative z-10 max-w-3xl space-y-5 animate-in fade-in slide-in-from-bottom-6 duration-700 flex flex-col ${align.horizontal} ${align.text}`}>
         {activeSlide.eyebrow && (
           <span className="inline-block rounded-full bg-white/20 backdrop-blur-md border border-white/30 px-3.5 py-1 text-[11px] font-bold tracking-widest uppercase text-white">
             {activeSlide.eyebrow}

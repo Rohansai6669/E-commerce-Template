@@ -77,7 +77,11 @@ export function BeforeAfterSliderSection({ config }: { config: BaseSectionConfig
 
   return (
     <SectionShell config={config}>
-      <SectionHeading eyebrow={config.eyebrow || 'FABRIC COMPARISON'} heading={config.heading || 'STANDARD VS ORGANIC CASHMERE'} alignment="center" />
+      <SectionHeading
+        eyebrow={config.eyebrow || 'FABRIC COMPARISON'}
+        heading={config.heading || 'STANDARD VS ORGANIC CASHMERE'}
+        alignment={config.headingAlignment || config.contentAlignment || 'center'}
+      />
       <div
         className={`relative max-w-4xl mx-auto overflow-hidden shadow-xl aspect-[16/9] select-none ${cardRadiusClass}`}
         style={cardRadiusStyle}
@@ -124,7 +128,11 @@ export function StoreLocatorSection({ config }: { config: BaseSectionConfig & an
 
   return (
     <SectionShell config={config}>
-      <SectionHeading eyebrow={config.eyebrow || 'PHYSICAL BOUTIQUES'} heading={config.heading || 'VISIT OUR FLAGSHIP STORES'} />
+      <SectionHeading
+        eyebrow={config.eyebrow || 'PHYSICAL BOUTIQUES'}
+        heading={config.heading || 'VISIT OUR FLAGSHIP STORES'}
+        alignment={config.headingAlignment || config.contentAlignment || 'center'}
+      />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
         <div
           className={`p-6 bg-white border border-[var(--border,#e2e8f0)] shadow-sm ${cardRadiusClass}`}

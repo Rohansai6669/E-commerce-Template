@@ -233,7 +233,7 @@ export function NavEditorPanel({
       </div>
 
       {/* 2. High-Contrast Sub-Tab Navigation Bar */}
-      <div className="flex border-b border-slate-200 bg-white px-2 pt-2 gap-1 sticky top-0 z-20 shadow-2xs">
+      <div className="flex border-b border-slate-200 bg-white px-2 pt-2 gap-1 sticky top-0 z-20 shadow-2xs overflow-x-auto scrollbar-none">
         {[
           { id: 'header', label: 'Header', icon: Layout },
           { id: 'logo', label: 'Logo', icon: Type },
@@ -248,13 +248,13 @@ export function NavEditorPanel({
               key={tab.id}
               type="button"
               onClick={() => setActiveSubTab(tab.id as NavSubTab)}
-              className={`flex-1 pb-2.5 pt-1 text-[11px] font-extrabold uppercase tracking-wider border-b-2 transition flex items-center justify-center gap-1.5 cursor-pointer ${
+              className={`flex-1 min-w-[70px] whitespace-nowrap pb-2.5 pt-1 px-2 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider border-b-2 transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
                 isActive
                   ? 'border-slate-950 text-slate-950 font-black'
                   : 'border-transparent text-slate-500 hover:text-slate-900'
               }`}
             >
-              <IconComp className="w-3.5 h-3.5" />
+              <IconComp className="w-3.5 h-3.5 shrink-0" />
               <span>{tab.label}</span>
             </button>
           );

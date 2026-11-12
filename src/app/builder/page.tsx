@@ -161,7 +161,7 @@ export default async function VisualBuilderPage() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-background overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-background overflow-hidden h-[100dvh]">
       <VisualBuilderStudio
         initialPageConfig={pageConfig}
         initialThemeTokens={themeTokens}

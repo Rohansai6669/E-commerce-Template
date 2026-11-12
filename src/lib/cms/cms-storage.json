@@ -107,7 +107,10 @@
         "eyebrow": "01 — SHOP BY",
         "heading": "THE EDIT",
         "marginTop": "small",
+        "cardRadius": "xlarge",
+        "cardShadow": "none",
         "aspectRatio": "square",
+        "cardRadiusPx": 0,
         "displayOrder": 3,
         "marginBottom": "small",
         "columnsMobile": 1,
@@ -115,13 +118,10 @@
         "mobileVisible": true,
         "tabletVisible": true,
         "columnsDesktop": 3,
+        "containerWidth": "full",
         "desktopVisible": true,
-        "headingAlignment": "left",
         "cardHoverEffect": "zoom-lg",
-        "cardShadow": "none",
-        "cardRadiusPx": 0,
-        "cardRadius": "xlarge",
-        "containerWidth": "full"
+        "headingAlignment": "left"
       },
       {
         "id": "product-grid-1",
@@ -160,10 +160,10 @@
         "productSource": "all",
         "tabletVisible": true,
         "columnsDesktop": 4,
+        "containerWidth": "full",
         "desktopVisible": true,
         "productsPerPage": 8,
-        "headingAlignment": "center",
-        "containerWidth": "full"
+        "headingAlignment": "center"
       },
       {
         "id": "category-grid-2",
@@ -227,9 +227,9 @@
         "mobileVisible": true,
         "tabletVisible": true,
         "columnsDesktop": 4,
+        "containerWidth": "full",
         "desktopVisible": true,
-        "headingAlignment": "left",
-        "containerWidth": "full"
+        "headingAlignment": "left"
       },
       {
         "id": "editorial-1",

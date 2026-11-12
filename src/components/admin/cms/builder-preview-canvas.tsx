@@ -102,19 +102,19 @@ export function BuilderPreviewCanvas({
 
   // Tablet or Mobile Viewport Simulator
   return (
-    <div className="w-full h-full flex items-center justify-center bg-slate-900/90 p-3 sm:p-6 overflow-hidden">
+    <div className="w-full h-full flex items-center justify-center bg-slate-900/90 md:p-6 overflow-hidden">
       {/* Device Frame Wrapper */}
       <div
         className={`transition-all duration-300 bg-white shadow-2xl flex flex-col relative overflow-hidden ${
           device === 'mobile'
-            ? 'w-[375px] max-w-full h-[88vh] max-h-[820px] rounded-[44px] border-[12px] border-slate-950'
-            : 'w-[768px] max-w-full h-[88vh] max-h-[960px] rounded-3xl border-[12px] border-slate-800'
+            ? 'w-full h-full md:w-[375px] md:max-w-full md:h-[88vh] md:max-h-[820px] md:rounded-[44px] md:border-[12px] md:border-slate-950'
+            : 'w-full h-full md:w-[768px] md:max-w-full md:h-[88vh] md:max-h-[960px] md:rounded-3xl md:border-[12px] md:border-slate-800'
         }`}
         style={cssVariables}
       >
-        {/* Mobile Notch Bar */}
+        {/* Mobile Notch Bar - only on desktop simulator frame */}
         {device === 'mobile' && (
-          <div className="w-full bg-slate-950 h-6 flex items-center justify-center shrink-0 select-none z-10">
+          <div className="hidden md:flex w-full bg-slate-950 h-6 items-center justify-center shrink-0 select-none z-10">
             <div className="w-24 h-4 bg-slate-900 rounded-b-xl flex items-center justify-center gap-2">
               <div className="w-2.5 h-2.5 rounded-full bg-slate-800" />
               <div className="w-8 h-1 bg-slate-800 rounded-full" />
@@ -122,9 +122,9 @@ export function BuilderPreviewCanvas({
           </div>
         )}
 
-        {/* Tablet Camera Dot */}
+        {/* Tablet Camera Dot - only on desktop simulator frame */}
         {device === 'tablet' && (
-          <div className="w-full bg-slate-800 h-5 flex items-center justify-center shrink-0 select-none z-10">
+          <div className="hidden md:flex w-full bg-slate-800 h-5 items-center justify-center shrink-0 select-none z-10">
             <div className="w-2 h-2 rounded-full bg-slate-700" />
           </div>
         )}

@@ -140,34 +140,34 @@ export function SectionPicker({ onSelectSection, onClose }: SectionPickerProps) 
   });
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 select-none">
-      <div className="bg-white w-full max-w-5xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-300">
+    <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-2 sm:p-6 select-none">
+      <div className="bg-white w-full max-w-5xl h-[95vh] sm:max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-300">
         {/* Header Bar */}
-        <div className="p-5 border-b border-slate-200 flex items-center justify-between bg-slate-950 text-white">
-          <div className="flex items-center gap-2.5">
-            <Sparkles className="w-5 h-5 text-amber-400" />
-            <h3 className="font-extrabold text-lg tracking-tight font-heading uppercase">
+        <div className="p-3.5 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-950 text-white shrink-0">
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+            <h3 className="font-extrabold text-sm sm:text-lg tracking-tight font-heading uppercase">
               Add Storefront Component
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
         {/* Filter & Search Bar */}
-        <div className="p-4 bg-slate-100 border-b border-slate-200 flex flex-col sm:flex-row gap-3 items-center justify-between">
+        <div className="p-2.5 sm:p-4 bg-slate-100 border-b border-slate-200 flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-center justify-between shrink-0">
           <div className="relative w-full sm:w-80">
-            <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search 46 components..."
-              className="w-full text-xs pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-950 bg-white font-semibold text-slate-900 shadow-2xs placeholder-slate-400"
+              placeholder="Search components..."
+              className="w-full text-xs pl-9 pr-3.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-950 bg-white font-semibold text-slate-900 shadow-2xs placeholder-slate-400"
             />
           </div>
 
@@ -176,7 +176,7 @@ export function SectionPicker({ onSelectSection, onClose }: SectionPickerProps) 
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold uppercase tracking-wider whitespace-nowrap transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-extrabold uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer ${
                   activeCategory === cat.id
                     ? 'bg-slate-950 text-white shadow-xs'
                     : 'bg-white text-slate-800 hover:bg-slate-950 hover:text-white border border-slate-300 shadow-2xs'
@@ -189,7 +189,7 @@ export function SectionPicker({ onSelectSection, onClose }: SectionPickerProps) 
         </div>
 
         {/* Grid of Components with Visual Mini Previews */}
-        <div className="p-6 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 bg-slate-50/70">
+        <div className="p-3 sm:p-6 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 bg-slate-50/70">
           {filteredEntries.map((entry) => (
             <div
               key={entry.type}

@@ -152,19 +152,19 @@ export function DirectSectionInspector({
   return (
     <div className="w-full h-full flex flex-col bg-white text-slate-900 overflow-hidden font-sans select-none">
       {/* Top Header Bar */}
-      <div className="p-3.5 border-b border-slate-200 bg-slate-50/80 flex items-center justify-between gap-2 flex-shrink-0">
-        <div className="flex items-center gap-2 overflow-hidden">
+      <div className="p-3 sm:p-3.5 border-b border-slate-200 bg-slate-50/80 flex items-center justify-between gap-1.5 sm:gap-2 flex-shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-hidden min-w-0">
           <button
             type="button"
             onClick={onBack}
-            className="p-1.5 rounded-lg text-slate-600 hover:text-slate-950 hover:bg-slate-200 transition cursor-pointer"
+            className="p-1.5 rounded-lg text-slate-600 hover:text-slate-950 hover:bg-slate-200 transition cursor-pointer shrink-0"
             title="Back to sections list"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
-          <div className="truncate">
+          <div className="truncate min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-slate-950 text-white uppercase tracking-wider">
+              <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-slate-950 text-white uppercase tracking-wider shrink-0">
                 {registryEntry?.category || section.type}
               </span>
               <h3 className="text-xs font-bold text-slate-950 truncate font-heading">
@@ -175,7 +175,7 @@ export function DirectSectionInspector({
         </div>
 
         {/* Action icons */}
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
           {onCollapse && (
             <button
               type="button"
@@ -232,11 +232,11 @@ export function DirectSectionInspector({
       </div>
 
       {/* Tabs Selector */}
-      <div className="flex border-b border-slate-200 bg-white px-2 pt-1 gap-1 flex-shrink-0">
+      <div className="flex border-b border-slate-200 bg-white px-2 pt-1 gap-1 flex-shrink-0 overflow-x-auto scrollbar-none">
         <button
           type="button"
           onClick={() => setActiveTab('content')}
-          className={`flex-1 py-2 text-[11px] font-extrabold uppercase tracking-wider border-b-2 transition flex items-center justify-center gap-1 cursor-pointer ${
+          className={`flex-1 min-w-[70px] whitespace-nowrap py-2 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider border-b-2 transition flex items-center justify-center gap-1 cursor-pointer ${
             activeTab === 'content'
               ? 'border-slate-950 text-slate-950'
               : 'border-transparent text-slate-400 hover:text-slate-700'
@@ -249,7 +249,7 @@ export function DirectSectionInspector({
         <button
           type="button"
           onClick={() => setActiveTab('dimensions')}
-          className={`flex-1 py-2 text-[11px] font-extrabold uppercase tracking-wider border-b-2 transition flex items-center justify-center gap-1 cursor-pointer ${
+          className={`flex-1 min-w-[105px] whitespace-nowrap py-2 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider border-b-2 transition flex items-center justify-center gap-1 cursor-pointer ${
             activeTab === 'dimensions'
               ? 'border-slate-950 text-slate-950'
               : 'border-transparent text-slate-400 hover:text-slate-700'
@@ -262,7 +262,7 @@ export function DirectSectionInspector({
         <button
           type="button"
           onClick={() => setActiveTab('style')}
-          className={`flex-1 py-2 text-[11px] font-extrabold uppercase tracking-wider border-b-2 transition flex items-center justify-center gap-1 cursor-pointer ${
+          className={`flex-1 min-w-[65px] whitespace-nowrap py-2 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider border-b-2 transition flex items-center justify-center gap-1 cursor-pointer ${
             activeTab === 'style'
               ? 'border-slate-950 text-slate-950'
               : 'border-transparent text-slate-400 hover:text-slate-700'
@@ -275,7 +275,7 @@ export function DirectSectionInspector({
         <button
           type="button"
           onClick={() => setActiveTab('cta')}
-          className={`flex-1 py-2 text-[11px] font-extrabold uppercase tracking-wider border-b-2 transition flex items-center justify-center gap-1 cursor-pointer ${
+          className={`flex-1 min-w-[70px] whitespace-nowrap py-2 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider border-b-2 transition flex items-center justify-center gap-1 cursor-pointer ${
             activeTab === 'cta'
               ? 'border-slate-950 text-slate-950'
               : 'border-transparent text-slate-400 hover:text-slate-700'

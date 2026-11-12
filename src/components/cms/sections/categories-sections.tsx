@@ -184,7 +184,11 @@ export function CategoryGridSection({ config }: { config: CategoryGridConfig & a
 export function CategoryCirclesSection({ config }: { config: BaseSectionConfig & any }) {
   return (
     <SectionShell config={config}>
-      <SectionHeading eyebrow="POPULAR COLLECTIONS" heading="BROWSE BY CATEGORY" alignment="center" />
+      <SectionHeading
+        eyebrow={config.eyebrow || 'POPULAR COLLECTIONS'}
+        heading={config.heading || 'BROWSE BY CATEGORY'}
+        alignment={config.headingAlignment || config.contentAlignment || 'center'}
+      />
       <div className="flex gap-6 overflow-x-auto justify-start sm:justify-center pb-4">
         {[
           { name: 'Outerwear', img: 'https://images.unsplash.com/photo-1544441893-675973e31985?q=80&w=300&auto=format&fit=crop' },

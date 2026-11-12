@@ -3,6 +3,7 @@
 import React from 'react';
 import { ProductGridConfig } from '@/types/cms';
 import { ConfigurableProductCard, ProductData } from '@/components/commerce/configurable-product-card';
+import { SectionHeading } from '../primitives/heading';
 
 // Fallback sample products for CMS grid when database is unpopulated or in preview mode
 const defaultProducts: ProductData[] = [
@@ -178,18 +179,11 @@ export function CmsProductGrid({ config, products }: CmsProductGridProps) {
     >
       {/* Heading */}
       {(config.heading || config.eyebrow) && (
-        <div className={`text-${config.headingAlignment || 'center'} space-y-2`}>
-          {config.eyebrow && (
-            <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
-              {config.eyebrow}
-            </p>
-          )}
-          {config.heading && (
-            <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight uppercase text-foreground">
-              {config.heading}
-            </h2>
-          )}
-        </div>
+        <SectionHeading
+          eyebrow={config.eyebrow}
+          heading={config.heading}
+          alignment={config.headingAlignment || config.contentAlignment || 'center'}
+        />
       )}
 
       {/* Grid */}

@@ -88,7 +88,7 @@ export function ProductGridSection({
         eyebrow={config.eyebrow}
         heading={config.heading}
         description={config.description}
-        alignment={config.headingAlignment}
+        alignment={config.headingAlignment || config.contentAlignment || 'center'}
       />
       {displayProducts.length > 0 ? (
         <div className={`grid ${colClasses[cols] || colClasses[4]} gap-6`}>
@@ -128,7 +128,12 @@ export function ProductCarouselSection({
 
   return (
     <SectionShell config={config}>
-      <SectionHeading eyebrow={config.eyebrow} heading={config.heading} description={config.description} />
+      <SectionHeading
+        eyebrow={config.eyebrow}
+        heading={config.heading}
+        description={config.description}
+        alignment={config.headingAlignment || config.contentAlignment || 'center'}
+      />
       {displayProducts.length > 0 ? (
         <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-thin snap-x">
           {displayProducts.slice(0, config.maxProducts || 12).map((product) => (
@@ -236,7 +241,7 @@ export function FlashSaleGridSection({
         eyebrow={config.eyebrow || 'LIMITED INVENTORY'}
         heading={config.heading || 'FLASH SALE DEALS'}
         description={config.description}
-        alignment="center"
+        alignment={config.headingAlignment || config.contentAlignment || 'center'}
       />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {displayProducts.slice(0, 3).map((item) => (
@@ -279,6 +284,7 @@ export function BestsellersShowcaseSection({
         eyebrow={config.eyebrow || 'RANKED TOP 5'}
         heading={config.heading || 'MOST POPULAR THIS MONTH'}
         description={config.description}
+        alignment={config.headingAlignment || config.contentAlignment || 'center'}
       />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {displayProducts.slice(0, 4).map((p, idx) => (
@@ -297,7 +303,11 @@ export function BestsellersShowcaseSection({
 export function ProductSpecificationSheetSection({ config }: { config: BaseSectionConfig & any }) {
   return (
     <SectionShell config={config}>
-      <SectionHeading eyebrow="CRAFT & MATERIALS" heading="PRODUCT SPECIFICATIONS" />
+      <SectionHeading
+        eyebrow="CRAFT & MATERIALS"
+        heading="PRODUCT SPECIFICATIONS"
+        alignment={config.headingAlignment || config.contentAlignment || 'center'}
+      />
       <div className="max-w-4xl mx-auto border border-[var(--border,#e2e8f0)] rounded-[var(--radius-lg,12px)] overflow-hidden divide-y divide-[var(--border,#e2e8f0)]">
         {[
           { spec: 'Outer Shell', detail: '90% Virgin Organic Wool, 10% Italian Cashmere' },
@@ -319,7 +329,11 @@ export function ProductSpecificationSheetSection({ config }: { config: BaseSecti
 export function BundleSaveShowcaseSection({ config }: { config: BaseSectionConfig & any }) {
   return (
     <SectionShell config={config} className="bg-[var(--surface,#f8fafc)]">
-      <SectionHeading eyebrow="BUNDLE & SAVE 25%" heading="FREQUENTLY BOUGHT TOGETHER" />
+      <SectionHeading
+        eyebrow="BUNDLE & SAVE 25%"
+        heading="FREQUENTLY BOUGHT TOGETHER"
+        alignment={config.headingAlignment || config.contentAlignment || 'center'}
+      />
       <div className="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-[var(--radius-xl,16px)] border border-[var(--border,#e2e8f0)] shadow-md">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4">

@@ -4,6 +4,7 @@ import React from 'react';
 import { CategoryGridConfig } from '@/types/cms';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
+import { SectionHeading } from '../primitives/heading';
 
 export function CmsCategoryGrid({ config }: { config: CategoryGridConfig }) {
   if (!config.enabled || !config.items || config.items.length === 0) return null;
@@ -79,18 +80,11 @@ export function CmsCategoryGrid({ config }: { config: CategoryGridConfig }) {
     >
       {/* Header */}
       {(config.heading || config.eyebrow) && (
-        <div className={`text-${config.headingAlignment || 'center'} space-y-2`}>
-          {config.eyebrow && (
-            <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
-              {config.eyebrow}
-            </p>
-          )}
-          {config.heading && (
-            <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight uppercase text-foreground">
-              {config.heading}
-            </h2>
-          )}
-        </div>
+        <SectionHeading
+          eyebrow={config.eyebrow}
+          heading={config.heading}
+          alignment={config.headingAlignment || config.contentAlignment || 'center'}
+        />
       )}
 
       {/* Grid */}
