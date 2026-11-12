@@ -55,10 +55,10 @@ export function AdminTabs({ badgeCounts }: AdminTabsProps) {
   );
 
   return (
-    <div className="w-full border-b border-slate-200 bg-white mb-8">
+    <div className="w-full border-b border-slate-200 bg-white mb-6 sm:mb-8">
       <div className="flex items-center justify-between">
-        {/* Horizontal Navigation Tabs */}
-        <nav className="flex flex-wrap gap-8">
+        {/* Horizontal Navigation Tabs with smooth mobile touch swipe */}
+        <nav className="flex items-center gap-5 sm:gap-8 overflow-x-auto scrollbar-none whitespace-nowrap py-0.5 -mb-px">
           {tabs.map((tab) => {
             const isActive = pathname === tab.href || (tab.href !== '/admin' && pathname?.startsWith(tab.href));
             const badgeCount = tab.badgeKey ? badgeCounts[tab.badgeKey] : 0;
@@ -68,7 +68,7 @@ export function AdminTabs({ badgeCounts }: AdminTabsProps) {
                 key={tab.href}
                 href={tab.href}
                 className={cn(
-                  "relative py-4 text-sm font-medium transition-all duration-200 select-none cursor-pointer",
+                  "relative py-3.5 sm:py-4 text-xs sm:text-sm font-medium transition-all duration-200 select-none cursor-pointer shrink-0",
                   isActive 
                     ? "text-slate-900 border-b-2 border-slate-950 font-semibold" 
                     : "text-slate-400 hover:text-slate-700"

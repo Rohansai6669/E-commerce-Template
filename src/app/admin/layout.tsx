@@ -58,14 +58,14 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Main viewport canvas */}
       <main className="flex-1 w-full flex flex-col bg-white">
-        <Container className="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-1 w-full flex flex-col">
+        <Container className="py-6 sm:py-10 max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 flex-1 w-full flex flex-col">
           {/* Section Breadcrumbs */}
           <span className="text-[10px] tracking-wider uppercase font-semibold text-slate-400 select-none">
             Admin
           </span>
 
           {/* Large Wide Heading Title */}
-          <h1 className="text-4xl font-extrabold tracking-tight text-slate-950 uppercase mt-1 mb-6 font-heading">
+          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-950 uppercase mt-1 mb-4 sm:mb-6 font-heading">
             Control Center
           </h1>
 

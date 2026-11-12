@@ -1,4 +1,3 @@
-import { cacheTag } from 'next/cache';
 import { cache as reactCache } from 'react';
 import { productRepository } from '../product/product.repository';
 import { productDetailService } from '../storefront/product-detail.service';
@@ -87,8 +86,6 @@ export function clearAllMemoryCache() {
  * Memoized per filter set with a 30s TTL.
  */
 export async function getCachedProducts(filters: ProductFilters) {
-  'use cache';
-  cacheTag('products');
   const cacheKey = `products_${JSON.stringify(filters)}`;
   return getOrSetCached(cacheKey, 30 * 1000, ['products'], () =>
     productRepository.getProducts(filters)
@@ -100,8 +97,6 @@ export async function getCachedProducts(filters: ProductFilters) {
  * Request-deduplicated via React.cache and memory-cached with a 60s TTL.
  */
 export const getCachedProductBySlug = reactCache(async (slug: string) => {
-  'use cache';
-  cacheTag(`product:${slug}`, 'products');
   const cacheKey = `product_slug_${slug}`;
   return getOrSetCached(cacheKey, 60 * 1000, ['products', `product:${slug}`], () =>
     productRepository.getProductBySlug(slug)
@@ -112,8 +107,6 @@ export const getCachedProductBySlug = reactCache(async (slug: string) => {
  * Cached fetch wrapper for featured recommendation lists.
  */
 export async function getCachedFeaturedProducts(limit = 4) {
-  'use cache';
-  cacheTag('products', 'featured-products');
   const cacheKey = `featured_products_${limit}`;
   return getOrSetCached(cacheKey, 60 * 1000, ['products', 'featured-products'], () =>
     productRepository.getFeaturedProducts(limit)
@@ -125,8 +118,6 @@ export async function getCachedFeaturedProducts(limit = 4) {
  * 5-minute TTL - eliminates repeated database trips for static taxonomy.
  */
 export const getCachedCategories = reactCache(async () => {
-  'use cache';
-  cacheTag('categories');
   return getOrSetCached('categories_list', 5 * 60 * 1000, ['categories'], () =>
     productRepository.getCategories()
   );
@@ -137,8 +128,6 @@ export const getCachedCategories = reactCache(async () => {
  * 5-minute TTL.
  */
 export const getCachedBrands = reactCache(async () => {
-  'use cache';
-  cacheTag('brands');
   return getOrSetCached('brands_list', 5 * 60 * 1000, ['brands'], () =>
     productRepository.getBrands()
   );
@@ -149,8 +138,6 @@ export const getCachedBrands = reactCache(async () => {
  * 60-second TTL.
  */
 export const getCachedFilterFacets = reactCache(async () => {
-  'use cache';
-  cacheTag('products', 'categories', 'brands', 'collections', 'attributes');
   return getOrSetCached(
     'product_filter_facets',
     60 * 1000,
@@ -164,8 +151,6 @@ export const getCachedFilterFacets = reactCache(async () => {
  * React request-deduplicated and 60-second memory cache.
  */
 export const getCachedProductDetailPage = reactCache(async (slug: string) => {
-  'use cache';
-  cacheTag(`product:${slug}`, 'products', 'reviews');
   const cacheKey = `pdp_details_${slug}`;
   return getOrSetCached(
     cacheKey,
