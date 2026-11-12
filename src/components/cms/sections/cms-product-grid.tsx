@@ -4,6 +4,7 @@ import React from 'react';
 import { ProductGridConfig } from '@/types/cms';
 import { ConfigurableProductCard, ProductData } from '@/components/commerce/configurable-product-card';
 import { SectionHeading } from '../primitives/heading';
+import { SectionShell } from '../primitives/section-shell';
 
 // Fallback sample products for CMS grid when database is unpopulated or in preview mode
 const defaultProducts: ProductData[] = [
@@ -173,29 +174,50 @@ export function CmsProductGrid({ config, products }: CmsProductGridProps) {
   }
 
   return (
-    <section 
-      className="py-12 sm:py-16 px-4 sm:px-8 max-w-7xl mx-auto space-y-8 rounded-2xl transition-colors"
-      style={sectionStyle}
-    >
-      {/* Heading */}
-      {(config.heading || config.eyebrow) && (
-        <SectionHeading
-          eyebrow={config.eyebrow}
-          heading={config.heading}
-          alignment={config.headingAlignment || config.contentAlignment || 'center'}
-        />
-      )}
-
-      {/* Grid */}
-      <div className={`grid ${gridColsClass} ${gapClass}`}>
-        {displayProducts.map((product) => (
-          <ConfigurableProductCard
-            key={product.id}
-            product={product}
-            config={config.cardConfig}
+    <SectionShell config={config} className="py-8 sm:py-12">
+      <div className="space-y-8">
+        {/* Heading */}
+        {(config.heading || config.eyebrow) && (
+          <SectionHeading
+            eyebrow={config.eyebrow}
+            heading={config.heading}
+            alignment={config.headingAlignment || config.contentAlignment || 'center'}
           />
-        ))}
+        )}
+
+        {/* Grid */}
+        <div className={`grid ${gridColsClass} ${gapClass}`}>
+          {displayProducts.map((product, idx) => (
+            <div
+              key={product.id}
+              className={`transition-all duration-300 ${
+                config.animationHoverEffect === 'lift'
+                  ? 'hover-lift'
+                  : config.animationHoverEffect === 'glow'
+                  ? 'hover-glow'
+                  : ''
+              } ${
+                config.animationPreset && config.animationPreset !== 'NONE'
+                  ? 'animate-fade-up'
+                  : ''
+              }`}
+              style={
+                config.animationPreset && config.animationPreset !== 'NONE'
+                  ? {
+                      animationDelay: `${Math.min(idx * 80 + 100, 800)}ms`,
+                      animationFillMode: 'both',
+                    }
+                  : undefined
+              }
+            >
+              <ConfigurableProductCard
+                product={product}
+                config={config.cardConfig}
+              />
+            </div>
+          ))}
+        </div>
       </div>
-    </section>
+    </SectionShell>
   );
 }

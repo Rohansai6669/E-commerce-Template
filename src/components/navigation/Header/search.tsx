@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Search as SearchIcon, X } from 'lucide-react';
+import { cn } from '@/core/utils/cn';
 
 const POPULAR_SUGGESTIONS = [
   'Denim',
@@ -17,7 +18,7 @@ const POPULAR_SUGGESTIONS = [
 /**
  * Full-Width Header Search Bar Overlay matching Lexido design spec.
  */
-export function Search() {
+export function Search({ className }: { className?: string } = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = React.useState(false);
@@ -55,10 +56,13 @@ export function Search() {
         type="button"
         suppressHydrationWarning
         onClick={() => setIsOpen(true)}
-        className="flex items-center justify-center h-9 w-9 rounded-full border border-border bg-background hover:bg-accent text-foreground transition-colors cursor-pointer"
+        className={cn(
+          "flex items-center justify-center h-9 w-9 text-foreground transition-colors cursor-pointer",
+          className || "rounded-full border border-border bg-background hover:bg-accent"
+        )}
         aria-label="Open search bar"
       >
-        <SearchIcon className="h-4 w-4" />
+        <SearchIcon className="h-[18px] w-[18px] stroke-[1.8]" />
       </button>
 
       {/* Full-Width Header Search Bar Overlay */}

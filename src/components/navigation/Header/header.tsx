@@ -197,10 +197,37 @@ export function Header({
       >
         <div
           style={{ height: `${headerHeight}px` }}
-          className={`flex items-center justify-between gap-4 ${widthClass}`}
+          className={`relative flex items-center justify-between gap-4 ${widthClass}`}
         >
-          {/* Left: Brand Logo */}
-          <div className="flex items-center gap-8 shrink-0">
+          {/* ======================================================== */}
+          {/* MOBILE VIEW (lg:hidden): Matches Reference Image Spec    */}
+          {/* Zone 1: Mobile Hamburger Menu on Far Left                */}
+          {/* ======================================================== */}
+          <div className="flex lg:hidden items-center shrink-0 z-10">
+            <MobileNav appearance={config} />
+          </div>
+
+          {/* ======================================================== */}
+          {/* Zone 2: Centered Brand Logo on Mobile                     */}
+          {/* ======================================================== */}
+          <div className="flex lg:hidden absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 items-center pointer-events-auto">
+            <Logo
+              type={config.logoType}
+              text={config.logoText}
+              font={config.logoFont}
+              fontSize={config.logoFontSize || 'xl'}
+              fontWeight={config.logoFontWeight}
+              letterSpacing={config.logoLetterSpacing}
+              color={config.logoColor}
+              imageUrl={config.logoImageUrl}
+              imageHeight={config.logoImageHeight}
+            />
+          </div>
+
+          {/* ======================================================== */}
+          {/* DESKTOP VIEW (hidden lg:flex): Left Brand Logo           */}
+          {/* ======================================================== */}
+          <div className="hidden lg:flex items-center gap-8 shrink-0">
             <Logo
               type={config.logoType}
               text={config.logoText}
@@ -291,14 +318,19 @@ export function Header({
           </div>
 
           {/* Right: Actions (Search, Account, Wishlist, Cart, Megamenu Close) */}
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 z-10">
             {config.showSearch !== false && (
               <React.Suspense fallback={null}>
-                <Search />
+                <Search className="h-9 w-9 border-none bg-transparent hover:bg-black/5 dark:hover:bg-white/10" />
               </React.Suspense>
             )}
 
-            {config.showAccount !== false && <ProfileMenu />}
+            {/* Desktop Only: ProfileMenu and Wishlist */}
+            {config.showAccount !== false && (
+              <div className="hidden lg:flex">
+                <ProfileMenu />
+              </div>
+            )}
 
             {config.showWishlist !== false && (
               <Link
@@ -307,23 +339,24 @@ export function Header({
                   borderColor: currentBorderColor,
                   color: currentTextColor,
                 }}
-                className={`hidden sm:flex ${iconButtonStyle}`}
+                className={`hidden lg:flex ${iconButtonStyle}`}
                 aria-label="View Wishlist"
               >
                 <Heart className="h-4 w-4" />
               </Link>
             )}
 
+            {/* Cart Button: Visible on mobile and desktop */}
             {config.showCart !== false && (
               <CartButton
                 badgeBgColor={config.cartBadgeBgColor}
                 badgeTextColor={config.cartBadgeTextColor}
-                className={iconButtonStyle}
+                className="h-9 w-9 border-none bg-transparent hover:bg-black/5 dark:hover:bg-white/10"
               />
             )}
 
-            {/* Close button if Megamenu is open */}
-            {isMegamenuOpen ? (
+            {/* Close button if Megamenu is open on desktop */}
+            {isMegamenuOpen && (
               <button
                 type="button"
                 suppressHydrationWarning
@@ -332,13 +365,11 @@ export function Header({
                   borderColor: currentBorderColor,
                   color: currentTextColor,
                 }}
-                className={`flex items-center justify-center h-9 w-9 rounded-full border transition-colors cursor-pointer ml-1 hover:opacity-80`}
+                className="hidden lg:flex items-center justify-center h-9 w-9 rounded-full border transition-colors cursor-pointer ml-1 hover:opacity-80"
                 aria-label="Close megamenu"
               >
                 <X className="h-5 w-5" />
               </button>
-            ) : (
-              <MobileNav appearance={config} />
             )}
           </div>
         </div>

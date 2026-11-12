@@ -27,6 +27,9 @@ import {
   Monitor,
   MoveVertical,
   PanelLeftClose,
+  Sparkles,
+  Play,
+  Square,
 } from 'lucide-react';
 
 import {
@@ -48,7 +51,7 @@ interface BrandItem {
 
 interface DirectSectionInspectorProps {
   section: AnySectionConfig;
-  onUpdateField: (fieldKey: string, value: any) => void;
+  onUpdateField: (fieldKey: string | Record<string, any>, value?: any) => void;
   onBack: () => void;
   onToggleEnabled: () => void;
   onDuplicate: () => void;
@@ -1178,6 +1181,280 @@ export function DirectSectionInspector({
                   onUpdateField('contentPosition', val);
                 }}
               />
+            </div>
+
+            {/* Section Animation & Living Motion */}
+            <div className="p-3.5 rounded-xl border border-indigo-100 bg-gradient-to-b from-indigo-50/40 to-white space-y-3.5 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-indigo-600" />
+                  <label className="text-[11px] font-extrabold uppercase tracking-tight text-slate-900">
+                    Living Motion & Animations
+                  </label>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onUpdateField({ _animReplayKey: Date.now() });
+                    const el = document.getElementById(`section-canvas-${section.id}`);
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                  }}
+                  className="px-2.5 py-1 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold flex items-center gap-1.5 transition shadow-xs cursor-pointer"
+                  title="Re-trigger animation in preview canvas"
+                >
+                  <Play className="w-2.5 h-2.5 fill-current" />
+                  <span>Replay</span>
+                </button>
+              </div>
+              <p className="text-[10px] text-slate-500 leading-snug">
+                Bring this section to life with entrance reveals, ambient loops, and interactive hover dynamics.
+              </p>
+
+              {/* Entrance Animation Preset */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-700 block">Entrance &amp; Reveal Preset</label>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {[
+                    { id: 'NONE', label: 'None', desc: 'Static render' },
+                    { id: 'FADE', label: 'Fade In', desc: 'Smooth opacity reveal' },
+                    { id: 'FADE_UP', label: 'Float Up', desc: 'Slide up + fade' },
+                    { id: 'FADE_DOWN', label: 'Float Down', desc: 'Slide down + fade' },
+                    { id: 'SLIDE_LEFT', label: 'Slide Left', desc: 'Glide from left' },
+                    { id: 'SLIDE_RIGHT', label: 'Slide Right', desc: 'Glide from right' },
+                    { id: 'ZOOM_IN', label: 'Zoom In', desc: 'Scale pop reveal' },
+                    { id: 'BLUR_REVEAL', label: 'Blur Reveal', desc: 'Focus unblur transition' },
+                    { id: 'FLOAT_AMBIENT', label: 'Ambient Float', desc: 'Living gentle float loop' },
+                    { id: 'PULSE_GLOW', label: 'Pulse Glow', desc: 'Living breathing pulse' },
+                    { id: 'IMAGE_ZOOM', label: 'Ken Burns', desc: 'Slow cinematic zoom' },
+                  ].map((preset) => {
+                    const isSelected = (section.animationPreset || 'NONE') === preset.id;
+                    return (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        onClick={() => {
+                          onUpdateField({
+                            animationPreset: preset.id,
+                            _animReplayKey: Date.now(),
+                          });
+                          const el = document.getElementById(`section-canvas-${section.id}`);
+                          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }}
+                        className={`p-2 rounded-lg border text-left transition cursor-pointer flex flex-col justify-between ${
+                          isSelected
+                            ? 'border-indigo-600 bg-indigo-50/70 text-indigo-950 ring-1 ring-indigo-500 font-bold'
+                            : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-extrabold">{preset.label}</span>
+                          {isSelected && <Check className="w-3 h-3 text-indigo-600 flex-shrink-0" />}
+                        </div>
+                        <span className="text-[9px] text-slate-400 mt-0.5 line-clamp-1">{preset.desc}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Animation Speed & Timing */}
+              <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] font-bold text-slate-700">Motion Speed / Duration</label>
+                  <span className="text-[9px] font-mono text-slate-500 capitalize">
+                    {section.animationDuration || 'normal'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-4 gap-1">
+                  {[
+                    { id: 'fast', label: 'Fast', ms: '400ms' },
+                    { id: 'normal', label: 'Normal', ms: '750ms' },
+                    { id: 'slow', label: 'Slow', ms: '1.2s' },
+                    { id: 'cinematic', label: 'Cinematic', ms: '1.8s' },
+                  ].map((dur) => {
+                    const isSelected = (section.animationDuration || 'normal') === dur.id;
+                    return (
+                      <button
+                        key={dur.id}
+                        type="button"
+                        onClick={() => {
+                          onUpdateField({
+                            animationDuration: dur.id,
+                            _animReplayKey: Date.now(),
+                          });
+                          const el = document.getElementById(`section-canvas-${section.id}`);
+                          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }}
+                        className={`py-1.5 px-1 rounded-md text-center transition cursor-pointer border ${
+                          isSelected
+                            ? 'bg-slate-900 border-slate-900 text-white font-extrabold shadow-2xs'
+                            : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
+                        }`}
+                      >
+                        <div className="text-[10px] font-bold leading-tight">{dur.label}</div>
+                        <div className="text-[8px] opacity-70">{dur.ms}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Stagger Delay */}
+              <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] font-bold text-slate-700">Stagger Entrance Delay</label>
+                  <span className="text-[9px] font-mono text-slate-500 capitalize">
+                    {section.animationDelay || 'none'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-4 gap-1">
+                  {[
+                    { id: 'none', label: 'Instant (0ms)' },
+                    { id: 'short', label: 'Short (150ms)' },
+                    { id: 'medium', label: 'Mid (300ms)' },
+                    { id: 'long', label: 'Long (500ms)' },
+                  ].map((del) => {
+                    const isSelected = (section.animationDelay || 'none') === del.id;
+                    return (
+                      <button
+                        key={del.id}
+                        type="button"
+                        onClick={() => {
+                          onUpdateField({
+                            animationDelay: del.id,
+                            _animReplayKey: Date.now(),
+                          });
+                          const el = document.getElementById(`section-canvas-${section.id}`);
+                          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }}
+                        className={`py-1.5 px-1 rounded-md text-[10px] text-center transition cursor-pointer border ${
+                          isSelected
+                            ? 'bg-slate-900 border-slate-900 text-white font-extrabold shadow-2xs'
+                            : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
+                        }`}
+                      >
+                        {del.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Interactive Hover Dynamics */}
+              <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                <label className="text-[10px] font-bold text-slate-700 block">Interactive Card &amp; Media Dynamics</label>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {[
+                    { id: 'none', label: 'Default', desc: 'No hover reaction' },
+                    { id: 'lift', label: 'Card Float & Shadow', desc: 'Translates up on hover' },
+                    { id: 'glow', label: 'Accent Aura Glow', desc: 'Luminous edge highlight' },
+                    { id: 'zoom-media', label: 'Media Zoom', desc: 'Subtle zoom on image/video' },
+                  ].map((hov) => {
+                    const isSelected = (section.animationHoverEffect || 'none') === hov.id;
+                    return (
+                      <button
+                        key={hov.id}
+                        type="button"
+                        onClick={() => onUpdateField('animationHoverEffect', hov.id)}
+                        className={`p-2 rounded-lg border text-left transition cursor-pointer flex flex-col justify-between ${
+                          isSelected
+                            ? 'border-indigo-600 bg-indigo-50/70 text-indigo-950 ring-1 ring-indigo-500 font-bold'
+                            : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700'
+                        }`}
+                      >
+                        <span className="text-[10px] font-extrabold">{hov.label}</span>
+                        <span className="text-[8px] text-slate-400 mt-0.5">{hov.desc}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Section Border Lines & Dividers */}
+            <div className="p-3.5 rounded-xl border border-slate-200 bg-white space-y-3.5 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Square className="w-4 h-4 text-slate-800" />
+                  <label className="text-[11px] font-extrabold uppercase tracking-tight text-slate-900">
+                    Section Border Lines &amp; Dividers
+                  </label>
+                </div>
+                <span className="text-[9px] font-mono text-slate-500 uppercase">
+                  {section.borderTop || 'inherit'} / {section.borderBottom || 'inherit'}
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-500 leading-snug">
+                Control boundary divider lines at the top and bottom of this section.
+              </p>
+
+              {/* Top & Bottom Border Width */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-700 block">Top Border Line</label>
+                  <select
+                    value={section.borderTop || 'inherit'}
+                    onChange={(e) => onUpdateField('borderTop', e.target.value)}
+                    className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium cursor-pointer"
+                  >
+                    <option value="inherit">Inherit Global Theme</option>
+                    <option value="none">None (0px / Flush)</option>
+                    <option value="thin">Hairline (1px)</option>
+                    <option value="medium">Medium (2px)</option>
+                    <option value="thick">Thick (3px)</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-700 block">Bottom Border Line</label>
+                  <select
+                    value={section.borderBottom || 'inherit'}
+                    onChange={(e) => onUpdateField('borderBottom', e.target.value)}
+                    className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium cursor-pointer"
+                  >
+                    <option value="inherit">Inherit Global Theme</option>
+                    <option value="none">None (0px / Flush)</option>
+                    <option value="thin">Hairline (1px)</option>
+                    <option value="medium">Medium (2px)</option>
+                    <option value="thick">Thick (3px)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Border Style & Color */}
+              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-700 block">Border Line Style</label>
+                  <select
+                    value={section.borderStyle || 'solid'}
+                    onChange={(e) => onUpdateField('borderStyle', e.target.value)}
+                    className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium cursor-pointer"
+                  >
+                    <option value="solid">Solid Line</option>
+                    <option value="dashed">Dashed Line</option>
+                    <option value="dotted">Dotted Line</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-700 block">Border Color Override</label>
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="color"
+                      value={section.borderColor || '#e2e8f0'}
+                      onChange={(e) => onUpdateField('borderColor', e.target.value)}
+                      className="w-7 h-7 rounded border border-slate-300 p-0.5 bg-white cursor-pointer flex-shrink-0"
+                    />
+                    <input
+                      type="text"
+                      value={section.borderColor || ''}
+                      placeholder="Theme default"
+                      onChange={(e) => onUpdateField('borderColor', e.target.value)}
+                      className="flex-1 text-[11px] font-mono px-2 py-1 rounded border border-slate-300 text-slate-900"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}

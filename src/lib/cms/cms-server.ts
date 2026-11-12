@@ -73,12 +73,12 @@ export async function getCmsPageConfigServer(slug: string = '/'): Promise<PageCo
 /**
  * Direct server-side read of Site Design Tokens with DB sync.
  */
-export async function getSiteDesignTokensServer(): Promise<SiteDesignTokens | null> {
+export async function getSiteDesignTokensServer(): Promise<SiteDesignTokens> {
   const cacheKey = 'design_tokens';
   const now = Date.now();
   const cached = cmsMemoryCache.get(cacheKey);
-  if (cached && cached.expiresAt > now) {
-    return cached.value as SiteDesignTokens | null;
+  if (cached && cached.expiresAt > now && cached.value) {
+    return cached.value as SiteDesignTokens;
   }
 
   let result: SiteDesignTokens | null = null;
@@ -99,8 +99,27 @@ export async function getSiteDesignTokensServer(): Promise<SiteDesignTokens | nu
     console.warn('getSiteDesignTokensServer DB fetch error:', err);
   }
 
-  cmsMemoryCache.set(cacheKey, { value: result, expiresAt: Date.now() + CMS_CACHE_TTL });
-  return result;
+  if (!result) {
+    try {
+      if (fs.existsSync(CMS_STORAGE_PATH)) {
+        const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
+        const data = JSON.parse(raw);
+        if (data.site_design_tokens) {
+          result = data.site_design_tokens as SiteDesignTokens;
+        }
+      }
+    } catch (err) {
+      console.error('getSiteDesignTokensServer storage error:', err);
+    }
+  }
+
+  const finalTokens: SiteDesignTokens = {
+    ...defaultSiteDesignTokens,
+    ...(result || {}),
+  };
+
+  cmsMemoryCache.set(cacheKey, { value: finalTokens, expiresAt: Date.now() + CMS_CACHE_TTL });
+  return finalTokens;
 }
 
 /**

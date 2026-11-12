@@ -6,18 +6,30 @@ import { cn } from '@/core/utils/cn';
 const typographyVariants = cva('text-foreground', {
   variants: {
     variant: {
-      display: 'text-5xl font-bold tracking-tight font-heading leading-tight',
-      h1: 'text-4xl font-bold tracking-tight font-heading leading-tight',
-      h2: 'text-3xl font-semibold tracking-tight font-heading leading-snug',
-      h3: 'text-2xl font-semibold tracking-tight font-heading leading-snug',
-      h4: 'text-xl font-semibold tracking-tight font-heading leading-snug',
-      lead: 'text-lg text-muted-foreground leading-normal',
-      body: 'text-base leading-normal font-sans',
-      small: 'text-sm font-medium leading-none',
-      caption: 'text-xs text-muted-foreground leading-none',
-      muted: 'text-sm text-muted-foreground leading-normal',
-      overline: 'text-xs font-semibold tracking-wider uppercase text-muted-foreground',
-      code: 'relative rounded bg-muted/60 px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold',
+      display:
+        'text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold sm:font-extrabold lg:font-black tracking-tight font-heading leading-[1.05] sm:leading-[0.98]',
+      h1:
+        'text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold sm:font-extrabold tracking-tight font-heading leading-tight',
+      h2:
+        'text-xl sm:text-2xl md:text-3xl font-semibold sm:font-bold tracking-tight font-heading leading-snug',
+      h3:
+        'text-lg sm:text-xl md:text-2xl font-semibold sm:font-bold tracking-tight font-heading leading-snug',
+      h4:
+        'text-base sm:text-lg md:text-xl font-medium sm:font-semibold tracking-tight font-heading leading-snug',
+      lead:
+        'text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed',
+      body:
+        'text-xs sm:text-sm md:text-base leading-relaxed font-sans',
+      small:
+        'text-xs sm:text-sm font-medium leading-normal',
+      caption:
+        'text-[10px] sm:text-xs text-muted-foreground leading-tight',
+      muted:
+        'text-xs sm:text-sm text-muted-foreground leading-normal',
+      overline:
+        'text-[10px] sm:text-xs font-semibold tracking-widest uppercase text-muted-foreground',
+      code:
+        'relative rounded bg-muted/60 px-[0.3rem] py-[0.2rem] font-mono text-xs sm:text-sm font-semibold',
     },
   },
   defaultVariants: {

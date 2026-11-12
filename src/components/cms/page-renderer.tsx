@@ -56,7 +56,8 @@ export function PageRenderer({
 
         return (
           <div
-            key={section.id}
+            key={`${section.id}-${section.animationPreset || 'none'}-${section._animReplayKey || 0}`}
+            id={`section-canvas-${section.id}`}
             onClick={() => onSelectSection?.(section.id)}
             className={`relative transition-all ${
               isInteractive ? 'cursor-pointer' : ''

@@ -5,6 +5,7 @@ import { CategoryGridConfig } from '@/types/cms';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { SectionHeading } from '../primitives/heading';
+import { SectionShell } from '../primitives/section-shell';
 
 export function CmsCategoryGrid({ config }: { config: CategoryGridConfig }) {
   if (!config.enabled || !config.items || config.items.length === 0) return null;
@@ -74,65 +75,82 @@ export function CmsCategoryGrid({ config }: { config: CategoryGridConfig }) {
   }
 
   return (
-    <section 
-      className="py-12 sm:py-16 px-4 sm:px-8 max-w-7xl mx-auto space-y-8 rounded-2xl transition-colors"
-      style={sectionStyle}
-    >
-      {/* Header */}
-      {(config.heading || config.eyebrow) && (
-        <SectionHeading
-          eyebrow={config.eyebrow}
-          heading={config.heading}
-          alignment={config.headingAlignment || config.contentAlignment || 'center'}
-        />
-      )}
+    <SectionShell config={config} className="py-8 sm:py-12">
+      <div className="space-y-8">
+        {/* Header */}
+        {(config.heading || config.eyebrow) && (
+          <SectionHeading
+            eyebrow={config.eyebrow}
+            heading={config.heading}
+            alignment={config.headingAlignment || config.contentAlignment || 'center'}
+          />
+        )}
 
-      {/* Grid */}
-      <div className={`grid ${gridColsClass} ${gapClass}`}>
-        {sortedItems.map((item) => {
-          const cardRadiusPx = item.cardRadiusPx ?? sectionRadiusPx;
-          const cardRadiusStyle = cardRadiusPx !== undefined ? { borderRadius: `${cardRadiusPx}px` } : {};
-          return (
-            <Link
-              key={item.id}
-              href={item.link}
-              className={`group relative overflow-hidden ${radiusClass} ${shadowClass} ${aspectClasses} bg-muted block transition-all duration-500`}
-              style={cardRadiusStyle}
-            >
-              {/* Background Image */}
-              <div
-                className={`absolute inset-0 bg-cover bg-center transition-transform duration-700 ${hoverScaleClass}`}
-                style={{ backgroundImage: `url('${item.image}')` }}
-              />
+        {/* Grid */}
+        <div className={`grid ${gridColsClass} ${gapClass}`}>
+          {sortedItems.map((item, idx) => {
+            const cardRadiusPx = item.cardRadiusPx ?? sectionRadiusPx;
+            const cardRadiusStyle = cardRadiusPx !== undefined ? { borderRadius: `${cardRadiusPx}px` } : {};
+            return (
+              <Link
+                key={item.id}
+                href={item.link}
+                className={`group relative overflow-hidden ${radiusClass} ${shadowClass} ${aspectClasses} bg-muted block transition-all duration-500 ${
+                  config.animationHoverEffect === 'lift'
+                    ? 'hover-lift'
+                    : config.animationHoverEffect === 'glow'
+                    ? 'hover-glow'
+                    : ''
+                } ${
+                  config.animationPreset && config.animationPreset !== 'NONE'
+                    ? 'animate-fade-up'
+                    : ''
+                }`}
+                style={{
+                  ...cardRadiusStyle,
+                  ...(config.animationPreset && config.animationPreset !== 'NONE'
+                    ? {
+                        animationDelay: `${Math.min(idx * 80 + 100, 800)}ms`,
+                        animationFillMode: 'both',
+                      }
+                    : {}),
+                }}
+              >
+                {/* Background Image */}
+                <div
+                  className={`absolute inset-0 bg-cover bg-center transition-transform duration-700 ${hoverScaleClass}`}
+                  style={{ backgroundImage: `url('${item.image}')` }}
+                />
 
-              {/* Dark Overlay */}
-              <div
-                className="absolute inset-0 bg-black/40 group-hover:bg-black/55 transition-colors duration-300"
-                style={{ opacity: item.overlayOpacity ?? config.cardOverlayOpacity ?? 0.3 }}
-              />
+                {/* Dark Overlay */}
+                <div
+                  className="absolute inset-0 bg-black/40 group-hover:bg-black/55 transition-colors duration-300"
+                  style={{ opacity: item.overlayOpacity ?? config.cardOverlayOpacity ?? 0.3 }}
+                />
 
-              {/* Content */}
-              <div className="absolute inset-0 p-6 flex flex-col justify-end text-white z-10">
-                <div className="flex justify-between items-end">
-                  <div>
-                    <h3 className="text-xl sm:text-2xl font-bold tracking-tight uppercase group-hover:translate-x-1 transition-transform">
-                      {item.title}
-                    </h3>
-                    {item.subtitle && (
-                      <p className="text-xs text-slate-200 mt-1 opacity-90">
-                        {item.subtitle}
-                      </p>
-                    )}
-                  </div>
-                  <div className="h-9 w-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white group-hover:bg-white group-hover:text-slate-900 transition-all">
-                    <ArrowUpRight className="h-5 w-5" />
+                {/* Content */}
+                <div className="absolute inset-0 p-6 flex flex-col justify-end text-white z-10">
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <h3 className="text-xl sm:text-2xl font-bold tracking-tight uppercase group-hover:translate-x-1 transition-transform">
+                        {item.title}
+                      </h3>
+                      {item.subtitle && (
+                        <p className="text-xs text-slate-200 mt-1 opacity-90">
+                          {item.subtitle}
+                        </p>
+                      )}
+                    </div>
+                    <div className="h-9 w-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white group-hover:bg-white group-hover:text-slate-900 transition-all">
+                      <ArrowUpRight className="h-5 w-5" />
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Link>
-          );
-        })}
+              </Link>
+            );
+          })}
+        </div>
       </div>
-    </section>
+    </SectionShell>
   );
 }

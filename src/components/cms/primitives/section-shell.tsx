@@ -103,6 +103,31 @@ export function SectionShell({ config, className = '', style = {}, children }: S
   const rightClass = config.paddingRight ? (paddingRightMap[config.paddingRight] || '') : '';
   const heightClass = heightClasses[config.sectionHeight || config.heroHeight || 'auto'] || 'min-h-0';
 
+  // Border Controls
+  const borderWidthMap: Record<string, string> = {
+    none: '0px',
+    thin: '1px',
+    medium: '2px',
+    thick: '3px',
+  };
+
+  const borderTopWidth =
+    config.borderTop && config.borderTop !== 'inherit' && config.borderTop !== 'none'
+      ? (borderWidthMap[config.borderTop] || config.borderTop)
+      : config.borderTop === 'none'
+      ? '0px'
+      : undefined;
+
+  const borderBottomWidth =
+    config.borderBottom && config.borderBottom !== 'inherit' && config.borderBottom !== 'none'
+      ? (borderWidthMap[config.borderBottom] || config.borderBottom)
+      : config.borderBottom === 'none'
+      ? '0px'
+      : undefined;
+
+  const resolvedBorderColor = config.borderColor || 'var(--border, #e2e8f0)';
+  const resolvedBorderStyle = (config.borderStyle as any) || 'var(--border-style, solid)';
+
   const customStyle: React.CSSProperties = {
     ...style,
     backgroundColor: config.backgroundColor || undefined,
@@ -116,7 +141,68 @@ export function SectionShell({ config, className = '', style = {}, children }: S
     ...(config.paddingBottomPx !== undefined ? { paddingBottom: `${config.paddingBottomPx}px` } : {}),
     ...(config.paddingLeftPx !== undefined ? { paddingLeft: `${config.paddingLeftPx}px` } : {}),
     ...(config.paddingRightPx !== undefined ? { paddingRight: `${config.paddingRightPx}px` } : {}),
+    ...(borderTopWidth !== undefined ? {
+      borderTopWidth,
+      borderTopColor: resolvedBorderColor,
+      borderTopStyle: resolvedBorderStyle,
+    } : {}),
+    ...(borderBottomWidth !== undefined ? {
+      borderBottomWidth,
+      borderBottomColor: resolvedBorderColor,
+      borderBottomStyle: resolvedBorderStyle,
+    } : {}),
   };
+
+  // Animation & Motion Presets
+  const animationPresetMap: Record<string, string> = {
+    FADE: 'animate-fade-in',
+    FADE_UP: 'animate-fade-up',
+    FADE_DOWN: 'animate-fade-down',
+    SLIDE_LEFT: 'animate-slide-left',
+    SLIDE_RIGHT: 'animate-slide-right',
+    ZOOM_IN: 'animate-zoom-in',
+    IMAGE_ZOOM: 'animate-zoom-in',
+    BLUR_REVEAL: 'animate-blur-reveal',
+    FLOAT_AMBIENT: 'animate-ambient-float',
+    PULSE_GLOW: 'animate-pulse-glow',
+  };
+
+  const animationDurationMap: Record<string, string> = {
+    fast: 'anim-duration-fast',
+    normal: 'anim-duration-normal',
+    slow: 'anim-duration-slow',
+    cinematic: 'anim-duration-cinematic',
+  };
+
+  const animationDelayMap: Record<string, string> = {
+    none: 'anim-delay-none',
+    short: 'anim-delay-short',
+    medium: 'anim-delay-medium',
+    long: 'anim-delay-long',
+  };
+
+  const hoverEffectMap: Record<string, string> = {
+    lift: 'hover-lift',
+    glow: 'hover-glow',
+    'zoom-media': 'hover-zoom-media',
+  };
+
+  const animNorm = (config.animationPreset || 'NONE').toUpperCase().replace(/-/g, '_');
+  const animPresetClass =
+    animNorm !== 'NONE' ? animationPresetMap[animNorm] || '' : '';
+
+  const animDurationClass = config.animationDuration
+    ? animationDurationMap[config.animationDuration] || ''
+    : '';
+
+  const animDelayClass = config.animationDelay
+    ? animationDelayMap[config.animationDelay] || ''
+    : '';
+
+  const hoverEffectClass =
+    config.animationHoverEffect && config.animationHoverEffect !== 'none'
+      ? hoverEffectMap[config.animationHoverEffect] || ''
+      : '';
 
   // Device visibility classes
   const visibilityClasses = [
@@ -126,19 +212,23 @@ export function SectionShell({ config, className = '', style = {}, children }: S
 
   const containerPaddingX = config.paddingX || (config.containerWidth === 'full' && config.contentPadding === 'none' ? 'none' : 'standard');
 
+  const animationKey = `${config.id}-${animNorm}-${config.animationDuration || 'normal'}-${config._animReplayKey || 0}`;
+
   return (
     <section
       id={config.id}
       data-section-id={config.id}
-      className={`w-full relative overflow-hidden transition-all duration-300 ${heightClass} ${marginTopClass} ${marginBottomClass} ${marginLeftClass} ${marginRightClass} ${topClass} ${bottomClass} ${leftClass} ${rightClass} ${visibilityClasses} ${className}`}
+      className={`w-full relative overflow-hidden transition-all duration-300 ${heightClass} ${marginTopClass} ${marginBottomClass} ${marginLeftClass} ${marginRightClass} ${topClass} ${bottomClass} ${leftClass} ${rightClass} ${visibilityClasses} ${hoverEffectClass} ${className}`}
       style={customStyle}
     >
       {config.backgroundImageUrl && (
-        <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
           <img
             src={config.backgroundImageUrl}
             alt=""
-            className="w-full h-full object-cover"
+            className={`w-full h-full object-cover transition-all duration-700 ${
+              config.animationPreset === 'IMAGE_ZOOM' ? 'animate-ken-burns' : ''
+            }`}
           />
           {config.backgroundOverlayOpacity !== undefined && (
             <div
@@ -148,7 +238,10 @@ export function SectionShell({ config, className = '', style = {}, children }: S
           )}
         </div>
       )}
-      <div className="relative z-10 w-full">
+      <div
+        key={animationKey}
+        className={`relative z-10 w-full ${animPresetClass} ${animDurationClass} ${animDelayClass} ${animPresetClass ? 'anim-stagger' : ''}`}
+      >
         <Container
           width={config.containerWidth || 'default'}
           paddingX={containerPaddingX}

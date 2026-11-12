@@ -109,8 +109,8 @@ export function MobileNav({ appearance }: MobileNavProps) {
         {/* Slide-in Luxury Drawer Container */}
         <div
           className={cn(
-            'fixed top-0 bottom-0 right-0 z-[99995] w-[88vw] sm:w-[380px] max-w-[420px] h-[100dvh] bg-white dark:bg-slate-950 border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col justify-between overflow-hidden transition-transform duration-300 ease-out',
-            isOpen ? 'translate-x-0' : 'translate-x-full'
+            'fixed top-0 bottom-0 left-0 z-[99995] w-[88vw] sm:w-[380px] max-w-[420px] h-[100dvh] bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col justify-between overflow-hidden transition-transform duration-300 ease-out',
+            isOpen ? 'translate-x-0' : '-translate-x-full'
           )}
           role="dialog"
           aria-modal="true"
@@ -287,17 +287,28 @@ export function MobileNav({ appearance }: MobileNavProps) {
   ) : null;
 
   return (
-    <div className="lg:hidden flex items-center">
+    <div className="flex items-center">
       {/* Trigger Button in Header */}
-      <Button
-        variant="ghost"
-        size="icon"
+      <button
+        type="button"
         onClick={() => setIsOpen(true)}
         aria-label="Open mobile navigation menu"
-        className="cursor-pointer h-10 w-10 text-slate-900 dark:text-white hover:bg-black/5 dark:hover:bg-white/10"
+        className="cursor-pointer h-9 w-9 flex items-center justify-center text-current hover:opacity-70 transition-opacity bg-transparent border-none"
       >
-        <Icon name="Menu" className="h-6 w-6" />
-      </Button>
+        <svg
+          className="w-5 h-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
 
       {/* Portal Mounted Drawer */}
       {drawerPortal}

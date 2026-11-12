@@ -165,50 +165,107 @@ export function StoreLocatorSection({ config }: { config: BaseSectionConfig & an
 
 export function MultiColumnFooterSection({ config }: { config: BaseSectionConfig & any }) {
   return (
-    <footer className="w-full bg-[var(--primary,#0f172a)] text-slate-300 py-16 border-t border-[var(--border,#e2e8f0)]">
-      <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
-        <div>
-          <h3 className="text-xl font-extrabold text-white font-heading mb-4">MINIMALIST LUXURY</h3>
-          <p className="text-xs text-slate-400 leading-relaxed mb-4">
-            Ethically sourced luxury garments and Italian handcrafted outerwear designed for modern living.
-          </p>
-          <div className="flex items-center gap-2 text-slate-400">
-            <CreditCard className="w-5 h-5" />
-            <ShieldCheck className="w-5 h-5" />
+    <footer className="w-full bg-[#000000] text-white border-t border-neutral-900 select-none font-sans">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-16 pb-12">
+        {/* Top Block: Brand Info + 4 Navigation Columns */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 pb-14">
+          <div className="lg:col-span-4 flex flex-col gap-4">
+            <h2 className="text-4xl sm:text-5xl font-black tracking-tight font-heading text-white">
+              LEXIDO
+            </h2>
+            <p className="text-sm text-neutral-400 max-w-sm leading-relaxed font-light">
+              Crafted for those who move different. Premium streetwear made in India, designed for the world.
+            </p>
+          </div>
+
+          <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-8">
+            <div className="flex flex-col gap-3">
+              <h4 className="text-xs font-bold uppercase tracking-widest text-neutral-400 font-heading">SHOP</h4>
+              <ul className="flex flex-col gap-2 text-sm text-neutral-300">
+                <li><Link href="/products?category=men" className="hover:text-white transition-colors">Men</Link></li>
+                <li><Link href="/products?category=women" className="hover:text-white transition-colors">Women</Link></li>
+                <li><Link href="/products?category=denim" className="hover:text-white transition-colors">Denim</Link></li>
+                <li><Link href="/products?category=hoodies" className="hover:text-white transition-colors">Hoodies</Link></li>
+              </ul>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <h4 className="text-xs font-bold uppercase tracking-widest text-neutral-400 font-heading">EXPLORE</h4>
+              <ul className="flex flex-col gap-2 text-sm text-neutral-300">
+                <li><Link href="/collections" className="hover:text-white transition-colors">Collections</Link></li>
+                <li><Link href="/products?category=accessories" className="hover:text-white transition-colors">Accessories</Link></li>
+                <li><Link href="/help" className="hover:text-white transition-colors">Help</Link></li>
+                <li><Link href="/about" className="hover:text-white transition-colors">About</Link></li>
+              </ul>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <h4 className="text-xs font-bold uppercase tracking-widest text-neutral-400 font-heading">HELP</h4>
+              <ul className="flex flex-col gap-2 text-sm text-neutral-300">
+                <li><Link href="/help" className="hover:text-white transition-colors">Help Center</Link></li>
+                <li><Link href="/account/orders" className="hover:text-white transition-colors">Track Order</Link></li>
+                <li><Link href="/faq" className="hover:text-white transition-colors">FAQs</Link></li>
+                <li><Link href="/support" className="hover:text-white transition-colors">Raise Ticket</Link></li>
+                <li><Link href="/shipping" className="hover:text-white transition-colors">Shipping</Link></li>
+                <li><Link href="/returns" className="hover:text-white transition-colors">Returns</Link></li>
+                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link></li>
+              </ul>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <h4 className="text-xs font-bold uppercase tracking-widest text-neutral-400 font-heading">REACH US</h4>
+              <div className="flex flex-col gap-2 text-sm text-neutral-300">
+                <a href="mailto:hello@lexido.in" className="hover:text-white transition-colors">hello@lexido.in</a>
+                <span className="text-xs text-neutral-400">Mon–Sat, 10am–7pm IST</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div>
-          <h4 className="text-xs font-extrabold text-white uppercase tracking-wider mb-4">SHOP CATEGORIES</h4>
-          <ul className="space-y-2 text-xs">
-            <li><Link href="/products?category=women" className="hover:text-white">Women's Collection</Link></li>
-            <li><Link href="/products?category=men" className="hover:text-white">Men's Apparel</Link></li>
-            <li><Link href="/products?category=accessories" className="hover:text-white">Leather Accessories</Link></li>
-            <li><Link href="/products" className="hover:text-white">New Arrivals</Link></li>
-          </ul>
+        <hr className="border-neutral-900" />
+
+        <div className="py-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+          <div className="flex flex-col gap-3">
+            <h5 className="text-[11px] font-bold tracking-[0.2em] uppercase text-neutral-400 font-heading">BECOME PART OF LEXIDO</h5>
+            <form onSubmit={(e) => e.preventDefault()} className="flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4 w-full">
+              <input
+                type="email"
+                placeholder="your@email.com"
+                className="bg-transparent border-b border-neutral-700 py-1.5 text-xs sm:text-sm text-white placeholder-neutral-500 focus:border-white focus:outline-none transition-colors w-full sm:w-80"
+              />
+              <button
+                type="submit"
+                className="text-xs font-bold tracking-widest uppercase text-white hover:text-neutral-300 transition-colors inline-flex items-center gap-1 cursor-pointer shrink-0"
+              >
+                <span>SUBSCRIBE</span>
+                <span>→</span>
+              </button>
+            </form>
+          </div>
+
+          <div className="flex flex-col gap-3 md:items-end">
+            <h5 className="text-[11px] font-bold tracking-[0.2em] uppercase text-neutral-400 font-heading">FOLLOW</h5>
+            <div className="flex items-center gap-2">
+              {['Instagram', 'Facebook', 'X', 'Pinterest', 'TikTok', 'YouTube'].map((social) => (
+                <div
+                  key={social}
+                  className="w-9 h-9 border border-neutral-800 flex items-center justify-center text-xs font-bold text-neutral-400 hover:text-white hover:border-neutral-500 rounded-none transition-colors cursor-pointer"
+                >
+                  {social[0]}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <div>
-          <h4 className="text-xs font-extrabold text-white uppercase tracking-wider mb-4">CUSTOMER CARE</h4>
-          <ul className="space-y-2 text-xs">
-            <li><Link href="/help" className="hover:text-white">Shipping & Returns</Link></li>
-            <li><Link href="/help" className="hover:text-white">Track Order</Link></li>
-            <li><Link href="/help" className="hover:text-white">Size Guide</Link></li>
-            <li><Link href="/help" className="hover:text-white">Contact VIP Support</Link></li>
-          </ul>
-        </div>
+        <hr className="border-neutral-900" />
 
-        <div>
-          <h4 className="text-xs font-extrabold text-white uppercase tracking-wider mb-4">LEGAL & PRIVACY</h4>
-          <ul className="space-y-2 text-xs">
-            <li><Link href="/privacy" className="hover:text-white">Privacy Policy</Link></li>
-            <li><Link href="/terms" className="hover:text-white">Terms of Service</Link></li>
-            <li><Link href="/sustainability" className="hover:text-white">Sustainability Pledge</Link></li>
-          </ul>
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-500 font-mono">
+          <div>&copy; 2026 LEXIDO. All rights reserved. Made in India.</div>
+          <div className="tracking-widest uppercase text-[11px]">
+            TAG <span className="text-white font-bold">@LEXIDO</span> — FEATURED IN OUR NEXT DROP
+          </div>
         </div>
-      </div>
-      <div className="max-w-7xl mx-auto px-4 mt-12 pt-6 border-t border-slate-800 text-center text-xs text-slate-500">
-        © 2026 Minimalist Luxury Storefront. All rights reserved.
       </div>
     </footer>
   );

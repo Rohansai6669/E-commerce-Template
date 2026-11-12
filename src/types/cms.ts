@@ -173,7 +173,28 @@ export interface BaseSectionConfig {
   primaryCtaUrl?: string;
   secondaryCtaText?: string;
   secondaryCtaUrl?: string;
-  animationPreset?: 'NONE' | 'FADE' | 'FADE_UP' | 'FADE_DOWN' | 'SLIDE_LEFT' | 'SLIDE_RIGHT' | 'IMAGE_ZOOM';
+  animationPreset?:
+    | 'NONE'
+    | 'FADE'
+    | 'FADE_UP'
+    | 'FADE_DOWN'
+    | 'SLIDE_LEFT'
+    | 'SLIDE_RIGHT'
+    | 'ZOOM_IN'
+    | 'IMAGE_ZOOM'
+    | 'BLUR_REVEAL'
+    | 'FLOAT_AMBIENT'
+    | 'PULSE_GLOW'
+    | string;
+  animationDuration?: 'fast' | 'normal' | 'slow' | 'cinematic' | string;
+  animationDelay?: 'none' | 'short' | 'medium' | 'long' | string;
+  animationHoverEffect?: 'none' | 'lift' | 'glow' | 'zoom-media' | string;
+  // Border Controls & Divider Lines
+  borderTop?: 'inherit' | 'none' | 'thin' | 'medium' | 'thick' | string;
+  borderBottom?: 'inherit' | 'none' | 'thin' | 'medium' | 'thick' | string;
+  borderStyle?: 'solid' | 'dashed' | 'dotted' | string;
+  borderColor?: string;
+  _animReplayKey?: number;
   analyticsId?: string;
   styleOverrides?: SectionStyleOverrides;
 }
@@ -404,6 +425,10 @@ export interface AnnouncementBarConfig extends BaseSectionConfig {
 export interface SiteDesignTokens {
   primaryFont: string;
   headingFont: string;
+  headingTracking?: 'tighter' | 'tight' | 'normal' | 'wide' | 'widest';
+  headingTransform?: 'uppercase' | 'none' | 'capitalize';
+  headingWeight?: '400' | '500' | '600' | '700' | '800' | '900';
+  typographyScale?: 'compact' | 'normal' | 'editorial' | 'grand';
   primaryColor: string;
   secondaryColor: string;
   accentColor: string;
@@ -415,9 +440,15 @@ export interface SiteDesignTokens {
   destructiveColor: string;
   borderRadius: 'none' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
   borderWidth: 'none' | 'thin' | 'medium' | 'thick';
+  borderStyle?: 'solid' | 'dashed' | 'dotted' | 'none';
+  sectionDividers?: 'none' | 'bottom' | 'top-bottom';
+  cardBorders?: 'borderless' | 'bordered' | 'accent';
   shadowStyle: 'none' | 'sm' | 'md' | 'lg' | 'xl' | 'glass';
-  buttonStyle: 'solid' | 'outline' | 'pill' | 'minimal';
+  buttonStyle: 'solid' | 'outline' | 'pill' | 'minimal' | 'square';
   cardStyle: 'square' | 'rounded' | 'bordered' | 'shadow';
+  animationSpeed?: 'subtle' | 'smooth' | 'energetic' | 'off';
+  ambientMotion?: 'none' | 'subtle-pulse' | 'glow-ambient' | 'gentle-float';
+  globalCardHover?: 'none' | 'lift' | 'glow' | 'zoom';
 }
 
 export interface InstagramPostItem {

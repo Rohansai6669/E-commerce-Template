@@ -33,17 +33,17 @@ export function SectionHeading({
       className={`flex flex-col mb-4 sm:mb-6 max-w-3xl ${containerMargin} ${alignInfo.horizontal} ${alignInfo.text} ${className}`}
     >
       {eyebrow && (
-        <span className="text-xs font-semibold tracking-[0.25em] uppercase text-muted-foreground mb-2 inline-block">
+        <span className="text-[10px] sm:text-xs font-semibold tracking-[0.2em] sm:tracking-[0.25em] uppercase text-muted-foreground mb-1.5 sm:mb-2 inline-block anim-child-1">
           {eyebrow}
         </span>
       )}
       {heading && (
-        <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground font-heading leading-none uppercase">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold sm:font-black tracking-tight text-foreground font-heading leading-tight sm:leading-none uppercase anim-child-2">
           {heading}
         </h2>
       )}
       {description && (
-        <p className="mt-3 text-sm sm:text-base text-muted-foreground font-normal leading-relaxed">
+        <p className="mt-2 sm:mt-3 text-xs sm:text-sm md:text-base text-muted-foreground font-normal leading-relaxed anim-child-3">
           {description}
         </p>
       )}

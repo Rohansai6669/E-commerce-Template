@@ -105,6 +105,19 @@ export async function saveCmsPageConfigAction(slug: string, config: PageConfig):
  */
 export async function saveSiteDesignTokensAction(tokens: SiteDesignTokens): Promise<boolean> {
   try {
+    // Save to Disk Storage
+    let existingData: Record<string, any> = {};
+    if (fs.existsSync(CMS_STORAGE_PATH)) {
+      try {
+        const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
+        existingData = JSON.parse(raw);
+      } catch (e) {
+        existingData = {};
+      }
+    }
+    existingData.site_design_tokens = tokens;
+    fs.writeFileSync(CMS_STORAGE_PATH, JSON.stringify(existingData, null, 2), 'utf-8');
+
     if (db) {
       await db
         .insert(cmsSiteSettings)

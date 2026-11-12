@@ -100,8 +100,12 @@ export const defaultInstagramSettings: InstagramSettingsConfig = {
 };
 
 export const defaultSiteDesignTokens: SiteDesignTokens = {
-  primaryFont: 'var(--font-geist-sans)',
-  headingFont: 'var(--font-geist-sans)',
+  primaryFont: "'Plus Jakarta Sans', sans-serif",
+  headingFont: "'Space Grotesk', sans-serif",
+  headingTracking: 'tighter',
+  headingTransform: 'uppercase',
+  headingWeight: '800',
+  typographyScale: 'normal',
   primaryColor: '#000000',
   secondaryColor: '#18181b',
   accentColor: '#000000',
@@ -113,9 +117,15 @@ export const defaultSiteDesignTokens: SiteDesignTokens = {
   destructiveColor: '#000000',
   borderRadius: 'none',
   borderWidth: 'thin',
+  borderStyle: 'solid',
+  sectionDividers: 'none',
+  cardBorders: 'bordered',
   shadowStyle: 'none',
-  buttonStyle: 'minimal',
+  buttonStyle: 'square',
   cardStyle: 'square',
+  animationSpeed: 'smooth',
+  ambientMotion: 'subtle-pulse',
+  globalCardHover: 'lift',
 };
 
 export const defaultHeroSection: HeroConfig = {

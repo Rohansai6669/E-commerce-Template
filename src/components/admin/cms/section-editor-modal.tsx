@@ -18,6 +18,9 @@ import {
   Filter,
   Eye,
   Check,
+  Sparkles,
+  Play,
+  Square,
 } from 'lucide-react';
 import { ImagePreviewInput } from '@/components/ui/image-preview-input';
 import { NineAlignmentMatrix } from '@/components/ui/nine-alignment-matrix';
@@ -660,6 +663,249 @@ export function SectionEditorModal({
                       handleFieldChange('contentPosition', val);
                     }}
                   />
+                </div>
+
+                {/* Section Animation & Living Motion */}
+                <div className="pt-4 border-t border-slate-100 space-y-4">
+                  <div className="p-4 rounded-xl border border-indigo-100 bg-gradient-to-b from-indigo-50/40 to-white space-y-3.5 shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-indigo-600" />
+                        <h4 className="text-xs font-extrabold uppercase tracking-tight text-slate-900">
+                          Living Motion & Section Animations
+                        </h4>
+                      </div>
+                      <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">
+                        Preset: {edited.animationPreset || 'NONE'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 leading-snug">
+                      Bring this storefront section to life with entrance reveals, ambient floating loops, and interactive hover dynamics.
+                    </p>
+
+                    {/* Entrance Animation Preset */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-700 block">Entrance &amp; Reveal Preset</label>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {[
+                          { id: 'NONE', label: 'None', desc: 'Static render' },
+                          { id: 'FADE', label: 'Fade In', desc: 'Smooth opacity reveal' },
+                          { id: 'FADE_UP', label: 'Float Up', desc: 'Slide up + fade' },
+                          { id: 'FADE_DOWN', label: 'Float Down', desc: 'Slide down + fade' },
+                          { id: 'SLIDE_LEFT', label: 'Slide Left', desc: 'Glide from left' },
+                          { id: 'SLIDE_RIGHT', label: 'Slide Right', desc: 'Glide from right' },
+                          { id: 'ZOOM_IN', label: 'Zoom In', desc: 'Scale pop reveal' },
+                          { id: 'BLUR_REVEAL', label: 'Blur Reveal', desc: 'Cinematic unblur' },
+                          { id: 'FLOAT_AMBIENT', label: 'Ambient Float', desc: 'Living gentle float loop' },
+                          { id: 'PULSE_GLOW', label: 'Pulse Glow', desc: 'Living breathing pulse' },
+                          { id: 'IMAGE_ZOOM', label: 'Ken Burns', desc: 'Slow cinematic zoom' },
+                        ].map((preset) => {
+                          const isSelected = (edited.animationPreset || 'NONE') === preset.id;
+                          return (
+                            <button
+                              key={preset.id}
+                              type="button"
+                              onClick={() => handleFieldChange('animationPreset', preset.id)}
+                              className={`p-2.5 rounded-xl border text-left transition cursor-pointer flex flex-col justify-between ${
+                                isSelected
+                                  ? 'border-indigo-600 bg-indigo-50/70 text-indigo-950 ring-1 ring-indigo-500 font-bold'
+                                  : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-extrabold">{preset.label}</span>
+                                {isSelected && <Check className="w-3.5 h-3.5 text-indigo-600 flex-shrink-0" />}
+                              </div>
+                              <span className="text-[10px] text-slate-400 mt-1 line-clamp-1">{preset.desc}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Animation Speed & Timing */}
+                    <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-slate-700">Motion Speed / Duration</label>
+                        <span className="text-[10px] font-mono text-slate-500 capitalize">
+                          {edited.animationDuration || 'normal'}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2">
+                        {[
+                          { id: 'fast', label: 'Fast', ms: '400ms' },
+                          { id: 'normal', label: 'Normal', ms: '750ms' },
+                          { id: 'slow', label: 'Slow', ms: '1.2s' },
+                          { id: 'cinematic', label: 'Cinematic', ms: '1.8s' },
+                        ].map((dur) => {
+                          const isSelected = (edited.animationDuration || 'normal') === dur.id;
+                          return (
+                            <button
+                              key={dur.id}
+                              type="button"
+                              onClick={() => handleFieldChange('animationDuration', dur.id)}
+                              className={`py-2 px-1 rounded-lg text-center transition cursor-pointer border ${
+                                isSelected
+                                  ? 'bg-slate-900 border-slate-900 text-white font-extrabold shadow-2xs'
+                                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
+                              }`}
+                            >
+                              <div className="text-xs font-bold leading-tight">{dur.label}</div>
+                              <div className="text-[9px] opacity-70">{dur.ms}</div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Stagger Delay */}
+                    <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-slate-700">Stagger Entrance Delay</label>
+                        <span className="text-[10px] font-mono text-slate-500 capitalize">
+                          {edited.animationDelay || 'none'}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2">
+                        {[
+                          { id: 'none', label: 'Instant (0ms)' },
+                          { id: 'short', label: 'Short (150ms)' },
+                          { id: 'medium', label: 'Mid (300ms)' },
+                          { id: 'long', label: 'Long (500ms)' },
+                        ].map((del) => {
+                          const isSelected = (edited.animationDelay || 'none') === del.id;
+                          return (
+                            <button
+                              key={del.id}
+                              type="button"
+                              onClick={() => handleFieldChange('animationDelay', del.id)}
+                              className={`py-2 px-1 rounded-lg text-xs text-center transition cursor-pointer border ${
+                                isSelected
+                                  ? 'bg-slate-900 border-slate-900 text-white font-extrabold shadow-2xs'
+                                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
+                              }`}
+                            >
+                              {del.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Interactive Hover Dynamics */}
+                    <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                      <label className="text-xs font-bold text-slate-700 block">Interactive Card &amp; Media Dynamics</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {[
+                          { id: 'none', label: 'Default', desc: 'No hover reaction' },
+                          { id: 'lift', label: 'Card Float & Shadow', desc: 'Translates up on hover' },
+                          { id: 'glow', label: 'Accent Aura Glow', desc: 'Luminous edge highlight' },
+                          { id: 'zoom-media', label: 'Media Zoom', desc: 'Subtle zoom on image/video' },
+                        ].map((hov) => {
+                          const isSelected = (edited.animationHoverEffect || 'none') === hov.id;
+                          return (
+                            <button
+                              key={hov.id}
+                              type="button"
+                              onClick={() => handleFieldChange('animationHoverEffect', hov.id)}
+                              className={`p-2.5 rounded-xl border text-left transition cursor-pointer flex flex-col justify-between ${
+                                isSelected
+                                  ? 'border-indigo-600 bg-indigo-50/70 text-indigo-950 ring-1 ring-indigo-500 font-bold'
+                                  : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700'
+                              }`}
+                            >
+                              <span className="text-xs font-extrabold">{hov.label}</span>
+                              <span className="text-[10px] text-slate-400 mt-0.5">{hov.desc}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section Border Lines & Boundary Dividers */}
+                <div className="pt-4 border-t border-slate-100 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Square className="w-4 h-4 text-slate-800" />
+                      <h4 className="text-xs font-extrabold uppercase tracking-tight text-slate-900">
+                        Section Border Lines &amp; Dividers
+                      </h4>
+                    </div>
+                    <span className="text-[10px] font-mono text-slate-500 uppercase">
+                      Top: {edited.borderTop || 'inherit'} / Bottom: {edited.borderBottom || 'inherit'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 leading-snug">
+                    Fine-tune top and bottom divider lines specifically for this section.
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700 block">Top Border Divider</label>
+                      <select
+                        value={edited.borderTop || 'inherit'}
+                        onChange={(e) => handleFieldChange('borderTop', e.target.value)}
+                        className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-medium cursor-pointer"
+                      >
+                        <option value="inherit">Inherit Global Theme Setting</option>
+                        <option value="none">None (0px / Flush)</option>
+                        <option value="thin">Hairline (1px)</option>
+                        <option value="medium">Medium (2px)</option>
+                        <option value="thick">Thick (3px)</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700 block">Bottom Border Divider</label>
+                      <select
+                        value={edited.borderBottom || 'inherit'}
+                        onChange={(e) => handleFieldChange('borderBottom', e.target.value)}
+                        className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-medium cursor-pointer"
+                      >
+                        <option value="inherit">Inherit Global Theme Setting</option>
+                        <option value="none">None (0px / Flush)</option>
+                        <option value="thin">Hairline (1px)</option>
+                        <option value="medium">Medium (2px)</option>
+                        <option value="thick">Thick (3px)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700 block">Border Line Style</label>
+                      <select
+                        value={edited.borderStyle || 'solid'}
+                        onChange={(e) => handleFieldChange('borderStyle', e.target.value)}
+                        className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-medium cursor-pointer"
+                      >
+                        <option value="solid">Solid Line</option>
+                        <option value="dashed">Dashed Line</option>
+                        <option value="dotted">Dotted Line</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700 block">Border Color Override</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={edited.borderColor || '#e2e8f0'}
+                          onChange={(e) => handleFieldChange('borderColor', e.target.value)}
+                          className="w-9 h-9 rounded-lg border border-slate-300 p-0.5 bg-white cursor-pointer flex-shrink-0"
+                        />
+                        <input
+                          type="text"
+                          value={edited.borderColor || ''}
+                          placeholder="#e2e8f0 (or theme default)"
+                          onChange={(e) => handleFieldChange('borderColor', e.target.value)}
+                          className="flex-1 text-xs font-mono px-3 py-2 rounded-xl border border-slate-300 text-slate-900 font-semibold"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { PageConfig, AnySectionConfig, SiteDesignTokens } from '@/types/cms';
 import { NavAppearanceConfig, defaultNavAppearanceConfig } from '@/types/navigation-appearance';
@@ -91,6 +91,15 @@ export function VisualBuilderStudio({
   const [viewMode, setViewMode] = useState<'split' | 'canvas' | 'inspector'>('split');
   const [mobileTab, setMobileTab] = useState<'canvas' | 'editor'>('canvas');
 
+  useEffect(() => {
+    if (selectedSectionId) {
+      const el = document.getElementById(`section-canvas-${selectedSectionId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  }, [selectedSectionId]);
+
   const [isSaving, setIsSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [catalogSearch, setCatalogSearch] = useState('');
@@ -130,13 +139,39 @@ export function VisualBuilderStudio({
     }
   };
 
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const themeSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const persistPageConfigDebounced = (updated: PageConfig) => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    saveTimeoutRef.current = setTimeout(() => {
+      saveCmsPageConfig('/', updated).catch(console.error);
+    }, 500);
+  };
+
   const handleColorChange = (key: keyof SiteDesignTokens, val: string) => {
     const updated = { ...themeTokens, [key]: val };
     setThemeTokens(updated);
+    applyLiveTheme(updated);
+    if (themeSaveTimeoutRef.current) {
+      clearTimeout(themeSaveTimeoutRef.current);
+    }
+    themeSaveTimeoutRef.current = setTimeout(() => {
+      saveSiteDesignTokens(updated).catch(console.error);
+    }, 500);
   };
 
   const handlePresetSelect = (preset: ThemePreset) => {
     setThemeTokens(preset.tokens);
+    applyLiveTheme(preset.tokens);
+    if (themeSaveTimeoutRef.current) {
+      clearTimeout(themeSaveTimeoutRef.current);
+    }
+    themeSaveTimeoutRef.current = setTimeout(() => {
+      saveSiteDesignTokens(preset.tokens).catch(console.error);
+    }, 500);
     toast.success(`Applied "${preset.name}" Theme Preset!`);
   };
 
@@ -155,29 +190,33 @@ export function VisualBuilderStudio({
     setPageConfig(updated);
     setSelectedSectionId(newSection.id);
     setMobileTab('editor');
-    saveCmsPageConfig('/', updated).catch(console.error);
+    persistPageConfigDebounced(updated);
     toast.success(`Added "${entry.label}" to layout`);
   };
 
   const toggleSectionEnabled = (id: string) => {
-    const updated = {
-      ...pageConfig,
-      sections: pageConfig.sections.map((sec) =>
-        sec.id === id ? { ...sec, enabled: !sec.enabled } : sec
-      ),
-    };
-    setPageConfig(updated);
-    saveCmsPageConfig('/', updated).catch(console.error);
+    setPageConfig((prev) => {
+      const updated = {
+        ...prev,
+        sections: prev.sections.map((sec) =>
+          sec.id === id ? { ...sec, enabled: !sec.enabled } : sec
+        ),
+      };
+      persistPageConfigDebounced(updated);
+      return updated;
+    });
   };
 
   const deleteSection = (id: string) => {
-    const updatedSections = pageConfig.sections
-      .filter((sec) => sec.id !== id)
-      .map((sec, idx) => ({ ...sec, displayOrder: idx + 1 }));
+    setPageConfig((prev) => {
+      const updatedSections = prev.sections
+        .filter((sec) => sec.id !== id)
+        .map((sec, idx) => ({ ...sec, displayOrder: idx + 1 }));
 
-    const updated = { ...pageConfig, sections: updatedSections };
-    setPageConfig(updated);
-    saveCmsPageConfig('/', updated).catch(console.error);
+      const updated = { ...prev, sections: updatedSections };
+      persistPageConfigDebounced(updated);
+      return updated;
+    });
 
     if (selectedSectionId === id) {
       setSelectedSectionId(null);
@@ -196,55 +235,69 @@ export function VisualBuilderStudio({
       displayOrder: pageConfig.sections.length + 1,
     };
 
-    const updated = {
-      ...pageConfig,
-      sections: [...pageConfig.sections, duplicated],
-    };
-    setPageConfig(updated);
+    setPageConfig((prev) => {
+      const updated = {
+        ...prev,
+        sections: [...prev.sections, duplicated],
+      };
+      persistPageConfigDebounced(updated);
+      return updated;
+    });
     setSelectedSectionId(duplicated.id);
-    saveCmsPageConfig('/', updated).catch(console.error);
     toast.success(`Duplicated "${target.name}"`);
   };
 
   const moveSection = (index: number, direction: 'up' | 'down') => {
-    const newSections = [...pageConfig.sections];
-    const targetIdx = direction === 'up' ? index - 1 : index + 1;
-    if (targetIdx < 0 || targetIdx >= newSections.length) return;
+    setPageConfig((prev) => {
+      const newSections = [...prev.sections];
+      const targetIdx = direction === 'up' ? index - 1 : index + 1;
+      if (targetIdx < 0 || targetIdx >= newSections.length) return prev;
 
-    const temp = newSections[index];
-    newSections[index] = newSections[targetIdx];
-    newSections[targetIdx] = temp;
+      const temp = newSections[index];
+      newSections[index] = newSections[targetIdx];
+      newSections[targetIdx] = temp;
 
-    const updatedSections = newSections.map((sec, idx) => ({
-      ...sec,
-      displayOrder: idx + 1,
-    }));
+      const updatedSections = newSections.map((sec, idx) => ({
+        ...sec,
+        displayOrder: idx + 1,
+      }));
 
-    const updated = { ...pageConfig, sections: updatedSections };
-    setPageConfig(updated);
-    saveCmsPageConfig('/', updated).catch(console.error);
+      const updated = { ...prev, sections: updatedSections };
+      persistPageConfigDebounced(updated);
+      return updated;
+    });
   };
 
-  const updateSectionField = (sectionId: string, field: string, value: any) => {
-    const updated = {
-      ...pageConfig,
-      sections: pageConfig.sections.map((sec) =>
-        sec.id === sectionId ? { ...sec, [field]: value } : sec
-      ),
-    };
-    setPageConfig(updated);
-    saveCmsPageConfig('/', updated).catch(console.error);
+  const updateSectionField = (
+    sectionId: string,
+    field: string | Record<string, any>,
+    value?: any
+  ) => {
+    setPageConfig((prev) => {
+      const updatedSections = prev.sections.map((sec) => {
+        if (sec.id !== sectionId) return sec;
+        if (typeof field === 'object' && field !== null) {
+          return { ...sec, ...field };
+        }
+        return { ...sec, [field]: value };
+      });
+      const updated = { ...prev, sections: updatedSections };
+      persistPageConfigDebounced(updated);
+      return updated;
+    });
   };
 
   const handleSaveFromModal = (updatedSection: AnySectionConfig) => {
-    const updated = {
-      ...pageConfig,
-      sections: pageConfig.sections.map((sec) =>
-        sec.id === updatedSection.id ? updatedSection : sec
-      ),
-    };
-    setPageConfig(updated);
-    saveCmsPageConfig('/', updated).catch(console.error);
+    setPageConfig((prev) => {
+      const updated = {
+        ...prev,
+        sections: prev.sections.map((sec) =>
+          sec.id === updatedSection.id ? updatedSection : sec
+        ),
+      };
+      persistPageConfigDebounced(updated);
+      return updated;
+    });
     toast.success(`Updated "${updatedSection.name}" from Detailed Form!`);
   };
 

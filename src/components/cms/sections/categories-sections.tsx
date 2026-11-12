@@ -128,7 +128,7 @@ export function CategoryGridSection({ config }: { config: CategoryGridConfig & a
         alignment={config.headingAlignment}
       />
       <div className={`grid ${gridColsClass} ${gapClass}`}>
-        {items.map((cat: any) => {
+        {items.map((cat: any, idx: number) => {
           const cardRadiusPx = cat.cardRadiusPx ?? sectionRadiusPx;
           const cardRadiusStyle = cardRadiusPx !== undefined ? { borderRadius: `${cardRadiusPx}px` } : {};
           const cardImg = cat.image || getCategoryCardFallbackImage(cat.title || cat.categorySlug);
@@ -142,8 +142,20 @@ export function CategoryGridSection({ config }: { config: CategoryGridConfig & a
             <Link
               key={cat.id}
               href={cat.link || `/products?category=${cat.categorySlug || 'all'}`}
-              className={`group relative overflow-hidden ${radiusClass} ${shadowClass} ${aspectClass} block transition-all duration-500 ${config.cardHoverEffect === 'lift' ? 'hover:-translate-y-1.5' : ''}`}
-              style={cardRadiusStyle}
+              className={`group relative overflow-hidden ${radiusClass} ${shadowClass} ${aspectClass} block transition-all duration-500 ${
+                config.cardHoverEffect === 'lift' || config.animationHoverEffect === 'lift' ? 'hover:-translate-y-1.5' : ''
+              } ${
+                config.animationPreset && config.animationPreset !== 'NONE' ? 'animate-fade-up' : ''
+              }`}
+              style={{
+                ...cardRadiusStyle,
+                ...(config.animationPreset && config.animationPreset !== 'NONE'
+                  ? {
+                      animationDelay: `${Math.min(idx * 80 + 100, 800)}ms`,
+                      animationFillMode: 'both',
+                    }
+                  : {}),
+              }}
             >
               <img
                 src={cardImg}
@@ -157,19 +169,19 @@ export function CategoryGridSection({ config }: { config: CategoryGridConfig & a
               />
 
               {/* Text & Content Overlay with crystal clear typography */}
-              <div className="absolute inset-0 p-6 flex flex-col justify-end text-white z-10 pointer-events-none">
+              <div className="absolute inset-0 p-4 sm:p-6 flex flex-col justify-end text-white z-10 pointer-events-none">
                 {showEyebrow && (
-                  <span className="text-xs font-bold tracking-[0.2em] text-[var(--accent,#818cf8)] mb-1 uppercase drop-shadow-xs">
+                  <span className="text-[10px] sm:text-xs font-bold tracking-[0.2em] text-[var(--accent,#818cf8)] mb-0.5 sm:mb-1 uppercase drop-shadow-xs">
                     {cat.eyebrow || defaultEyebrow}
                   </span>
                 )}
-                <h3 className="text-2xl font-extrabold font-heading uppercase drop-shadow-sm tracking-tight">{cat.title}</h3>
+                <h3 className="text-lg sm:text-2xl font-extrabold font-heading uppercase drop-shadow-sm tracking-tight">{cat.title}</h3>
                 {cat.subtitle && (
-                  <p className="text-xs text-slate-200 mt-1 font-normal opacity-95 drop-shadow-xs">{cat.subtitle}</p>
+                  <p className="text-[11px] sm:text-xs text-slate-200 mt-0.5 sm:mt-1 font-normal opacity-95 drop-shadow-xs">{cat.subtitle}</p>
                 )}
                 {showCta && (
-                  <div className="mt-4 flex items-center text-xs font-bold group-hover:translate-x-1.5 transition-transform drop-shadow-xs">
-                    {cat.ctaText || defaultCta} <ArrowRight className="w-4 h-4 ml-1.5" />
+                  <div className="mt-2.5 sm:mt-4 flex items-center text-[11px] sm:text-xs font-bold group-hover:translate-x-1.5 transition-transform drop-shadow-xs">
+                    {cat.ctaText || defaultCta} <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-1.5" />
                   </div>
                 )}
               </div>

@@ -243,13 +243,14 @@ export function MarqueeTickerSection({ config }: { config: BaseSectionConfig & a
   const items = Array.isArray(config.tickerItems) && config.tickerItems.length > 0
     ? config.tickerItems
     : typeof config.tickerText === 'string' && config.tickerText.trim()
-    ? config.tickerText.split('•').map((s: string) => s.trim()).filter(Boolean)
+    ? config.tickerText.split(/[•◆|]/).map((s: string) => s.trim()).filter(Boolean)
     : [
-        'FREE EXPRESS SHIPPING ON ORDERS OVER ₹4,999',
-        'BUILT IN INDIA — DESIGNED FOR THE WORLD',
-        '100% CERTIFIED ORGANIC COTTON & SILK',
-        'COMPLIMENTARY 30-DAY EASY RETURNS',
-        'LIMITED EDITORIAL DROPS AVAILABLE NOW',
+        'SHIPPING ABOVE ₹2000',
+        '15-DAY RETURNS',
+        'CASH ON DELIVERY',
+        'PAN INDIA DELIVERY',
+        '100% PREMIUM COTTON',
+        'LIMITED EDITORIAL DROPS',
       ];
 
   return (
@@ -264,7 +265,7 @@ export function MarqueeTickerSection({ config }: { config: BaseSectionConfig & a
       className="p-0"
     >
       <div
-        className="w-full py-3.5 bg-black text-white border-y border-zinc-800 overflow-hidden select-none"
+        className="w-full py-3.5 bg-black text-white border-y border-neutral-900 overflow-hidden select-none"
         style={{
           backgroundColor: config.backgroundColor || '#000000',
           color: config.textColor || '#ffffff',
@@ -274,7 +275,7 @@ export function MarqueeTickerSection({ config }: { config: BaseSectionConfig & a
           {[...items, ...items, ...items, ...items].map((text: string, idx: number) => (
             <div key={idx} className="flex items-center gap-6 text-xs font-bold uppercase tracking-[0.25em]">
               <span>{text}</span>
-              <span className="text-zinc-600">•</span>
+              <span className="text-neutral-400">◆</span>
             </div>
           ))}
         </div>

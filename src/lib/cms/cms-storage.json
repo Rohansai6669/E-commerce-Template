@@ -57,7 +57,7 @@
         "name": "Marquee Ticker Banner",
         "type": "MARQUEE_TICKER",
         "enabled": true,
-        "tickerText": "FREE EXPRESS SHIPPING ON ORDERS OVER ₹4,999 • BUILT IN INDIA — DESIGNED FOR THE WORLD • 100% CERTIFIED ORGANIC COTTON & SILK • COMPLIMENTARY 30-DAY EASY RETURNS • LIMITED EDITORIAL DROPS AVAILABLE NOW",
+        "tickerText": "SHIPPING ABOVE ₹2000 ◆ 15-DAY RETURNS ◆ CASH ON DELIVERY ◆ PAN INDIA DELIVERY ◆ 100% PREMIUM COTTON ◆ LIMITED EDITORIAL DROPS",
         "displayOrder": 2,
         "mobileVisible": true,
         "tabletVisible": true,
@@ -71,45 +71,33 @@
           {
             "id": "cat-1",
             "link": "/men",
-            "image": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=800&auto=format&fit=crop",
+            "image": "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=1200&auto=format&fit=crop",
             "title": "MEN",
             "enabled": true,
             "subtitle": "DISCOVER MEN",
             "categorySlug": "men",
             "displayOrder": 1,
-            "overlayOpacity": 0.3
+            "overlayOpacity": 0.2
           },
           {
             "id": "cat-2",
             "link": "/women",
-            "image": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=800&auto=format&fit=crop",
+            "image": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1200&auto=format&fit=crop",
             "title": "WOMEN",
             "enabled": true,
             "subtitle": "DISCOVER WOMEN",
             "categorySlug": "women",
             "displayOrder": 2,
-            "overlayOpacity": 0.25
-          },
-          {
-            "id": "cat-card-1794246323745",
-            "link": "/products?category=new-arrivals",
-            "image": "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=800&auto=format&fit=crop",
-            "title": "NEW CATEGORY",
-            "ctaText": "SHOP NOW",
-            "enabled": true,
-            "subtitle": "EXPLORE RELEASES",
-            "categorySlug": "new-arrivals",
-            "displayOrder": 3,
-            "overlayOpacity": 0.3
+            "overlayOpacity": 0.2
           }
         ],
         "enabled": true,
         "eyebrow": "01 — SHOP BY",
         "heading": "THE EDIT",
         "marginTop": "small",
-        "cardRadius": "xlarge",
+        "cardRadius": "none",
         "cardShadow": "none",
-        "aspectRatio": "square",
+        "aspectRatio": "portrait",
         "cardRadiusPx": 0,
         "displayOrder": 3,
         "marginBottom": "small",
@@ -117,11 +105,13 @@
         "columnsTablet": 2,
         "mobileVisible": true,
         "tabletVisible": true,
-        "columnsDesktop": 3,
+        "_animReplayKey": 1794492607793,
+        "columnsDesktop": 2,
         "containerWidth": "full",
         "desktopVisible": true,
-        "cardHoverEffect": "zoom-lg",
-        "headingAlignment": "left"
+        "cardHoverEffect": "zoom",
+        "headingAlignment": "left",
+        "animationPreset": "FADE_UP"
       },
       {
         "id": "product-grid-1",
@@ -332,6 +322,12 @@
         "href": "/products?category=women",
         "label": "WOMEN",
         "hasMega": true
+      },
+      {
+        "id": "nav-kids",
+        "href": "/products?category=kids",
+        "label": "KIDS",
+        "hasMega": false
       }
     ],
     "megaMenuBgColor": "#ffffff",
@@ -377,5 +373,33 @@
     "announcementCtaUrl": "/products",
     "announcementBgColor": "#000000",
     "announcementTextColor": "#ffffff"
+  },
+  "site_design_tokens": {
+    "primaryFont": "'Plus Jakarta Sans', sans-serif",
+    "headingFont": "'Space Grotesk', sans-serif",
+    "headingTracking": "tighter",
+    "headingTransform": "uppercase",
+    "headingWeight": "800",
+    "typographyScale": "normal",
+    "primaryColor": "#000000",
+    "secondaryColor": "#18181b",
+    "accentColor": "#000000",
+    "backgroundColor": "#ffffff",
+    "surfaceColor": "#ffffff",
+    "textColor": "#000000",
+    "mutedTextColor": "#52525b",
+    "borderColor": "#e4e4e7",
+    "destructiveColor": "#000000",
+    "borderRadius": "none",
+    "borderWidth": "thin",
+    "borderStyle": "solid",
+    "sectionDividers": "none",
+    "cardBorders": "bordered",
+    "shadowStyle": "none",
+    "buttonStyle": "square",
+    "cardStyle": "square",
+    "animationSpeed": "smooth",
+    "ambientMotion": "subtle-pulse",
+    "globalCardHover": "lift"
   }
 }

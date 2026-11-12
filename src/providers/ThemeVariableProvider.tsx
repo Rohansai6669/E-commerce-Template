@@ -20,6 +20,37 @@ export function ThemeVariableProvider({ children }: { children: React.ReactNode 
 
     const root = document.documentElement;
 
+    // Apply Global Typography Tokens
+    if (t.headingFont) {
+      root.style.setProperty('--font-heading', t.headingFont);
+      root.style.setProperty('--heading-font', t.headingFont);
+    }
+    if (t.primaryFont) {
+      root.style.setProperty('--font-body', t.primaryFont);
+      root.style.setProperty('--font-sans', t.primaryFont);
+      root.style.setProperty('--primary-font', t.primaryFont);
+    }
+    const trackingMap: Record<string, string> = {
+      tighter: '-0.05em',
+      tight: '-0.025em',
+      normal: '0em',
+      wide: '0.05em',
+      widest: '0.1em',
+    };
+    root.style.setProperty('--heading-tracking', trackingMap[t.headingTracking || 'tighter'] || '-0.04em');
+    root.style.setProperty('--heading-transform', t.headingTransform || 'uppercase');
+    root.style.setProperty('--heading-weight', t.headingWeight || '800');
+
+    const scaleMap: Record<string, string> = {
+      compact: '0.9',
+      normal: '1.0',
+      editorial: '1.1',
+      grand: '1.25',
+    };
+    const scaleVal = scaleMap[t.typographyScale || 'normal'] || '1.0';
+    root.style.setProperty('--typography-scale', scaleVal);
+    root.setAttribute('data-typography-scale', t.typographyScale || 'normal');
+
     // Apply Root Color Variables (Mutates Tailwind Semantic Theme Tokens globally)
     if (t.primaryColor) {
       root.style.setProperty('--primary', t.primaryColor);
@@ -53,11 +84,28 @@ export function ThemeVariableProvider({ children }: { children: React.ReactNode 
       root.style.setProperty('--muted-foreground', t.mutedTextColor);
       root.style.setProperty('--cms-muted-text', t.mutedTextColor);
     }
-    if (t.borderColor) {
-      root.style.setProperty('--border', t.borderColor);
-      root.style.setProperty('--input', t.borderColor);
-      root.style.setProperty('--cms-border', t.borderColor);
-    }
+    // Apply Global Border Line Tokens
+    const borderWidthMap: Record<string, string> = {
+      none: '0px',
+      thin: '1px',
+      medium: '2px',
+      thick: '3px',
+    };
+    const bWidth = borderWidthMap[t.borderWidth || 'thin'] || '1px';
+    const bColor = t.borderWidth === 'none' ? 'transparent' : (t.borderColor || '#e2e8f0');
+    const bStyle = t.borderStyle || 'solid';
+
+    root.style.setProperty('--border-width', bWidth);
+    root.style.setProperty('--border-style', bStyle);
+    root.style.setProperty('--border', bColor);
+    root.style.setProperty('--input', bColor);
+    root.style.setProperty('--cms-border', bColor);
+
+    // Apply document attributes for site-wide borders, dividers & cards
+    root.setAttribute('data-border-width', t.borderWidth || 'thin');
+    root.setAttribute('data-section-dividers', t.sectionDividers || 'none');
+    root.setAttribute('data-card-borders', t.cardBorders || 'bordered');
+
     if (t.destructiveColor) {
       root.style.setProperty('--destructive', t.destructiveColor);
       root.style.setProperty('--cms-destructive', t.destructiveColor);

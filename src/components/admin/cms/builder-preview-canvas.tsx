@@ -45,6 +45,18 @@ export function BuilderPreviewCanvas({
     full: '9999px',
   };
 
+  const borderWidthMap: Record<string, string> = {
+    none: '0px',
+    thin: '1px',
+    medium: '2px',
+    thick: '3px',
+  };
+
+  const resolvedBorderWidth = borderWidthMap[themeTokens.borderWidth || 'thin'] || '1px';
+  const resolvedBorderColor =
+    themeTokens.borderWidth === 'none' ? 'transparent' : (themeTokens.borderColor || '#e2e8f0');
+  const resolvedBorderStyle = themeTokens.borderStyle || 'solid';
+
   const cssVariables = {
     '--primary': themeTokens.primaryColor || '#0f172a',
     '--primary-foreground': '#ffffff',
@@ -62,16 +74,36 @@ export function BuilderPreviewCanvas({
     '--muted-foreground': themeTokens.mutedTextColor || '#64748b',
     '--foreground': themeTokens.textColor || '#020617',
     '--text-primary': themeTokens.textColor || '#020617',
-    '--border': themeTokens.borderColor || '#e2e8f0',
-    '--input': themeTokens.borderColor || '#e2e8f0',
+    '--border': resolvedBorderColor,
+    '--border-width': resolvedBorderWidth,
+    '--border-style': resolvedBorderStyle,
+    '--input': resolvedBorderColor,
     '--ring': themeTokens.primaryColor || '#4f46e5',
     '--radius': radiusMap[themeTokens.borderRadius || 'md'] || '0.5rem',
     '--radius-sm': '0.25rem',
     '--radius-lg': '0.75rem',
     '--radius-xl': '1rem',
-    '--font-heading': themeTokens.headingFont || 'inherit',
-    '--font-primary': themeTokens.primaryFont || 'inherit',
-    '--font-body': themeTokens.primaryFont || 'inherit',
+    '--font-heading': themeTokens.headingFont || "'Space Grotesk', sans-serif",
+    '--font-primary': themeTokens.primaryFont || "'Plus Jakarta Sans', sans-serif",
+    '--font-body': themeTokens.primaryFont || "'Plus Jakarta Sans', sans-serif",
+    '--font-sans': themeTokens.primaryFont || "'Plus Jakarta Sans', sans-serif",
+    '--heading-tracking': {
+      tighter: '-0.05em',
+      tight: '-0.025em',
+      normal: '0em',
+      wide: '0.05em',
+      widest: '0.1em',
+    }[themeTokens.headingTracking || 'tighter'] || '-0.04em',
+    '--heading-transform': themeTokens.headingTransform || 'uppercase',
+    '--heading-weight': themeTokens.headingWeight || '800',
+    '--typography-scale': {
+      compact: '0.9',
+      normal: '1.0',
+      editorial: '1.1',
+      grand: '1.25',
+    }[themeTokens.typographyScale || 'normal'] || '1.0',
+    '--section-divider-color': resolvedBorderColor,
+    '--section-divider-width': themeTokens.sectionDividers === 'none' ? '0px' : resolvedBorderWidth,
   } as React.CSSProperties;
 
   if (device === 'desktop') {
@@ -79,6 +111,10 @@ export function BuilderPreviewCanvas({
       <div
         className="w-full h-full overflow-y-auto overflow-x-hidden bg-[var(--background,#ffffff)] font-sans text-[var(--foreground,#020617)] flex flex-col"
         style={cssVariables}
+        data-section-dividers={themeTokens.sectionDividers || 'none'}
+        data-card-borders={themeTokens.cardBorders || 'bordered'}
+        data-border-width={themeTokens.borderWidth || 'thin'}
+        data-typography-scale={themeTokens.typographyScale || 'normal'}
       >
         {/* Live Storefront Header in Builder Canvas */}
         <Header
@@ -130,7 +166,13 @@ export function BuilderPreviewCanvas({
         )}
 
         {/* Live Storefront Renderer Inside Device Frame */}
-        <div className="w-full flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-[var(--background,#ffffff)] font-sans text-[var(--foreground,#020617)] flex flex-col">
+        <div
+          className="w-full flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-[var(--background,#ffffff)] font-sans text-[var(--foreground,#020617)] flex flex-col"
+          data-section-dividers={themeTokens.sectionDividers || 'none'}
+          data-card-borders={themeTokens.cardBorders || 'bordered'}
+          data-border-width={themeTokens.borderWidth || 'thin'}
+          data-typography-scale={themeTokens.typographyScale || 'normal'}
+        >
           <Header
             previewConfig={navConfig}
             previewActiveCategory={previewActiveCategory}
