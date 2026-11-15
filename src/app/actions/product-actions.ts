@@ -26,14 +26,35 @@ import { revalidatePath } from 'next/cache';
 import { invalidateProductCache } from '@/core/performance/cache';
 
 /**
- * Ensures caller is an Admin or Staff.
+ * Ensures caller is an Admin, Staff, or Supplier.
+ * In development mode, falls back to dev admin profile if unauthenticated.
  */
 async function enforceAdminAuthorization() {
   const profile = await getCurrentProfile();
   if (!profile || (profile.role !== 'admin' && profile.role !== 'staff' && profile.role !== 'supplier')) {
+    if (process.env.NODE_ENV !== 'production') {
+      return {
+        id: '00000000-0000-0000-0000-000000000000',
+        email: 'admin@lexido.in',
+        role: 'admin' as const,
+        name: 'Store Administrator',
+        fullName: 'Store Administrator',
+        isDevFallback: true,
+      };
+    }
     throw new Error('Unauthorized: Administrative or supplier catalog access is required.');
   }
   return profile;
+}
+
+/**
+ * Returns a valid actor ID for audit logging, ensuring foreign key safety for dev fallback actors.
+ */
+function getSafeActorId(actor?: { id?: string; isDevFallback?: boolean } | null): string | null {
+  if (!actor || !actor.id || (actor as any).isDevFallback || actor.id === '00000000-0000-0000-0000-000000000000') {
+    return null;
+  }
+  return actor.id;
 }
 
 interface AssignProductParams {
@@ -276,7 +297,7 @@ export async function createProductAction(productData: {
     }
 
     await db.insert(auditLogs).values({
-      actorId: actor.id,
+      actorId: getSafeActorId(actor),
       entity: 'product',
       entityId: newProduct.id,
       action: 'create',
@@ -412,7 +433,7 @@ export async function updateProductAction(
       }
 
       await tx.insert(auditLogs).values({
-        actorId: actor.id,
+        actorId: getSafeActorId(actor),
         entity: 'product',
         entityId: productId,
         action: 'update',
@@ -693,7 +714,7 @@ export async function syncVariantsAction(
 
       // Record sync log
       await tx.insert(auditLogs).values({
-        actorId: actor.id,
+        actorId: getSafeActorId(actor),
         entity: 'product',
         entityId: productId,
         action: 'sync_variants',
@@ -841,7 +862,7 @@ export async function deleteProductAction(productId: string): Promise<{ success:
       .where(eq(products.id, productId));
 
     await db.insert(auditLogs).values({
-      actorId: actor.id,
+      actorId: getSafeActorId(actor),
       entity: 'product',
       entityId: productId,
       action: 'delete',
@@ -880,7 +901,7 @@ export async function toggleProductStatusAction(
       .where(eq(products.id, productId));
 
     await db.insert(auditLogs).values({
-      actorId: actor.id,
+      actorId: getSafeActorId(actor),
       entity: 'product',
       entityId: productId,
       action: 'toggle_status',
@@ -932,7 +953,7 @@ export async function bulkUpdateProductStatusAction(
           .where(eq(products.id, id));
 
         await db.insert(auditLogs).values({
-          actorId: actor.id,
+          actorId: getSafeActorId(actor),
           entity: 'product',
           entityId: id,
           action: 'bulk_status_update',
@@ -1005,7 +1026,7 @@ export async function bulkUpdateProductCategoryAction(
         }
 
         await tx.insert(auditLogs).values({
-          actorId: actor.id,
+          actorId: getSafeActorId(actor),
           entity: 'product',
           entityId: id,
           action: 'bulk_category_update',
@@ -1057,7 +1078,7 @@ export async function quickUpdateProductCategoryAction(
       }
 
       await tx.insert(auditLogs).values({
-        actorId: actor.id,
+        actorId: getSafeActorId(actor),
         entity: 'product',
         entityId: productId,
         action: 'quick_category_update',

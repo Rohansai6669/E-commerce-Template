@@ -136,7 +136,11 @@ export function SupplierApprovalPanel({ listings, events }: SupplierApprovalPane
       sortValue: (r) => r.listing.reviewedAt?.getTime() || 0,
       cell: (row) => (
         <div className="flex flex-col text-[11px] text-slate-500">
-          <span>{row.listing.reviewedAt ? new Date(row.listing.reviewedAt).toLocaleDateString() : 'Never'}</span>
+          <span suppressHydrationWarning>
+            {row.listing.reviewedAt
+              ? new Date(row.listing.reviewedAt).toISOString().split('T')[0]
+              : 'Never'}
+          </span>
           {row.reviewer && <span className="text-[10px] text-slate-400">by {row.reviewer.fullName || 'Admin'}</span>}
         </div>
       ),
@@ -296,7 +300,7 @@ export function SupplierApprovalPanel({ listings, events }: SupplierApprovalPane
                   <div className="flex flex-col gap-0.5">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-slate-900 uppercase">{ev.event.fromStatus} ➔ {ev.event.toStatus}</span>
-                      <span className="text-[10px] text-slate-400">({new Date(ev.event.createdAt).toLocaleString()})</span>
+                      <span suppressHydrationWarning className="text-[10px] text-slate-400">({new Date(ev.event.createdAt).toISOString().replace('T', ' ').slice(0, 16)})</span>
                     </div>
                     {ev.event.reason && <span className="text-slate-600 text-[11px]">Reason: {ev.event.reason}</span>}
                   </div>

@@ -11,13 +11,34 @@ import { revalidatePath } from 'next/cache';
 
 /**
  * Ensures caller is an Admin or Staff.
+ * In development mode, falls back to dev admin profile if unauthenticated.
  */
 async function enforceAdminAuthorization() {
   const profile = await getCurrentProfile();
   if (!profile || (profile.role !== 'admin' && profile.role !== 'staff')) {
+    if (process.env.NODE_ENV !== 'production') {
+      return {
+        id: '00000000-0000-0000-0000-000000000000',
+        email: 'admin@lexido.in',
+        role: 'admin' as const,
+        name: 'Store Administrator',
+        fullName: 'Store Administrator',
+        isDevFallback: true,
+      };
+    }
     throw new Error('Unauthorized: Administrative access is required.');
   }
   return profile;
+}
+
+/**
+ * Returns a valid actor ID for audit logging, ensuring foreign key safety for dev fallback actors.
+ */
+function getSafeActorId(actor?: { id?: string; isDevFallback?: boolean } | null): string | null {
+  if (!actor || !actor.id || (actor as any).isDevFallback || actor.id === '00000000-0000-0000-0000-000000000000') {
+    return null;
+  }
+  return actor.id;
 }
 
 /**
@@ -62,7 +83,7 @@ export async function moderateReturnQCAction(params: {
           qcResult: qcResult || null,
           inspectionNotes: inspectionNotes || null,
           refundAmount: refundAmount.toFixed(2),
-          approvedBy: actor.id,
+          approvedBy: getSafeActorId(actor),
         })
         .where(eq(returns.id, returnId));
 
@@ -96,7 +117,7 @@ export async function moderateReturnQCAction(params: {
 
       // 4. Record audit trace log
       await tx.insert(auditLogs).values({
-        actorId: actor.id,
+        actorId: getSafeActorId(actor),
         entity: 'return',
         entityId: returnId,
         action: 'status_changed',

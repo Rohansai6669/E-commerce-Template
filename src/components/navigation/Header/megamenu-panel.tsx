@@ -55,7 +55,7 @@ export const FALLBACK_MEGAMENU_DATA: Record<string, MegamenuCollection[]> = {
       ],
       featured: {
         title: 'STREETWEAR',
-        imageUrl: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=1000&auto=format&fit=crop',
+        imageUrl: 'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=1000&auto=format&fit=crop',
         href: '/products?category=streetwear',
         actionLabel: 'SHOP THE EDIT',
       },
@@ -308,7 +308,7 @@ export function MegamenuPanel({ category, onClose, appearance }: MegamenuPanelPr
       ? currentCategoryPromo.imageUrl
       : config.promoBannerImageUrl ||
         currentCategoryPromo?.imageUrl ||
-        'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=1000&auto=format&fit=crop';
+        'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=1000&auto=format&fit=crop';
 
   const promoCta =
     config.promoBannerActionLabel || currentCategoryPromo?.actionLabel || 'SHOP THE EDIT';

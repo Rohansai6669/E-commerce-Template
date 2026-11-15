@@ -66,7 +66,7 @@ export function Footer() {
               </h4>
               <ul className="flex flex-col gap-2 text-sm text-neutral-300">
                 <li><Link href="/help" className="hover:text-white transition-colors">Help Center</Link></li>
-                <li><Link href="/account/orders" className="hover:text-white transition-colors">Track Order</Link></li>
+                <li><Link href="/track-order" className="hover:text-white transition-colors">Track Order</Link></li>
                 <li><Link href="/faq" className="hover:text-white transition-colors">FAQs</Link></li>
                 <li><Link href="/support" className="hover:text-white transition-colors">Raise Ticket</Link></li>
                 <li><Link href="/shipping" className="hover:text-white transition-colors">Shipping</Link></li>
@@ -103,17 +103,19 @@ export function Footer() {
                 ✓ THANK YOU FOR SUBSCRIBING TO THE LEXIDO INNER CIRCLE.
               </div>
             ) : (
-              <form onSubmit={handleSubscribe} className="flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4 w-full">
+              <form onSubmit={handleSubscribe} suppressHydrationWarning className="flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4 w-full">
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="your@email.com"
+                  suppressHydrationWarning
                   className="bg-transparent border-b border-neutral-700 py-1.5 text-xs sm:text-sm text-white placeholder-neutral-500 focus:border-white focus:outline-none transition-colors w-full sm:w-80"
                 />
                 <button
                   type="submit"
+                  suppressHydrationWarning
                   className="text-xs font-bold tracking-widest uppercase text-white hover:text-neutral-300 transition-colors inline-flex items-center gap-1 cursor-pointer shrink-0"
                 >
                   <span>SUBSCRIBE</span>

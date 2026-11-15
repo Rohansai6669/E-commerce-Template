@@ -38,7 +38,7 @@ export function RecentOrdersLog({ orders }: RecentOrdersLogProps) {
           <div className="flex flex-col gap-4">
             {orders.slice(0, 8).map((order) => {
               const orderNum = order.shippingAddress?.orderNumber || order.id.slice(0, 12).toUpperCase();
-              const formattedDate = new Date(order.createdAt).toLocaleDateString();
+              const formattedDate = new Date(order.createdAt).toISOString().split('T')[0];
               const formattedPrice = parseFloat(order.totalAmount).toLocaleString('en-IN', {
                 style: 'currency',
                 currency: 'INR',
@@ -54,7 +54,7 @@ export function RecentOrdersLog({ orders }: RecentOrdersLogProps) {
                     <span className="font-semibold text-slate-900 font-mono">
                       {orderNum}
                     </span>
-                    <span className="text-xs text-slate-450">
+                    <span suppressHydrationWarning className="text-xs text-slate-450">
                       {order.shippingAddress?.email || 'customer@lexido.demo'} • {formattedDate}
                     </span>
                   </div>

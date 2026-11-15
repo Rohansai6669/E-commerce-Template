@@ -1,8 +1,8 @@
 import { env } from '../validation/env';
 
 export const storageConfig = {
-  maxFileSize: 10 * 1024 * 1024, // 10MB
-  allowedImageMimes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+  maxFileSize: 50 * 1024 * 1024, // 50MB
+  allowedImageMimes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'],
   allowedDocMimes: [
     'application/pdf',
     'application/msword',

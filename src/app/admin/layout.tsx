@@ -1,6 +1,5 @@
 import { Header } from '@/components/navigation/Header/header';
 import { Footer } from '@/components/navigation/Footer/footer';
-import { Container } from '@/components/layout/container';
 import { AdminTabs } from '@/components/admin/admin-tabs';
 import { db } from '@/lib/db';
 import { orders } from '@/lib/db/schema/order';
@@ -18,7 +17,7 @@ export interface AdminLayoutProps {
 
 /**
  * Administrative Portal Guard & Layout.
- * Standardized to match the storefront's light theme control center layouts.
+ * Full-width control center layout without boxed container constraints or excessive padding.
  */
 export default async function AdminLayout({ children }: AdminLayoutProps) {
   await connection();
@@ -56,27 +55,27 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
       {/* Storefront Header Navigation bar */}
       <Header />
 
-      {/* Main viewport canvas */}
+      {/* Main viewport canvas - Full Width with zero container restrictions */}
       <main className="flex-1 w-full flex flex-col bg-white">
-        <Container className="py-6 sm:py-10 max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 flex-1 w-full flex flex-col">
+        <div className="w-full flex-1 flex flex-col px-3 sm:px-6 lg:px-8 pt-3 sm:pt-4 pb-12">
           {/* Section Breadcrumbs */}
           <span className="text-[10px] tracking-wider uppercase font-semibold text-slate-400 select-none">
             Admin
           </span>
 
           {/* Large Wide Heading Title */}
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-950 uppercase mt-1 mb-4 sm:mb-6 font-heading">
+          <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-slate-950 uppercase mt-0.5 mb-3 font-heading">
             Control Center
           </h1>
 
           {/* Horizontal navigation tabs selector */}
           <AdminTabs badgeCounts={badgeCounts} />
 
-          {/* Renders dashboard content viewports */}
+          {/* Renders dashboard content viewports full-width */}
           <div className="flex-1 w-full text-slate-900">
             {children}
           </div>
-        </Container>
+        </div>
       </main>
 
       {/* Storefront Footer bar */}

@@ -321,7 +321,8 @@ export async function uploadMediaAction(formData: FormData): Promise<{
     }
 
     if (file.size > storageConfig.maxFileSize) {
-      return { success: false, error: 'File size exceeds maximum allowed limit of 10MB.' };
+      const maxMb = Math.round(storageConfig.maxFileSize / (1024 * 1024));
+      return { success: false, error: `File size exceeds maximum allowed limit of ${maxMb}MB.` };
     }
 
     const cleanFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
@@ -343,9 +344,12 @@ export async function uploadMediaAction(formData: FormData): Promise<{
       });
       if (result.success && result.url) {
         mediaUrl = result.url;
+        console.log(`[R2] Upload succeeded: ${mediaUrl}`);
+      } else if (result.error) {
+        console.warn('[R2] Upload failed, falling back:', result.error.message || result.error);
       }
-    } catch (r2Err) {
-      console.warn('Cloudflare R2 upload attempt encountered an issue, falling back to local storage:', r2Err);
+    } catch (r2Err: any) {
+      console.warn('Cloudflare R2 upload attempt encountered an issue, falling back to local storage:', r2Err?.message || r2Err);
     }
 
     // 2. Resilient Fallback: Save to public/uploads directory so we have a persistent, fast, clean HTTP URL

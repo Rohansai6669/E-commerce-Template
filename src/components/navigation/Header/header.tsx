@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Logo } from './logo';
 import { MobileNav } from './mobile-nav';
 import { Search } from './search';
@@ -9,7 +10,11 @@ import { CartButton } from './cart-button';
 import { ProfileMenu } from './profile-menu';
 import { MegamenuPanel } from './megamenu-panel';
 import { X, Heart, ChevronDown } from 'lucide-react';
-import { NavAppearanceConfig, defaultNavAppearanceConfig } from '@/types/navigation-appearance';
+import {
+  NavAppearanceConfig,
+  defaultNavAppearanceConfig,
+  DEFAULT_NAV_LINKS,
+} from '@/types/navigation-appearance';
 import { useNavAppearance } from '@/hooks/use-nav-appearance';
 
 export interface HeaderProps {
@@ -66,7 +71,8 @@ const TRACKING_MAP: Record<string, string> = {
 
 /**
  * Storefront Header component with full appearance control.
- * Supports live editing from the Visual Studio Builder.
+ * Supports transparent-to-sticky scroll transition, custom color palettes,
+ * and live editing from Visual Studio & Admin CMS.
  */
 export function Header({
   previewConfig,
@@ -74,10 +80,14 @@ export function Header({
   onPreviewCategoryChange,
   className = '',
 }: HeaderProps) {
+  const pathname = usePathname();
+  const isHomepage = pathname === '/';
+
   const { navConfig: liveConfig } = useNavAppearance(previewConfig);
   const config = previewConfig || liveConfig || defaultNavAppearanceConfig;
 
   const [internalActiveCategory, setInternalActiveCategory] = React.useState<string | null>(null);
+  const [isScrolled, setIsScrolled] = React.useState(false);
 
   const activeCategory =
     previewActiveCategory !== undefined ? previewActiveCategory : internalActiveCategory;
@@ -90,6 +100,19 @@ export function Header({
     }
   };
 
+  // Scroll listener for dynamic transparent-to-sticky behavior
+  React.useEffect(() => {
+    const threshold = config.scrollThresholdPx || 30;
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+      setIsScrolled(currentScrollY > threshold);
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [config.scrollThresholdPx]);
+
   // Exact Height Control
   const headerHeight =
     config.headerHeightPx ||
@@ -101,19 +124,98 @@ export function Header({
 
   const widthClass = WIDTH_CLASS_MAP[config.maxWidth] || WIDTH_CLASS_MAP.wide;
 
-  // Header Colors & Background
+  // Pre-Layout & Scroll Behavior Calculation
+  const scrollBehavior = config.scrollBehavior || 'transparent-to-sticky';
+  const transparentOnlyOnHomepage = config.transparentOnlyOnHomepage ?? true;
   const isMegamenuOpen = Boolean(activeCategory);
-  const currentBgColor = isMegamenuOpen
-    ? config.megaMenuBgColor || '#ffffff'
-    : config.backgroundColor || '#ffffff';
 
-  const currentTextColor = isMegamenuOpen
-    ? config.megaMenuTextColor || '#0f172a'
-    : config.textColor || '#0f172a';
+  const isTransparentTop =
+    (scrollBehavior === 'transparent-to-sticky' &&
+      !isScrolled &&
+      !isMegamenuOpen &&
+      (!transparentOnlyOnHomepage || isHomepage)) ||
+    (scrollBehavior === 'always-transparent' && !isMegamenuOpen);
 
-  const currentBorderColor = isMegamenuOpen
-    ? config.megaMenuBorderColor || '#e2e8f0'
-    : config.borderColor || '#e2e8f0';
+  // Compute Scrolled Color Palette
+  const getScrolledPaletteColors = () => {
+    const palette = config.scrolledBgPalette || 'theme-palette';
+    switch (palette) {
+      case 'black':
+        return {
+          bg: '#000000',
+          text: '#ffffff',
+          border: '#262626',
+          logo: '#ffffff',
+          iconHover: 'hover:bg-white/10',
+        };
+      case 'white':
+        return {
+          bg: '#ffffff',
+          text: '#0a0a0a',
+          border: '#e5e5e5',
+          logo: '#0a0a0a',
+          iconHover: 'hover:bg-black/5',
+        };
+      case 'glass-dark':
+        return {
+          bg: 'rgba(0, 0, 0, 0.82)',
+          text: '#ffffff',
+          border: 'rgba(255, 255, 255, 0.12)',
+          logo: '#ffffff',
+          iconHover: 'hover:bg-white/10',
+        };
+      case 'glass-light':
+        return {
+          bg: 'rgba(255, 255, 255, 0.88)',
+          text: '#0a0a0a',
+          border: 'rgba(0, 0, 0, 0.08)',
+          logo: '#0a0a0a',
+          iconHover: 'hover:bg-black/5',
+        };
+      case 'custom':
+        return {
+          bg: config.scrolledCustomBgColor || config.backgroundColor || '#000000',
+          text: config.scrolledCustomTextColor || config.textColor || '#ffffff',
+          border: config.scrolledCustomBorderColor || config.borderColor || '#262626',
+          logo: config.scrolledCustomTextColor || config.logoColor || '#ffffff',
+          iconHover: 'hover:bg-current/10',
+        };
+      case 'theme-palette':
+      default:
+        return {
+          bg: config.backgroundColor || '#ffffff',
+          text: config.textColor || '#0f172a',
+          border: config.borderColor || '#e2e8f0',
+          logo: config.logoColor || config.textColor || '#0f172a',
+          iconHover: 'hover:bg-black/5 dark:hover:bg-white/10',
+        };
+    }
+  };
+
+  const scrolledPalette = getScrolledPaletteColors();
+
+  // Active current color states
+  let currentBgColor: string;
+  let currentTextColor: string;
+  let currentBorderColor: string;
+  let currentLogoColor: string;
+
+  if (isMegamenuOpen) {
+    currentBgColor = config.megaMenuBgColor || '#ffffff';
+    currentTextColor = config.megaMenuTextColor || '#0f172a';
+    currentBorderColor = config.megaMenuBorderColor || '#e2e8f0';
+    currentLogoColor = config.megaMenuTextColor || '#0f172a';
+  } else if (isTransparentTop) {
+    currentBgColor = 'transparent';
+    currentTextColor = config.initialTextColor || '#ffffff';
+    currentBorderColor = 'transparent';
+    currentLogoColor = config.initialLogoColor || config.initialTextColor || '#ffffff';
+  } else {
+    currentBgColor = scrolledPalette.bg;
+    currentTextColor = scrolledPalette.text;
+    currentBorderColor = scrolledPalette.border;
+    currentLogoColor = scrolledPalette.logo;
+  }
 
   // Navigation Links Styling
   const linksAlignClass = ALIGN_CLASS_MAP[config.linksAlignment] || 'justify-center';
@@ -123,35 +225,81 @@ export function Header({
   const linksTransformClass = TRANSFORM_MAP[config.linksTextTransform] || 'uppercase';
   const linksTrackingClass = TRACKING_MAP[config.linksLetterSpacing] || 'tracking-[0.2em]';
 
-  // Links Hover Effect Class Generator
+  // Hover Effect Class Generator
   const getLinkHoverClasses = () => {
     switch (config.linksHoverEffect) {
       case 'underline':
         return 'relative py-1 group/link after:content-[""] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[2px] after:bg-current hover:after:w-full after:transition-all after:duration-200';
       case 'pill':
-        return 'px-3 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors';
+        return 'px-3 py-1.5 rounded-full hover:bg-current/10 transition-colors';
       case 'color-shift':
         return 'py-1 hover:opacity-100 transition-colors';
       case 'glow':
-        return 'py-1 hover:drop-shadow-[0_0_8px_rgba(0,0,0,0.25)] transition-all';
+        return 'py-1 hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.4)] transition-all';
       case 'opacity':
       default:
-        return 'py-1 hover:opacity-60 transition-opacity';
+        return 'py-1 hover:opacity-70 transition-opacity';
     }
   };
 
-  // Icon Button Styles
-  const iconButtonStyle =
-    config.iconStyle === 'minimal'
-      ? 'relative flex items-center justify-center h-9 w-9 rounded hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer'
-      : config.iconStyle === 'square-button'
-      ? 'relative flex items-center justify-center h-9 w-9 rounded-lg border transition-colors cursor-pointer'
-      : 'relative flex items-center justify-center h-9 w-9 rounded-full border transition-colors cursor-pointer';
+  // Border Style & Width Computation
+  const getHeaderBorderBottom = () => {
+    if (isTransparentTop) {
+      return '1px solid transparent';
+    }
+    const borderStyle = config.headerBorderStyle || (config.borderBottom !== false ? 'solid' : 'none');
+    if (borderStyle === 'none' || config.borderBottom === false) {
+      return 'none';
+    }
+    const width = config.headerBorderWidth || '1px';
+    if (borderStyle === 'dashed') {
+      return `${width} dashed ${currentBorderColor}`;
+    }
+    if (borderStyle === 'subtle-glass') {
+      return `${width} solid ${currentBorderColor.includes('rgba') ? currentBorderColor : 'rgba(255, 255, 255, 0.12)'}`;
+    }
+    return `${width} solid ${currentBorderColor}`;
+  };
+
+  // Action Icon Button Styles (Controlled border: none vs rounded vs square)
+  const iconBorderOpt = config.actionIconBorderStyle || (config.iconStyle === 'minimal' ? 'none' : config.iconStyle || 'none');
+  const actionIconClass =
+    iconBorderOpt === 'rounded-button'
+      ? 'relative flex items-center justify-center h-9 w-9 rounded-full border border-current/25 hover:border-current bg-transparent hover:bg-current/10 transition-colors cursor-pointer text-current select-none'
+      : iconBorderOpt === 'square-button'
+      ? 'relative flex items-center justify-center h-9 w-9 rounded-none border border-current/25 hover:border-current bg-transparent hover:bg-current/10 transition-colors cursor-pointer text-current select-none'
+      : iconBorderOpt === 'minimal-pill'
+      ? 'relative flex items-center justify-center px-3 h-9 rounded-full border border-current/25 hover:border-current bg-transparent hover:bg-current/10 transition-colors cursor-pointer text-current select-none'
+      : 'relative flex items-center justify-center h-9 w-9 rounded-none border-none bg-transparent hover:bg-current/10 transition-colors cursor-pointer text-current select-none';
+  const iconButtonStyle = actionIconClass;
+
+  // Determine container positioning: sticky vs fixed vs relative
+  const isAdminOrDashboard =
+    pathname?.startsWith('/admin') ||
+    pathname?.startsWith('/supplier') ||
+    pathname?.startsWith('/account');
+
+  // Fixed layout is strictly reserved for transparent hero overlay at top of homepage
+  // (never on admin, supplier, or non-transparent subpages to prevent content overlapping)
+  const isFixedLayout =
+    !isAdminOrDashboard &&
+    ((scrollBehavior === 'transparent-to-sticky' && (!transparentOnlyOnHomepage || isHomepage)) ||
+      scrollBehavior === 'always-transparent');
+
+  const containerPositionClass = isFixedLayout
+    ? 'fixed top-0 inset-x-0 z-[1010]'
+    : config.isSticky !== false
+    ? 'sticky top-0 z-[1010]'
+    : 'relative z-30';
+
+  // Guaranteed fallback links
+  const navLinks =
+    config.links && config.links.length > 0 ? config.links : DEFAULT_NAV_LINKS;
 
   return (
     <div
       suppressHydrationWarning
-      className={`w-full ${config.isSticky ? 'sticky top-0 z-[1010]' : 'relative z-30'} ${className}`}
+      className={`w-full ${containerPositionClass} ${className} transition-all duration-300`}
     >
       {/* 1. Optional Top Announcement Bar Companion */}
       {config.showAnnouncementBar && (
@@ -184,11 +332,16 @@ export function Header({
         style={{
           backgroundColor: currentBgColor,
           color: currentTextColor,
-          borderBottom: config.borderBottom ? `1px solid ${currentBorderColor}` : 'none',
+          borderBottom: getHeaderBorderBottom(),
         }}
-        className={`w-full transition-colors duration-200 select-none ${
-          config.translucentBlur && !isMegamenuOpen ? 'backdrop-blur-md' : ''
-        }`}
+        className={`w-full transition-all duration-300 ease-in-out select-none ${
+          (config.translucentBlur ||
+            config.scrolledBgPalette === 'glass-dark' ||
+            config.scrolledBgPalette === 'glass-light') &&
+          !isTransparentTop
+            ? 'backdrop-blur-md'
+            : ''
+        } ${!isTransparentTop && isScrolled ? 'shadow-sm' : ''}`}
         onMouseLeave={() => {
           if (previewActiveCategory === undefined) {
             handleCategoryChange(null);
@@ -200,15 +353,14 @@ export function Header({
           className={`relative flex items-center justify-between gap-4 ${widthClass}`}
         >
           {/* ======================================================== */}
-          {/* MOBILE VIEW (lg:hidden): Matches Reference Image Spec    */}
-          {/* Zone 1: Mobile Hamburger Menu on Far Left                */}
+          {/* MOBILE VIEW (lg:hidden): Hamburger Menu on Left          */}
           {/* ======================================================== */}
           <div className="flex lg:hidden items-center shrink-0 z-10">
             <MobileNav appearance={config} />
           </div>
 
           {/* ======================================================== */}
-          {/* Zone 2: Centered Brand Logo on Mobile                     */}
+          {/* Centered Brand Logo on Mobile                             */}
           {/* ======================================================== */}
           <div className="flex lg:hidden absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 items-center pointer-events-auto">
             <Logo
@@ -218,7 +370,7 @@ export function Header({
               fontSize={config.logoFontSize || 'xl'}
               fontWeight={config.logoFontWeight}
               letterSpacing={config.logoLetterSpacing}
-              color={config.logoColor}
+              color={currentLogoColor}
               imageUrl={config.logoImageUrl}
               imageHeight={config.logoImageHeight}
             />
@@ -235,68 +387,37 @@ export function Header({
               fontSize={config.logoFontSize}
               fontWeight={config.logoFontWeight}
               letterSpacing={config.logoLetterSpacing}
-              color={config.logoColor}
+              color={currentLogoColor}
               imageUrl={config.logoImageUrl}
               imageHeight={config.logoImageHeight}
             />
           </div>
 
-          {/* Center: Dynamic Category & Section Navigation Links */}
+          {/* ======================================================== */}
+          {/* Center: ALL Navigation Links (Always Rendered & Visible)  */}
+          {/* ======================================================== */}
           <div className={`hidden lg:flex items-center flex-1 h-full ${linksAlignClass}`}>
-            {isMegamenuOpen ? (
-              /* When Megamenu is open: Display Active Department Label */
-              <div className="flex items-center gap-2">
-                <span
-                  style={{ color: config.activeTextColor || currentTextColor }}
-                  className="text-xs font-black tracking-[0.3em] uppercase font-heading"
-                >
-                  {activeCategory}
-                </span>
-              </div>
-            ) : (
-              /* Standard Configurable Navigation Links */
-              <nav className={`flex items-center h-full ${linksSpacingClass}`} suppressHydrationWarning>
-                {(config.links || []).map((item) => {
-                  const hoverClasses = getLinkHoverClasses();
+            <nav className={`flex items-center h-full ${linksSpacingClass}`} suppressHydrationWarning>
+              {navLinks.map((item) => {
+                const hoverClasses = getLinkHoverClasses();
+                const isItemActive = isMegamenuOpen && activeCategory === item.label;
 
-                  if (item.hasMega) {
-                    return (
-                      <button
-                        type="button"
-                        suppressHydrationWarning
-                        key={item.id || item.label}
-                        onMouseEnter={() => handleCategoryChange(item.label)}
-                        onClick={() => handleCategoryChange(item.label)}
-                        style={{ color: currentTextColor }}
-                        className={`${linksFontSizeClass} ${linksFontWeightClass} ${linksTrackingClass} ${linksTransformClass} ${hoverClasses} cursor-pointer flex items-center gap-1 group`}
-                      >
-                        <span>{item.label}</span>
-                        {item.badgeText && (
-                          <span
-                            style={{
-                              backgroundColor: item.badgeColor || '#4f46e5',
-                              color: '#ffffff',
-                            }}
-                            className="text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider ml-1"
-                          >
-                            {item.badgeText}
-                          </span>
-                        )}
-                        <ChevronDown className="w-3 h-3 opacity-60 transition-transform group-hover:rotate-180" />
-                      </button>
-                    );
-                  }
-
+                if (item.hasMega) {
                   return (
-                    <Link
+                    <button
+                      type="button"
+                      suppressHydrationWarning
                       key={item.id || item.label}
-                      href={item.href}
+                      onMouseEnter={() => handleCategoryChange(item.label)}
+                      onClick={() => handleCategoryChange(item.label)}
                       style={{
-                        color: item.highlight
-                          ? config.activeTextColor || '#4f46e5'
+                        color: isItemActive
+                          ? config.activeTextColor || currentTextColor
                           : currentTextColor,
                       }}
-                      className={`${linksFontSizeClass} ${linksFontWeightClass} ${linksTrackingClass} ${linksTransformClass} ${hoverClasses} flex items-center gap-1.5`}
+                      className={`${linksFontSizeClass} ${linksFontWeightClass} ${linksTrackingClass} ${linksTransformClass} ${hoverClasses} cursor-pointer flex items-center gap-1 group transition-colors relative py-1 ${
+                        isItemActive ? 'font-black after:w-full opacity-100' : 'opacity-90'
+                      }`}
                     >
                       <span>{item.label}</span>
                       {item.badgeText && (
@@ -305,41 +426,73 @@ export function Header({
                             backgroundColor: item.badgeColor || '#4f46e5',
                             color: '#ffffff',
                           }}
-                          className="text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider"
+                          className="text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider ml-1"
                         >
                           {item.badgeText}
                         </span>
                       )}
-                    </Link>
+                      <ChevronDown
+                        className={`w-3 h-3 opacity-60 transition-transform ${
+                          isItemActive ? 'rotate-180 opacity-100' : 'group-hover:rotate-180'
+                        }`}
+                      />
+                    </button>
                   );
-                })}
-              </nav>
-            )}
+                }
+
+                return (
+                  <Link
+                    key={item.id || item.label}
+                    href={item.href}
+                    style={{
+                      color: item.highlight
+                        ? config.activeTextColor || '#4f46e5'
+                        : currentTextColor,
+                    }}
+                    className={`${linksFontSizeClass} ${linksFontWeightClass} ${linksTrackingClass} ${linksTransformClass} ${hoverClasses} flex items-center gap-1.5 transition-colors relative py-1`}
+                  >
+                    <span>{item.label}</span>
+                    {item.badgeText && (
+                      <span
+                        style={{
+                          backgroundColor: item.badgeColor || '#4f46e5',
+                          color: '#ffffff',
+                        }}
+                        className="text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider"
+                      >
+                        {item.badgeText}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </nav>
           </div>
 
-          {/* Right: Actions (Search, Account, Wishlist, Cart, Megamenu Close) */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 z-10">
+          {/* ======================================================== */}
+          {/* Right: Actions (Search, Account, Wishlist, Cart, Close)   */}
+          {/* ======================================================== */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 z-10" style={{ color: currentTextColor }}>
             {config.showSearch !== false && (
               <React.Suspense fallback={null}>
-                <Search className="h-9 w-9 border-none bg-transparent hover:bg-black/5 dark:hover:bg-white/10" />
+                <Search className={actionIconClass} />
               </React.Suspense>
             )}
 
             {/* Desktop Only: ProfileMenu and Wishlist */}
             {config.showAccount !== false && (
               <div className="hidden lg:flex">
-                <ProfileMenu />
+                <ProfileMenu
+                  buttonType={config.accountButtonType || 'icon'}
+                  iconStyleClass={actionIconClass}
+                />
               </div>
             )}
 
             {config.showWishlist !== false && (
               <Link
                 href="/account/wishlist"
-                style={{
-                  borderColor: currentBorderColor,
-                  color: currentTextColor,
-                }}
-                className={`hidden lg:flex ${iconButtonStyle}`}
+                className={`hidden lg:flex ${actionIconClass}`}
                 aria-label="View Wishlist"
               >
                 <Heart className="h-4 w-4" />
@@ -351,7 +504,7 @@ export function Header({
               <CartButton
                 badgeBgColor={config.cartBadgeBgColor}
                 badgeTextColor={config.cartBadgeTextColor}
-                className="h-9 w-9 border-none bg-transparent hover:bg-black/5 dark:hover:bg-white/10"
+                className={actionIconClass}
               />
             )}
 

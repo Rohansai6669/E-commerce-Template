@@ -43,6 +43,11 @@ export function MediaUploader({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error('File size exceeds the 50MB upload limit.');
+      return;
+    }
+
     setIsUploading(true);
     const formData = new FormData();
     formData.append('file', file);
@@ -56,8 +61,8 @@ export function MediaUploader({
       } else {
         toast.error(res.error || 'Failed to upload media file.');
       }
-    } catch {
-      toast.error('An error occurred while uploading media.');
+    } catch (err: any) {
+      toast.error(err?.message || 'An error occurred while uploading media.');
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';

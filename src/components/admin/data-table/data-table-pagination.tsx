@@ -35,6 +35,7 @@ export function DataTablePagination({
           <select
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value) as any)}
+            suppressHydrationWarning
             className="h-8 px-2 bg-slate-50 border border-slate-200 rounded text-xs text-slate-900 font-bold outline-none cursor-pointer hover:border-slate-400 transition"
           >
             <option value={10}>10</option>

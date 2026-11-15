@@ -51,17 +51,34 @@ export class ProductRepository {
     }
 
     if (category) {
+      const catLower = category.toLowerCase().trim();
+      const isGenderCategory = catLower === 'men' || catLower === 'women';
+
       conditions.push(
         or(
-          eq(categories.slug, category),
+          sql`lower(${categories.slug}) = ${catLower}`,
+          sql`lower(${categories.name}) = ${catLower}`,
+          sql`lower(${products.gender}) = ${catLower}`,
+          isGenderCategory
+            ? sql`(lower(${products.gender}) IN ('unisex', 'all', ${catLower}) OR ${products.gender} IS NULL)`
+            : sql`false`,
           sql`exists (
             select 1 from ${productCategories}
             inner join ${categories} as sub_cat on sub_cat.id = ${productCategories.categoryId}
-            where ${productCategories.productId} = ${products.id} and sub_cat.slug = ${category}
+            where ${productCategories.productId} = ${products.id} and (lower(sub_cat.slug) = ${catLower} or lower(sub_cat.name) = ${catLower})
           )`,
           sql`exists (
             select 1 from ${categories} as parent_cat
-            where parent_cat.id = ${categories.parentId} and parent_cat.slug = ${category}
+            where parent_cat.id = ${categories.parentId} and (lower(parent_cat.slug) = ${catLower} or lower(parent_cat.name) = ${catLower})
+          )`,
+          sql`exists (
+            select 1 from ${productAudiences}
+            inner join ${audiences} on ${audiences.id} = ${productAudiences.audienceId}
+            where ${productAudiences.productId} = ${products.id} and (
+              lower(${audiences.slug}) = ${catLower} or 
+              lower(${audiences.name}) = ${catLower}
+              ${isGenderCategory ? sql`or lower(${audiences.slug}) in ('unisex', 'all') or lower(${audiences.name}) in ('unisex', 'all')` : sql``}
+            )
           )`
         )
       );
@@ -88,13 +105,22 @@ export class ProductRepository {
     }
 
     if (filters.gender) {
+      const gLower = filters.gender.toLowerCase().trim();
+      const isGenderAudience = gLower === 'men' || gLower === 'women';
       conditions.push(
         or(
-          eq(products.gender, filters.gender),
+          sql`lower(${products.gender}) = ${gLower}`,
+          isGenderAudience
+            ? sql`(lower(${products.gender}) IN ('unisex', 'all', ${gLower}) OR ${products.gender} IS NULL)`
+            : sql`false`,
           sql`exists (
             select 1 from ${productAudiences}
             inner join ${audiences} on ${audiences.id} = ${productAudiences.audienceId}
-            where ${productAudiences.productId} = ${products.id} and (${audiences.slug} = ${filters.gender} or ${audiences.name} = ${filters.gender})
+            where ${productAudiences.productId} = ${products.id} and (
+              lower(${audiences.slug}) = ${gLower} or 
+              lower(${audiences.name}) = ${gLower}
+              ${isGenderAudience ? sql`or lower(${audiences.slug}) in ('unisex', 'all') or lower(${audiences.name}) in ('unisex', 'all')` : sql``}
+            )
           )`
         )
       );

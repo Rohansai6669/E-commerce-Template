@@ -92,24 +92,43 @@ export function MediaManagerView({ initialFiles, initialKpis }: MediaManagerView
 
     setIsUploading(true);
     let count = 0;
+    const maxLimit = 50 * 1024 * 1024; // 50MB
 
-    for (let i = 0; i < selectedFiles.length; i++) {
-      const file = selectedFiles[i];
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('folder', uploadFolder);
+    try {
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
 
-      const res = await uploadMediaAction(formData);
-      if (res.success && res.fileRecord) {
-        count++;
-        setFiles((prev) => [res.fileRecord!, ...prev]);
+        if (file.size > maxLimit) {
+          toast.error(`File "${file.name}" exceeds the 50MB upload limit.`);
+          continue;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folder', uploadFolder);
+
+        try {
+          const res = await uploadMediaAction(formData);
+          if (res.success && res.fileRecord) {
+            count++;
+            setFiles((prev) => [res.fileRecord!, ...prev]);
+          } else {
+            toast.error(res.error || `Failed to upload ${file.name}`);
+          }
+        } catch (fileErr: any) {
+          console.error(`Upload error for ${file.name}:`, fileErr);
+          toast.error(`Failed to upload ${file.name}: ${fileErr?.message || 'Network error'}`);
+        }
       }
-    }
 
-    setIsUploading(false);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-    toast.success(`Successfully uploaded ${count} media asset(s) to Cloudflare R2!`);
-    router.refresh();
+      if (count > 0) {
+        toast.success(`Successfully uploaded ${count} media asset(s) to Cloudflare R2!`);
+        router.refresh();
+      }
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   // Filtered files view computation

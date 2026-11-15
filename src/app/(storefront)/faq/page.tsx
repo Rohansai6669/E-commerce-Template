@@ -1,39 +1,47 @@
 import * as React from 'react';
-import InfoLayout from '@/components/storefront/info-layout';
+import { HelpLayout } from '@/components/storefront/help-layout';
+import { getFaqConfigServer } from '@/app/actions/help-cms-actions';
+import { ChevronDown } from 'lucide-react';
 
-export default function FaqPage() {
-  const faqItems = [
-    {
-      q: 'How long will standard shipping take?',
-      a: 'Standard shipping takes 3–5 business days within the continental United States. Express shipping options are available at checkout.',
-    },
-    {
-      q: 'What is your return window policy?',
-      a: 'We accept returns on all unused items in their original packaging within 30 days of delivery. Refer to our Returns & Refunds page for full details.',
-    },
-    {
-      q: 'Are my payment details secure?',
-      a: 'Yes, all transaction processing is handled securely through encrypted payment gateways. We never save raw payment credentials on our servers.',
-    },
-    {
-      q: 'How can I track guest orders?',
-      a: 'You can check tracking states by visiting our Order Tracking tool and inputting your Order ID and billing/shipping email address.',
-    },
-  ];
+export const revalidate = 60;
+
+export default async function FaqPage() {
+  const config = await getFaqConfigServer();
 
   return (
-    <InfoLayout
-      title="Frequently Asked Questions"
-      subtitle="Find answers to common questions about shopping, shipping, and returns."
+    <HelpLayout
+      title={config.title}
+      subtitle={config.subtitle}
+      badge="UPDATED 2026"
     >
-      <div className="space-y-6 mt-4">
-        {faqItems.map((item, idx) => (
-          <div key={idx} className="pb-4 border-b border-slate-850">
-            <h4 className="font-bold text-slate-200 text-base mb-1">{item.q}</h4>
-            <p className="text-slate-400 text-sm">{item.a}</p>
+      <div className="flex flex-col gap-10">
+        {config.categories.map((category) => (
+          <div key={category.id} className="flex flex-col gap-4">
+            <h2 className="text-base font-black tracking-widest uppercase font-heading text-neutral-900 dark:text-white border-b-2 border-black dark:border-white pb-2 inline-block">
+              {category.name}
+            </h2>
+
+            <div className="flex flex-col divide-y divide-neutral-200 dark:divide-neutral-800 border-t border-b border-neutral-200 dark:border-neutral-800">
+              {category.items.map((item) => (
+                <details
+                  key={item.id}
+                  className="group py-4 px-2 cursor-pointer transition-colors open:bg-neutral-50/50 dark:open:bg-neutral-950/50"
+                >
+                  <summary className="flex items-center justify-between text-sm sm:text-base font-bold text-neutral-900 dark:text-white select-none list-none">
+                    <span>{item.question}</span>
+                    <span className="ml-4 shrink-0 p-1 border border-neutral-300 dark:border-neutral-700 group-open:rotate-180 transition-transform">
+                      <ChevronDown className="w-3.5 h-3.5 text-neutral-500" />
+                    </span>
+                  </summary>
+                  <div className="mt-3 pr-8 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed font-light">
+                    {item.answer}
+                  </div>
+                </details>
+              ))}
+            </div>
           </div>
         ))}
       </div>
-    </InfoLayout>
+    </HelpLayout>
   );
 }

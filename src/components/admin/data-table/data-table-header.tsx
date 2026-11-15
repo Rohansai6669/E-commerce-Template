@@ -32,7 +32,7 @@ export function DataTableHeader<T>({
 
   return (
     <thead>
-      <tr className="border-b border-slate-200 text-[10px] font-bold text-slate-400 uppercase tracking-wider select-none bg-slate-50/70">
+      <tr className="border-b border-slate-200 text-xs font-bold text-slate-700 uppercase tracking-wider select-none bg-slate-100">
         {selectable && (
           <th className="py-3.5 px-4 w-10 text-center">
             <input
@@ -62,6 +62,7 @@ export function DataTableHeader<T>({
                 <button
                   type="button"
                   onClick={() => onSortChange(colId)}
+                  suppressHydrationWarning
                   className="inline-flex items-center gap-1.5 hover:text-slate-800 transition cursor-pointer select-none group"
                 >
                   <span>{col.header}</span>

@@ -425,6 +425,9 @@ export interface AnnouncementBarConfig extends BaseSectionConfig {
 export interface SiteDesignTokens {
   primaryFont: string;
   headingFont: string;
+  paragraphFont?: string;
+  accentFont?: string;
+  monoFont?: string;
   headingTracking?: 'tighter' | 'tight' | 'normal' | 'wide' | 'widest';
   headingTransform?: 'uppercase' | 'none' | 'capitalize';
   headingWeight?: '400' | '500' | '600' | '700' | '800' | '900';
@@ -479,6 +482,8 @@ export interface PageConfig {
 
 export type {
   NavAppearanceConfig,
+  NavScrollBehaviorOption,
+  ScrolledBgPaletteOption,
   NavLinkItem,
   HeaderHeightOption,
   HeaderWidthOption,

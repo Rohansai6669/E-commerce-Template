@@ -21,14 +21,28 @@ export function ThemeVariableProvider({ children }: { children: React.ReactNode 
     const root = document.documentElement;
 
     // Apply Global Typography Tokens
-    if (t.headingFont) {
-      root.style.setProperty('--font-heading', t.headingFont);
-      root.style.setProperty('--heading-font', t.headingFont);
-    }
-    if (t.primaryFont) {
-      root.style.setProperty('--font-body', t.primaryFont);
-      root.style.setProperty('--font-sans', t.primaryFont);
-      root.style.setProperty('--primary-font', t.primaryFont);
+    const headingFontVal = t.headingFont || t.primaryFont || "'Clash Display', sans-serif";
+    const bodyFontVal = t.paragraphFont || t.primaryFont || "'Plus Jakarta Sans', sans-serif";
+    const accentFontVal = t.accentFont || "'Cinzel', serif";
+    const monoFontVal = t.monoFont || "'JetBrains Mono', monospace";
+
+    root.style.setProperty('--font-heading', headingFontVal);
+    root.style.setProperty('--heading-font', headingFontVal);
+    root.style.setProperty('--primary-font', headingFontVal);
+
+    root.style.setProperty('--font-body', bodyFontVal);
+    root.style.setProperty('--font-sans', bodyFontVal);
+    root.style.setProperty('--font-para', bodyFontVal);
+    root.style.setProperty('--paragraph-font', bodyFontVal);
+
+    root.style.setProperty('--font-accent', accentFontVal);
+    root.style.setProperty('--accent-font', accentFontVal);
+
+    root.style.setProperty('--font-mono', monoFontVal);
+    root.style.setProperty('--mono-font', monoFontVal);
+
+    if (document.body) {
+      document.body.style.fontFamily = bodyFontVal;
     }
     const trackingMap: Record<string, string> = {
       tighter: '-0.05em',

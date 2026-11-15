@@ -66,135 +66,135 @@ export function ActiveFilters() {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2 pt-1 animate-in fade-in duration-200">
-      <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 font-heading mr-1">
-        Active:
+    <div className="flex flex-wrap items-center gap-2 animate-in fade-in duration-200">
+      <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-neutral-400 font-mono mr-1">
+        FILTERS:
       </span>
 
       {activeSearch && (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-2xs">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider bg-black text-white dark:bg-white dark:text-black rounded-none">
           <span>Search: &ldquo;{activeSearch}&rdquo;</span>
           <button
             type="button"
             onClick={() => removeParam('search')}
-            className="text-slate-400 hover:text-white dark:hover:text-slate-900 transition cursor-pointer"
+            className="text-neutral-400 hover:text-white dark:hover:text-black transition cursor-pointer"
             aria-label="Remove search filter"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-3 h-3" />
           </button>
         </span>
       )}
 
       {activeGender && (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-2xs">
-          <span>Audience: {formatText(activeGender)}</span>
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider bg-black text-white dark:bg-white dark:text-black rounded-none">
+          <span>{formatText(activeGender)}</span>
           <button
             type="button"
             onClick={() => removeParam('gender')}
-            className="text-slate-400 hover:text-white dark:hover:text-slate-900 transition cursor-pointer"
+            className="text-neutral-400 hover:text-white dark:hover:text-black transition cursor-pointer"
             aria-label="Remove audience filter"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-3 h-3" />
           </button>
         </span>
       )}
 
-      {activeCategory && (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-2xs">
-          <span>Category: {formatText(activeCategory)}</span>
+      {activeCategory && activeCategory !== 'all' && (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider bg-black text-white dark:bg-white dark:text-black rounded-none">
+          <span>{formatText(activeCategory)}</span>
           <button
             type="button"
             onClick={() => removeParam('category')}
-            className="text-slate-400 hover:text-white dark:hover:text-slate-900 transition cursor-pointer"
+            className="text-neutral-400 hover:text-white dark:hover:text-black transition cursor-pointer"
             aria-label="Remove category filter"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-3 h-3" />
           </button>
         </span>
       )}
 
       {activeCollection && (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-2xs">
-          <span>Collection: {formatText(activeCollection)}</span>
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider bg-black text-white dark:bg-white dark:text-black rounded-none">
+          <span>{formatText(activeCollection)}</span>
           <button
             type="button"
             onClick={() => removeParam('collection')}
-            className="text-slate-400 hover:text-white dark:hover:text-slate-900 transition cursor-pointer"
+            className="text-neutral-400 hover:text-white dark:hover:text-black transition cursor-pointer"
             aria-label="Remove collection filter"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-3 h-3" />
           </button>
         </span>
       )}
 
       {activeAvailability && (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-2xs">
-          <span>In Stock Only</span>
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider bg-black text-white dark:bg-white dark:text-black rounded-none">
+          <span>In Stock</span>
           <button
             type="button"
             onClick={() => removeParam('availability')}
-            className="text-slate-400 hover:text-white dark:hover:text-slate-900 transition cursor-pointer"
+            className="text-neutral-400 hover:text-white dark:hover:text-black transition cursor-pointer"
             aria-label="Remove availability filter"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-3 h-3" />
           </button>
         </span>
       )}
 
       {(activeMin || activeMax) && (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-2xs">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider bg-black text-white dark:bg-white dark:text-black rounded-none">
           <span>
-            Price: {activeMin ? `₹${activeMin}` : '₹0'} – {activeMax ? `₹${activeMax}` : 'Any'}
+            {activeMin ? `₹${activeMin}` : '₹0'} – {activeMax ? `₹${activeMax}` : 'Any'}
           </span>
           <button
             type="button"
             onClick={removePrice}
-            className="text-slate-400 hover:text-white dark:hover:text-slate-900 transition cursor-pointer"
+            className="text-neutral-400 hover:text-white dark:hover:text-black transition cursor-pointer"
             aria-label="Remove price filter"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-3 h-3" />
           </button>
         </span>
       )}
 
       {activeBrand && (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-2xs">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider bg-black text-white dark:bg-white dark:text-black rounded-none">
           <span>Brand: {formatText(activeBrand)}</span>
           <button
             type="button"
             onClick={() => removeParam('brand')}
-            className="text-slate-400 hover:text-white dark:hover:text-slate-900 transition cursor-pointer"
+            className="text-neutral-400 hover:text-white dark:hover:text-black transition cursor-pointer"
             aria-label="Remove brand filter"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-3 h-3" />
           </button>
         </span>
       )}
 
       {activeEdition && (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-2xs">
-          <span>Edition: {formatText(activeEdition)}</span>
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider bg-black text-white dark:bg-white dark:text-black rounded-none">
+          <span>{formatText(activeEdition)}</span>
           <button
             type="button"
             onClick={() => removeParam('edition')}
-            className="text-slate-400 hover:text-white dark:hover:text-slate-900 transition cursor-pointer"
+            className="text-neutral-400 hover:text-white dark:hover:text-black transition cursor-pointer"
             aria-label="Remove edition filter"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-3 h-3" />
           </button>
         </span>
       )}
 
       {activeFestival && (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-2xs">
-          <span>Festival: {formatText(activeFestival)}</span>
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider bg-black text-white dark:bg-white dark:text-black rounded-none">
+          <span>{formatText(activeFestival)}</span>
           <button
             type="button"
             onClick={() => removeParam('festival')}
-            className="text-slate-400 hover:text-white dark:hover:text-slate-900 transition cursor-pointer"
+            className="text-neutral-400 hover:text-white dark:hover:text-black transition cursor-pointer"
             aria-label="Remove festival filter"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-3 h-3" />
           </button>
         </span>
       )}
@@ -203,10 +203,10 @@ export function ActiveFilters() {
       <button
         type="button"
         onClick={clearAll}
-        className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-rose-600 hover:text-rose-700 hover:underline cursor-pointer ml-1 py-1 px-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition"
+        className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-neutral-500 hover:text-black dark:hover:text-white underline cursor-pointer ml-1 py-1 px-1 transition"
       >
         <RotateCcw className="w-3 h-3" />
-        <span>Clear All</span>
+        <span>CLEAR ALL</span>
       </button>
     </div>
   );

@@ -7,7 +7,12 @@ import { defaultProductCardConfig, defaultSiteDesignTokens } from '@/lib/cms/def
 import { useThemeVariables } from '@/providers/ThemeVariableProvider';
 import { SectionEditorModal } from '@/components/admin/cms/section-editor-modal';
 import Link from 'next/link';
-import { Sliders, Eye, ArrowUp, ArrowDown, Save, CheckCircle, Layout, Table as TableIcon, Megaphone, Palette, Edit3, Sparkles } from 'lucide-react';
+import { Sliders, Eye, ArrowUp, ArrowDown, Save, CheckCircle, Layout, Table as TableIcon, Megaphone, Palette, Edit3, Sparkles, LifeBuoy, Compass } from 'lucide-react';
+import { HelpPagesManager } from '@/components/admin/cms/help-pages-manager';
+import { NavEditorPanel } from '@/components/admin/cms/nav-editor-panel';
+import { NavAppearanceConfig, defaultNavAppearanceConfig } from '@/types/navigation-appearance';
+import { getNavAppearanceConfig, saveNavAppearanceConfig } from '@/lib/cms/service';
+import { TypographyStudio } from '@/components/admin/cms/typography-studio';
 
 export default function AdminCmsPage() {
   const { tokens: currentThemeTokens, updateTokens: applyLiveTheme } = useThemeVariables();
@@ -17,9 +22,10 @@ export default function AdminCmsPage() {
   const [tableConfig, setTableConfig] = useState<TableConfig | null>(null);
   const [announcementBar, setAnnouncementBarState] = useState<AnnouncementBarConfig | null>(null);
   const [themeTokens, setThemeTokens] = useState<SiteDesignTokens>(currentThemeTokens || defaultSiteDesignTokens);
+  const [navConfig, setNavConfig] = useState<NavAppearanceConfig>(defaultNavAppearanceConfig);
 
   const [editingSection, setEditingSection] = useState<AnySectionConfig | null>(null);
-  const [activeTab, setActiveTab] = useState<'theme' | 'sections' | 'product_cards' | 'tables' | 'announcement'>('theme');
+  const [activeTab, setActiveTab] = useState<'theme' | 'sections' | 'navigation' | 'product_cards' | 'tables' | 'announcement' | 'help_pages'>('navigation');
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   useEffect(() => {
@@ -35,6 +41,9 @@ export default function AdminCmsPage() {
 
       const tok = await getSiteDesignTokens();
       setThemeTokens(tok);
+
+      const nav = await getNavAppearanceConfig();
+      setNavConfig(nav);
     }
     loadData();
   }, []);
@@ -52,6 +61,9 @@ export default function AdminCmsPage() {
     if (themeTokens) {
       await saveSiteDesignTokens(themeTokens);
       applyLiveTheme(themeTokens);
+    }
+    if (navConfig) {
+      await saveNavAppearanceConfig(navConfig);
     }
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
@@ -123,7 +135,7 @@ export default function AdminCmsPage() {
   }
 
   return (
-    <div className="p-6 sm:p-10 max-w-6xl mx-auto space-y-8">
+    <div className="w-full space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-6">
         <div>
@@ -177,6 +189,18 @@ export default function AdminCmsPage() {
         </button>
 
         <button
+          onClick={() => setActiveTab('navigation')}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors ${
+            activeTab === 'navigation'
+              ? 'bg-primary text-primary-foreground shadow'
+              : 'bg-muted/60 text-muted-foreground hover:bg-muted'
+          }`}
+        >
+          <Compass className="h-4 w-4" />
+          Nav & Layout ({navConfig.scrollBehavior === 'transparent-to-sticky' ? 'Transparent Sticky' : navConfig.scrollBehavior})
+        </button>
+
+        <button
           onClick={() => setActiveTab('sections')}
           className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors ${
             activeTab === 'sections'
@@ -213,6 +237,18 @@ export default function AdminCmsPage() {
         </button>
 
         <button
+          onClick={() => setActiveTab('help_pages')}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors ${
+            activeTab === 'help_pages'
+              ? 'bg-primary text-primary-foreground shadow'
+              : 'bg-muted/60 text-muted-foreground hover:bg-muted'
+          }`}
+        >
+          <LifeBuoy className="h-4 w-4" />
+          Help & Policies (7 Pages)
+        </button>
+
+        <button
           onClick={() => setActiveTab('announcement')}
           className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors ${
             activeTab === 'announcement'
@@ -226,79 +262,102 @@ export default function AdminCmsPage() {
       </div>
 
       {/* TAB 0: Global Theme & Customization */}
+      {/* TAB 0: Global Theme & Customization */}
       {activeTab === 'theme' && (
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-bold tracking-tight text-foreground">
-              Dynamic Theme & Color Palette Customizer
-            </h3>
-            <span className="text-xs text-muted-foreground">
-              Changes apply instantly across storefront and admin views
-            </span>
-          </div>
+        <div className="space-y-8">
+          {/* 1. Typography & Font Architecture */}
+          <TypographyStudio
+            tokens={themeTokens}
+            onChange={(key, val) => handleColorChange(key, val)}
+          />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {[
-              { key: 'primaryColor', label: 'Primary Brand Color' },
-              { key: 'secondaryColor', label: 'Secondary Text Color' },
-              { key: 'accentColor', label: 'Accent Highlight Color' },
-              { key: 'backgroundColor', label: 'Page Background Color' },
-              { key: 'surfaceColor', label: 'Card / Surface Color' },
-              { key: 'textColor', label: 'Primary Text Color' },
-              { key: 'borderColor', label: 'Border Color' },
-              { key: 'destructiveColor', label: 'Alert / Destructive Color' },
-            ].map(({ key, label }) => (
-              <div key={key} className="p-4 rounded-2xl border border-border bg-card space-y-2">
-                <label className="text-xs font-semibold text-foreground block">{label}</label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="color"
-                    value={String(themeTokens[key as keyof SiteDesignTokens] || '#0f172a')}
-                    onChange={(e) => handleColorChange(key as keyof SiteDesignTokens, e.target.value)}
-                    className="h-9 w-9 rounded-lg border border-input cursor-pointer"
-                  />
-                  <input
-                    type="text"
-                    value={String(themeTokens[key as keyof SiteDesignTokens] || '')}
-                    onChange={(e) => handleColorChange(key as keyof SiteDesignTokens, e.target.value)}
-                    className="flex-1 rounded-xl border border-input bg-background p-2 text-xs font-mono text-foreground"
-                  />
-                </div>
+          {/* 2. Color Palette Customizer */}
+          <div className="space-y-4 pt-6 border-t border-border">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-base font-extrabold uppercase tracking-tight text-foreground font-heading">
+                  Dynamic Color Palette Customizer
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Changes apply in real-time across storefront and admin views.
+                </p>
               </div>
-            ))}
-          </div>
-
-          {/* Border Radius & Shadow Selection */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-border">
-            <div className="p-4 rounded-2xl border border-border bg-card space-y-2">
-              <label className="text-xs font-semibold text-foreground block">Border Radius Style</label>
-              <select
-                value={themeTokens.borderRadius}
-                onChange={(e) => handleColorChange('borderRadius', e.target.value)}
-                className="w-full rounded-xl border border-input bg-background p-2.5 text-xs text-foreground"
-              >
-                <option value="none">Square (0px)</option>
-                <option value="sm">Small (4px)</option>
-                <option value="md">Medium (8px)</option>
-                <option value="lg">Large (12px)</option>
-                <option value="xl">Extra Large (20px)</option>
-                <option value="full">Pill / Full Round</option>
-              </select>
             </div>
 
-            <div className="p-4 rounded-2xl border border-border bg-card space-y-2">
-              <label className="text-xs font-semibold text-foreground block">Elevation / Shadow Style</label>
-              <select
-                value={themeTokens.shadowStyle}
-                onChange={(e) => handleColorChange('shadowStyle', e.target.value)}
-                className="w-full rounded-xl border border-input bg-background p-2.5 text-xs text-foreground"
-              >
-                <option value="none">Flat / No Shadow</option>
-                <option value="sm">Subtle Shadow (sm)</option>
-                <option value="md">Standard Shadow (md)</option>
-                <option value="lg">Deep Elevation (lg)</option>
-                <option value="glass">Glassmorphism Backdrop Blur</option>
-              </select>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { key: 'primaryColor', label: 'Primary Brand Color' },
+                { key: 'secondaryColor', label: 'Secondary Text Color' },
+                { key: 'accentColor', label: 'Accent Highlight Color' },
+                { key: 'backgroundColor', label: 'Page Background Color' },
+                { key: 'surfaceColor', label: 'Card / Surface Color' },
+                { key: 'textColor', label: 'Primary Text Color' },
+                { key: 'borderColor', label: 'Border Color' },
+                { key: 'destructiveColor', label: 'Alert / Destructive Color' },
+              ].map(({ key, label }) => (
+                <div key={key} className="p-4 rounded-2xl border border-border bg-card space-y-2">
+                  <label className="text-xs font-semibold text-foreground block">{label}</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={String(themeTokens[key as keyof SiteDesignTokens] || '#0f172a')}
+                      onChange={(e) => handleColorChange(key as keyof SiteDesignTokens, e.target.value)}
+                      className="h-9 w-9 rounded-lg border border-input cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={String(themeTokens[key as keyof SiteDesignTokens] || '')}
+                      onChange={(e) => handleColorChange(key as keyof SiteDesignTokens, e.target.value)}
+                      className="flex-1 rounded-xl border border-input bg-background p-2 text-xs font-mono text-foreground"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 3. Border Radius & Elevation */}
+          <div className="space-y-4 pt-6 border-t border-border">
+            <div>
+              <h3 className="text-base font-extrabold uppercase tracking-tight text-foreground font-heading">
+                Surface & Elevation Styling
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Control curvature and shadows for cards, buttons, and dialogs.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-4 rounded-2xl border border-border bg-card space-y-2">
+                <label className="text-xs font-semibold text-foreground block">Border Radius Style</label>
+                <select
+                  value={themeTokens.borderRadius}
+                  onChange={(e) => handleColorChange('borderRadius', e.target.value)}
+                  className="w-full rounded-xl border border-input bg-background p-2.5 text-xs text-foreground cursor-pointer"
+                >
+                  <option value="none">Square (0px, Streetwear Standard)</option>
+                  <option value="sm">Small (4px)</option>
+                  <option value="md">Medium (8px)</option>
+                  <option value="lg">Large (12px)</option>
+                  <option value="xl">Extra Large (20px)</option>
+                  <option value="full">Pill / Full Round</option>
+                </select>
+              </div>
+
+              <div className="p-4 rounded-2xl border border-border bg-card space-y-2">
+                <label className="text-xs font-semibold text-foreground block">Elevation / Shadow Style</label>
+                <select
+                  value={themeTokens.shadowStyle}
+                  onChange={(e) => handleColorChange('shadowStyle', e.target.value)}
+                  className="w-full rounded-xl border border-input bg-background p-2.5 text-xs text-foreground cursor-pointer"
+                >
+                  <option value="none">Flat / No Shadow (Minimalist Standard)</option>
+                  <option value="sm">Subtle Shadow (sm)</option>
+                  <option value="md">Standard Shadow (md)</option>
+                  <option value="lg">Deep Elevation (lg)</option>
+                  <option value="glass">Glassmorphism Backdrop Blur</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
@@ -384,6 +443,32 @@ export default function AdminCmsPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* TAB 1.5: Navigation & Header Layout */}
+      {activeTab === 'navigation' && (
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-bold tracking-tight text-foreground">
+                Storefront Navigation & Pre-Layout Settings
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Configure transparent hero overlay, sticky scroll behavior, color palettes, logo typography, and links.
+              </p>
+            </div>
+            <button
+              onClick={handleSaveAll}
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-bold uppercase tracking-wider text-primary-foreground shadow hover:bg-primary/90 transition-all cursor-pointer"
+            >
+              <Save className="h-4 w-4" /> Save Navigation
+            </button>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
+            <NavEditorPanel config={navConfig} onChange={setNavConfig} />
           </div>
         </div>
       )}
@@ -503,6 +588,9 @@ export default function AdminCmsPage() {
           </div>
         </div>
       )}
+
+      {/* TAB 5: Help & Policies Manager */}
+      {activeTab === 'help_pages' && <HelpPagesManager />}
 
       {/* Interactive Modal Editor */}
       {editingSection && (

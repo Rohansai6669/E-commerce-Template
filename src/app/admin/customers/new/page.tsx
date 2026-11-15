@@ -8,7 +8,7 @@ export default async function AdminNewCustomerPage() {
   await connection();
 
   return (
-    <div className="w-full text-slate-900 pb-12 font-sans max-w-4xl mx-auto flex flex-col gap-6">
+    <div className="w-full text-slate-900 pb-12 font-sans flex flex-col gap-6">
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-4">
         <div className="flex flex-col gap-1">

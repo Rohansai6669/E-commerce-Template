@@ -4,9 +4,7 @@ import { getCachedProducts, getCachedFilterFacets } from '@/core/performance/cac
 import { ProductMapper } from '@/core/product/product.mapper';
 import { ProductsCatalogView } from './products-catalog-view';
 import { Container } from '@/components/layout/container';
-import { Breadcrumb } from '@/components/navigation/Breadcrumb/breadcrumb';
 import { getBreadcrumbsSchema } from '@/core/seo/jsonld';
-import { Sparkles } from 'lucide-react';
 
 export interface ProductsPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>> | Record<string, string | string[] | undefined>;
@@ -14,8 +12,7 @@ export interface ProductsPageProps {
 
 /**
  * Server-rendered Product Listing Page (PLP) catalog browser.
- * Features luxury editorial typography, mobile-first responsive drawers,
- * and high-performance server-cached database facets.
+ * Features luxury editorial typography matching Lexido Atelier design language.
  */
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const resolvedSearchParams = await searchParams;
@@ -61,74 +58,61 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   if (filters.category) {
     breadcrumbs.push({ label: filters.category.toUpperCase(), href: `/products?category=${filters.category}` });
   }
-  if (filters.edition) {
-    breadcrumbs.push({ label: `${filters.edition}`, href: `/products?edition=${filters.edition}` });
-  }
-  if (filters.festival) {
-    breadcrumbs.push({ label: `${filters.festival}`, href: `/products?festival=${filters.festival}` });
-  }
 
   const breadcrumbJsonLd = getBreadcrumbsSchema(breadcrumbs);
 
   // Dynamic catalog hero title & description
-  const heroTitle = filters.category
-    ? filters.category.toUpperCase()
-    : filters.gender
-    ? `${filters.gender.toUpperCase()} COLLECTION`
-    : filters.collection
-    ? `${filters.collection.toUpperCase()} CAPSULE`
-    : 'ALL COLLECTIONS';
+  const heroEyebrow = 'LEXIDO • EDITORIAL';
 
-  const heroDescription = filters.category
-    ? `Explore our signature ${filters.category} range crafted with luxury fabrications and contemporary tailoring.`
-    : filters.gender
-    ? `Curated ${filters.gender} sartorial essentials, oversized silhouettes, and refined accessories.`
-    : 'Contemporary luxury silhouettes, premium materials, and precision tailoring for the modern wardrobe.';
+  const rawTitle = filters.category || filters.gender || filters.collection || 'ALL COLLECTIONS';
+  const heroTitle = rawTitle.toUpperCase();
+
+  const heroDescription =
+    filters.category?.toLowerCase() === 'men' || filters.gender?.toLowerCase() === 'men'
+      ? 'Minimalist luxury menswear. Clean silhouettes, premium textiles, crafted in India.'
+      : filters.category?.toLowerCase() === 'women' || filters.gender?.toLowerCase() === 'women'
+      ? 'Minimalist luxury womenswear. Clean silhouettes, premium textiles, crafted in India.'
+      : filters.category
+      ? `Explore our signature ${filters.category} range crafted with luxury fabrications and contemporary tailoring.`
+      : filters.collection
+      ? `Curated ${filters.collection} capsule with precision tailoring and timeless craftsmanship.`
+      : 'Minimalist luxury apparel. Clean silhouettes, premium textiles, crafted in India.';
 
   return (
-    <div className="w-full bg-background min-h-screen">
+    <div className="w-full bg-background min-h-screen font-sans select-none">
       {/* Dynamic SEO breadcrumbs list schema */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 
-      {/* Catalog Hero Banner */}
-      <div className="w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40">
-        <Container className="py-6 sm:py-10">
-          <div className="flex flex-col gap-2">
-            <Breadcrumb items={breadcrumbs} />
+      {/* Main Luxury Catalog Container */}
+      <Container className="pt-8 sm:pt-14 pb-16">
+        {/* Top Eyebrow, Title & Subtitle - Exact match to Lexido Editorial */}
+        <div className="flex flex-col gap-1.5 sm:gap-2">
+          <span className="text-[11px] font-bold tracking-[0.25em] text-neutral-500 uppercase font-mono">
+            {heroEyebrow}
+          </span>
+          <h1 className="text-5xl sm:text-7xl md:text-8xl font-black font-heading tracking-tighter uppercase text-neutral-950 dark:text-white leading-[0.9] mt-1 mb-2">
+            {heroTitle}
+          </h1>
+          <p className="text-xs sm:text-sm md:text-base text-neutral-600 dark:text-neutral-400 font-normal leading-relaxed max-w-2xl">
+            {heroDescription}
+          </p>
+        </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mt-2">
-              <div className="space-y-1.5 max-w-2xl">
-                <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-md text-[10px] font-black bg-slate-950 text-white dark:bg-white dark:text-slate-950 uppercase tracking-widest flex items-center gap-1.5 shadow-2xs">
-                    <Sparkles className="w-3 h-3 text-amber-400 fill-amber-400" /> LEXIDO ATELIER
-                  </span>
-                </div>
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-950 dark:text-white uppercase font-heading leading-tight">
-                  {heroTitle}
-                </h1>
-                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-normal leading-relaxed">
-                  {heroDescription}
-                </p>
-              </div>
-            </div>
-          </div>
-        </Container>
-      </div>
-
-      {/* Main Catalog View Container */}
-      <Container className="py-6 sm:py-8">
-        <ProductsCatalogView
-          products={mappedProducts}
-          facets={facets}
-          total={total}
-          page={page}
-          limit={limit}
-          totalPages={totalPages}
-          filters={filters}
-        />
+        {/* Catalog Body: Tabs, Sort, Count & Products/Empty State */}
+        <div className="mt-8 sm:mt-10">
+          <ProductsCatalogView
+            products={mappedProducts}
+            facets={facets}
+            total={total}
+            page={page}
+            limit={limit}
+            totalPages={totalPages}
+            filters={filters}
+          />
+        </div>
       </Container>
     </div>
   );

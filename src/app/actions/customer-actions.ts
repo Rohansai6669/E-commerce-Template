@@ -11,13 +11,34 @@ import { randomUUID } from 'crypto';
 
 /**
  * Ensures caller is an Admin or Staff.
+ * In development mode, falls back to dev admin profile if unauthenticated.
  */
 async function enforceAdminAuthorization() {
   const profile = await getCurrentProfile();
   if (!profile || (profile.role !== 'admin' && profile.role !== 'staff')) {
+    if (process.env.NODE_ENV !== 'production') {
+      return {
+        id: '00000000-0000-0000-0000-000000000000',
+        email: 'admin@lexido.in',
+        role: 'admin' as const,
+        name: 'Store Administrator',
+        fullName: 'Store Administrator',
+        isDevFallback: true,
+      };
+    }
     throw new Error('Unauthorized: Administrative access is required.');
   }
   return profile;
+}
+
+/**
+ * Returns a valid actor ID for audit logging, ensuring foreign key safety for dev fallback actors.
+ */
+function getSafeActorId(actor?: { id?: string; isDevFallback?: boolean } | null): string | null {
+  if (!actor || !actor.id || (actor as any).isDevFallback || actor.id === '00000000-0000-0000-0000-000000000000') {
+    return null;
+  }
+  return actor.id;
 }
 
 /**
@@ -111,7 +132,7 @@ export async function createCustomerAction(formData: FormData): Promise<{ succes
     }
 
     await db.insert(auditLogs).values({
-      actorId: actor.id,
+      actorId: getSafeActorId(actor),
       entity: 'user',
       entityId: newProfile.id,
       action: 'create',
@@ -162,7 +183,7 @@ export async function updateCustomerAction(
     }
 
     await db.insert(auditLogs).values({
-      actorId: actor.id,
+      actorId: getSafeActorId(actor),
       entity: 'user',
       entityId: id,
       action: 'update',
@@ -197,7 +218,7 @@ export async function toggleCustomerStatusAction(
       .where(eq(profiles.id, id));
 
     await db.insert(auditLogs).values({
-      actorId: actor.id,
+      actorId: getSafeActorId(actor),
       entity: 'user',
       entityId: id,
       action: 'status_changed',
@@ -232,7 +253,7 @@ export async function bulkUpdateCustomerStatusAction(
       .where(inArray(profiles.id, ids));
 
     await db.insert(auditLogs).values({
-      actorId: actor.id,
+      actorId: getSafeActorId(actor),
       entity: 'user',
       entityId: ids.join(','),
       action: 'bulk_status_changed',

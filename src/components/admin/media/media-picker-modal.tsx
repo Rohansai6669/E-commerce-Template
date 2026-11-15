@@ -141,8 +141,13 @@ export function MediaPickerModal({
     const selectedFiles = e.target.files;
     if (!selectedFiles || selectedFiles.length === 0) return;
 
-    setIsUploading(true);
     const file = selectedFiles[0];
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error('File size exceeds the 50MB upload limit.');
+      return;
+    }
+
+    setIsUploading(true);
     const targetFolder = uploadFolder || (activeFolder !== 'all' ? activeFolder : 'products');
     const formData = new FormData();
     formData.append('file', file);
@@ -162,8 +167,8 @@ export function MediaPickerModal({
       } else {
         toast.error(res.error || 'Failed to upload media file.', { id: toastId });
       }
-    } catch {
-      toast.error('An error occurred while uploading file.', { id: toastId });
+    } catch (err: any) {
+      toast.error(err?.message || 'An error occurred while uploading file.', { id: toastId });
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';

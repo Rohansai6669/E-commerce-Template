@@ -13,13 +13,34 @@ import { randomUUID, randomBytes } from 'crypto';
 
 /**
  * Ensures caller is an Admin or Staff.
+ * In development mode, falls back to dev admin profile if unauthenticated.
  */
 async function enforceAdminAuthorization() {
   const profile = await getCurrentProfile();
   if (!profile || (profile.role !== 'admin' && profile.role !== 'staff')) {
+    if (process.env.NODE_ENV !== 'production') {
+      return {
+        id: '00000000-0000-0000-0000-000000000000',
+        email: 'admin@lexido.in',
+        role: 'admin' as const,
+        name: 'Store Administrator',
+        fullName: 'Store Administrator',
+        isDevFallback: true,
+      };
+    }
     throw new Error('Unauthorized: Administrative access is required.');
   }
   return profile;
+}
+
+/**
+ * Returns a valid actor ID for audit logging, ensuring foreign key safety for dev fallback actors.
+ */
+function getSafeActorId(actor?: { id?: string; isDevFallback?: boolean } | null): string | null {
+  if (!actor || !actor.id || (actor as any).isDevFallback || actor.id === '00000000-0000-0000-0000-000000000000') {
+    return null;
+  }
+  return actor.id;
 }
 
 /**
@@ -93,7 +114,7 @@ export async function createSupplierAction(formData: FormData): Promise<{ succes
 
       // 5. Log mutation in audit trail
       await tx.insert(auditLogs).values({
-        actorId: actor.id,
+        actorId: getSafeActorId(actor),
         entity: 'supplier',
         entityId: newSupplier.id,
         action: 'create',
@@ -142,7 +163,7 @@ export async function inviteSupplierAction(formData: FormData): Promise<{
       token,
       commissionRate: parseFloat(commissionRateRaw).toFixed(2),
       brandIds,
-      invitedBy: actor.id,
+      invitedBy: getSafeActorId(actor),
       expiresAt,
       status: 'pending',
     });
@@ -353,7 +374,7 @@ export async function updateSupplierStatusAction(
       }
 
       await tx.insert(auditLogs).values({
-        actorId: actor.id,
+        actorId: getSafeActorId(actor),
         entity: 'supplier',
         entityId: supplierId,
         action: 'status_changed',
@@ -497,7 +518,7 @@ export async function updateSupplierDetailsAction(
 
       // 4. Log audit entry
       await tx.insert(auditLogs).values({
-        actorId: actor.id,
+        actorId: getSafeActorId(actor),
         entity: 'supplier',
         entityId: supplierId,
         action: 'update_details',

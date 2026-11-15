@@ -23,7 +23,7 @@ export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
  * Reusable fallback view for empty carts, wishlist misses, and empty search lists.
  */
 export function EmptyState({
-  icon = 'Inbox',
+  icon = 'Package',
   title,
   description,
   actionLabel,
@@ -39,35 +39,35 @@ export function EmptyState({
     <Stack
       align="center"
       justify="center"
-      gap="6"
+      gap="5"
       className={cn(
-        'text-center py-12 px-6 border border-dashed border-border rounded-xl bg-card max-w-md mx-auto shadow-sm',
+        'text-center py-12 sm:py-16 px-6 sm:px-12 border border-dashed border-neutral-300 dark:border-neutral-800 rounded-none bg-white dark:bg-neutral-950/40 max-w-lg mx-auto shadow-none',
         className
       )}
       {...props}
     >
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted text-muted-foreground animate-bounce">
-        <Icon name={icon} className="h-6 w-6" />
+      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-neutral-100 dark:bg-neutral-800/80 text-neutral-600 dark:text-neutral-300">
+        <Icon name={icon} className="h-6 w-6 stroke-[1.5]" />
       </div>
 
-      <Stack gap="2">
-        <Heading level={3} className="text-base font-bold tracking-tight">
+      <div className="space-y-2">
+        <h3 className="text-xl sm:text-2xl font-black uppercase tracking-tight font-heading text-neutral-950 dark:text-white">
           {title}
-        </Heading>
-        <Text className="text-sm text-muted-foreground max-w-xs">
+        </h3>
+        <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 max-w-sm mx-auto leading-relaxed">
           {description}
-        </Text>
-      </Stack>
+        </p>
+      </div>
 
       {(actionLabel || secondaryActionLabel) && (
-        <div className="flex flex-wrap items-center justify-center gap-3">
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
           {secondaryActionLabel && (
             secondaryActionHref ? (
-              <Button variant="outline" className="cursor-pointer" asChild>
+              <Button variant="outline" className="cursor-pointer h-11 px-7 rounded-none text-xs font-bold uppercase tracking-widest border-neutral-300 hover:bg-neutral-100" asChild>
                 <Link href={secondaryActionHref}>{secondaryActionLabel}</Link>
               </Button>
             ) : onSecondaryActionClick ? (
-              <Button variant="outline" onClick={onSecondaryActionClick} className="cursor-pointer">
+              <Button variant="outline" onClick={onSecondaryActionClick} className="cursor-pointer h-11 px-7 rounded-none text-xs font-bold uppercase tracking-widest border-neutral-300 hover:bg-neutral-100">
                 {secondaryActionLabel}
               </Button>
             ) : null
@@ -75,11 +75,11 @@ export function EmptyState({
 
           {actionLabel && (
             actionHref ? (
-              <Button className="cursor-pointer" asChild>
+              <Button className="cursor-pointer h-11 px-8 rounded-none bg-black hover:bg-neutral-800 text-white text-xs font-bold uppercase tracking-widest transition-all shadow-sm" asChild>
                 <Link href={actionHref}>{actionLabel}</Link>
               </Button>
             ) : onActionClick ? (
-              <Button onClick={onActionClick} className="cursor-pointer">
+              <Button onClick={onActionClick} className="cursor-pointer h-11 px-8 rounded-none bg-black hover:bg-neutral-800 text-white text-xs font-bold uppercase tracking-widest transition-all shadow-sm">
                 {actionLabel}
               </Button>
             ) : null

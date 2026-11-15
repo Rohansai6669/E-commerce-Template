@@ -86,6 +86,44 @@ export async function toggleCouponAction(id: string, currentlyActive: boolean): 
 }
 
 /**
+ * Updates an existing coupon's code, discount, and constraints.
+ */
+export async function updateCouponAction(id: string, formData: FormData): Promise<{ success: boolean; error?: string }> {
+  const code = formData.get('code') as string;
+  const discountType = formData.get('discountType') as 'percentage' | 'fixed';
+  const discountValue = formData.get('discountValue') as string;
+  const minOrderValue = formData.get('minOrderValue') as string;
+  const maxDiscountValue = formData.get('maxDiscountValue') as string;
+  const usageLimit = formData.get('usageLimit') as string;
+
+  if (!code || !discountType || !discountValue) {
+    return { success: false, error: 'Code, type, and value are required.' };
+  }
+
+  try {
+    await db
+      .update(coupons)
+      .set({
+        code: code.trim().toUpperCase(),
+        discountType,
+        discountValue,
+        minOrderValue: minOrderValue ? minOrderValue : null,
+        maxDiscountValue: maxDiscountValue ? maxDiscountValue : null,
+        usageLimit: usageLimit ? parseInt(usageLimit) : null,
+        updatedAt: new Date(),
+      })
+      .where(eq(coupons.id, id));
+
+    revalidatePath('/admin/coupons');
+    revalidatePath('/admin/promotions');
+    return { success: true };
+  } catch (err: any) {
+    console.error('Update coupon action failed:', err);
+    return { success: false, error: err.message || 'Failed to update coupon.' };
+  }
+}
+
+/**
  * Soft deletes a coupon to preserve historical orders reference integrity.
  */
 export async function deleteCouponAction(id: string): Promise<{ success: boolean; error?: string }> {

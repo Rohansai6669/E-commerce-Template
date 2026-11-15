@@ -38,7 +38,7 @@ export function CartButton({ badgeBgColor, badgeTextColor, className }: CartButt
         size="icon"
         onClick={() => setIsOpen(true)}
         className={cn(
-          'relative rounded-full h-9 w-9 border-border bg-background hover:bg-accent text-foreground cursor-pointer',
+          'relative rounded-full h-9 w-9 border-border bg-background hover:bg-accent text-current cursor-pointer',
           className
         )}
         aria-label={`Open shopping cart drawer with ${itemCount} items`}

@@ -43,7 +43,31 @@ export type CategoryHoverEffectOption = 'slide-right' | 'color-shift' | 'border-
 export type SubitemHoverEffectOption = 'underline' | 'arrow' | 'color-shift' | 'bold' | 'pill';
 export type SpacingScaleOption = 'compact' | 'standard' | 'relaxed';
 
+export type NavScrollBehaviorOption = 'transparent-to-sticky' | 'always-sticky' | 'always-transparent' | 'static';
+export type ScrolledBgPaletteOption = 'theme-palette' | 'black' | 'white' | 'glass-dark' | 'glass-light' | 'custom';
+export type HeaderBorderStyleOption = 'none' | 'solid' | 'dashed' | 'subtle-glass';
+export type HeaderBorderWidthOption = '1px' | '2px';
+export type ActionIconBorderStyleOption = 'none' | 'rounded-button' | 'square-button' | 'minimal-pill';
+export type AccountButtonTypeOption = 'icon' | 'pill' | 'text';
+
 export interface NavAppearanceConfig {
+  // Pre-Layout & Scroll Behavior Options
+  scrollBehavior: NavScrollBehaviorOption;
+  scrolledBgPalette: ScrolledBgPaletteOption;
+  scrolledCustomBgColor?: string;
+  scrolledCustomTextColor?: string;
+  scrolledCustomBorderColor?: string;
+  initialTextColor: string;
+  initialLogoColor: string;
+  scrollThresholdPx: number;
+  transparentOnlyOnHomepage?: boolean;
+
+  // Border Style Options
+  headerBorderStyle: HeaderBorderStyleOption;
+  headerBorderWidth?: HeaderBorderWidthOption;
+  actionIconBorderStyle: ActionIconBorderStyleOption;
+  accountButtonType?: AccountButtonTypeOption;
+
   // 1. Header Bar Layout & Colors & Height Controls
   height: HeaderHeightOption;
   headerHeightPx: number;
@@ -141,6 +165,23 @@ export const DEFAULT_NAV_LINKS: NavLinkItem[] = [
 ];
 
 export const defaultNavAppearanceConfig: NavAppearanceConfig = {
+  // Pre-Layout & Scroll Behavior Options
+  scrollBehavior: 'transparent-to-sticky',
+  scrolledBgPalette: 'theme-palette',
+  scrolledCustomBgColor: '#000000',
+  scrolledCustomTextColor: '#ffffff',
+  scrolledCustomBorderColor: '#262626',
+  initialTextColor: '#ffffff',
+  initialLogoColor: '#ffffff',
+  scrollThresholdPx: 30,
+  transparentOnlyOnHomepage: true,
+
+  // Border Style Options
+  headerBorderStyle: 'solid',
+  headerBorderWidth: '1px',
+  actionIconBorderStyle: 'none',
+  accountButtonType: 'icon',
+
   // 1. Header Bar & Height Controls
   height: 'standard', // 72px / 4.5rem
   headerHeightPx: 72,
@@ -195,7 +236,7 @@ export const defaultNavAppearanceConfig: NavAppearanceConfig = {
   showPromoBanner: true,
   promoBannerTitle: 'STREETWEAR',
   promoBannerEyebrow: 'DISCOVER',
-  promoBannerImageUrl: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=1000&auto=format&fit=crop',
+  promoBannerImageUrl: 'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=1000&auto=format&fit=crop',
   promoBannerActionLabel: 'SHOP THE EDIT',
   promoBannerHref: '/products?category=streetwear',
   promoBannerOverlayOpacity: 0.4,
@@ -238,8 +279,64 @@ export interface NavAppearancePreset {
 
 export const NAV_APPEARANCE_PRESETS: NavAppearancePreset[] = [
   {
+    id: 'transparent-to-dark',
+    name: 'Transparent Top → Monochrome Black',
+    description: 'Initially 100% transparent hero nav with crisp white typography, transitioning into solid luxury black on scroll.',
+    previewBg: '#000000',
+    previewAccent: '#ffffff',
+    config: {
+      scrollBehavior: 'transparent-to-sticky',
+      scrolledBgPalette: 'black',
+      initialTextColor: '#ffffff',
+      initialLogoColor: '#ffffff',
+      scrollThresholdPx: 30,
+      backgroundColor: '#000000',
+      textColor: '#ffffff',
+      borderColor: '#262626',
+      activeTextColor: '#ffffff',
+      megaMenuBgColor: '#000000',
+      megaMenuTextColor: '#ffffff',
+      megaMenuBorderColor: '#262626',
+      translucentBlur: true,
+    },
+  },
+  {
+    id: 'transparent-to-glass',
+    name: 'Transparent Top → Frosted Glass',
+    description: 'Initially transparent floating header that transforms into a blurred translucent glassmorphism dock on scroll.',
+    previewBg: 'rgba(0,0,0,0.6)',
+    previewAccent: '#ffffff',
+    config: {
+      scrollBehavior: 'transparent-to-sticky',
+      scrolledBgPalette: 'glass-dark',
+      initialTextColor: '#ffffff',
+      initialLogoColor: '#ffffff',
+      scrollThresholdPx: 30,
+      translucentBlur: true,
+      borderColor: 'rgba(255,255,255,0.12)',
+    },
+  },
+  {
+    id: 'transparent-to-white',
+    name: 'Transparent Top → Editorial White',
+    description: 'Transparent hero nav transforming into sharp editorial white with pure black typography on scroll.',
+    previewBg: '#ffffff',
+    previewAccent: '#000000',
+    config: {
+      scrollBehavior: 'transparent-to-sticky',
+      scrolledBgPalette: 'white',
+      initialTextColor: '#ffffff',
+      initialLogoColor: '#ffffff',
+      scrollThresholdPx: 30,
+      backgroundColor: '#ffffff',
+      textColor: '#0a0a0a',
+      borderColor: '#e5e5e5',
+      activeTextColor: '#000000',
+    },
+  },
+  {
     id: 'lexido-luxury',
-    name: 'Lexido Luxury (Default)',
+    name: 'Lexido Luxury Solid Sticky',
     description: 'Crisp white, wide letter tracking, rounded action buttons, signature black category borders.',
     previewBg: '#ffffff',
     previewAccent: '#0f172a',

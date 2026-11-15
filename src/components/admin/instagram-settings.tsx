@@ -110,7 +110,7 @@ export function InstagramSettingsForm() {
   }
 
   return (
-    <div className="flex flex-col gap-6 text-slate-900 py-2 max-w-4xl">
+    <div className="flex flex-col gap-6 text-slate-900 py-2 w-full">
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl border border-slate-200 bg-white shadow-xs">
         <div className="flex items-center gap-3">

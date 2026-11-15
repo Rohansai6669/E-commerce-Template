@@ -251,6 +251,7 @@ export function OrdersList({
             value={row.status}
             disabled={isPending}
             onChange={(e) => handleStatusChange(row.id, row.status, e.target.value)}
+            suppressHydrationWarning
             className="px-2.5 py-1 bg-white border border-slate-200 rounded text-slate-900 focus:outline-none focus:border-slate-950 disabled:opacity-50 font-extrabold uppercase cursor-pointer text-[10px] tracking-wider h-8 transition"
           >
             <option value="pending">PENDING</option>

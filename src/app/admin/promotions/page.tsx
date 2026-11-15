@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { salesCampaigns, promotionOffers, promotionEvents } from '@/lib/db/schema/catalog/promotions';
 import { coupons } from '@/lib/db/schema/marketing';
 import { connection } from 'next/server';
-import { desc, sql } from 'drizzle-orm';
+import { desc, sql, inArray } from 'drizzle-orm';
 import { PromotionsManagerPanel } from '@/components/admin/promotions-manager-panel';
 import { Tag, Sparkles, Plus, Percent, Ticket } from 'lucide-react';
 
@@ -13,12 +13,42 @@ import { safeQuery } from '@/lib/db/safe-query';
 export default async function AdminPromotionsPage() {
   await connection();
 
-  const [campaignsList, offersList, couponsList, eventsList] = await Promise.all([
+  const [rawCampaigns, offersList, couponsList, eventsList] = await Promise.all([
     safeQuery(() => db.select().from(salesCampaigns).where(sql`${salesCampaigns.deletedAt} IS NULL`).orderBy(desc(salesCampaigns.createdAt)), 'sales_campaigns'),
     safeQuery(() => db.select().from(promotionOffers).where(sql`${promotionOffers.deletedAt} IS NULL`).orderBy(desc(promotionOffers.createdAt)), 'promotion_offers'),
     safeQuery(() => db.select().from(coupons).where(sql`${coupons.deletedAt} IS NULL`).orderBy(desc(coupons.createdAt)), 'coupons'),
     safeQuery(() => db.select().from(promotionEvents).orderBy(desc(promotionEvents.createdAt)).limit(50), 'promotion_events'),
   ]);
+
+  // Deduplicate campaigns by name: keep newest, collect duplicate IDs to auto-clean
+  const seenNames = new Set<string>();
+  const duplicateIds: string[] = [];
+  const campaignsList: typeof rawCampaigns = [];
+
+  for (const c of rawCampaigns) {
+    const key = c.name.trim().toLowerCase();
+    if (seenNames.has(key)) {
+      duplicateIds.push(c.id);
+    } else {
+      seenNames.add(key);
+      campaignsList.push(c);
+    }
+  }
+
+  // If excess duplicate records exist in the database from legacy seeding, prune them in the background
+  if (duplicateIds.length > 0) {
+    safeQuery(async () => {
+      const chunkSize = 100;
+      for (let i = 0; i < duplicateIds.length; i += chunkSize) {
+        const chunk = duplicateIds.slice(i, i + chunkSize);
+        await db
+          .update(salesCampaigns)
+          .set({ deletedAt: new Date() })
+          .where(inArray(salesCampaigns.id, chunk));
+      }
+      return [];
+    }, 'auto_prune_duplicates').catch(() => {});
+  }
 
   return (
     <div className="flex flex-col gap-6 w-full text-slate-900 pb-12 font-sans">

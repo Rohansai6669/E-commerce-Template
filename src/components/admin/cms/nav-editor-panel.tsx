@@ -42,8 +42,8 @@ import { toast } from 'sonner';
 interface NavEditorPanelProps {
   config: NavAppearanceConfig;
   onChange: (updated: NavAppearanceConfig) => void;
-  previewMegamenuCategory: string | null;
-  onPreviewMegamenuChange: (category: string | null) => void;
+  previewMegamenuCategory?: string | null;
+  onPreviewMegamenuChange?: (category: string | null) => void;
 }
 
 type NavSubTab = 'header' | 'logo' | 'links' | 'megamenu' | 'icons';
@@ -266,6 +266,312 @@ export function NavEditorPanel({
         {/* ===================== SUBTAB 1: HEADER LAYOUT, HEIGHT & COLORS ===================== */}
         {activeSubTab === 'header' && (
           <div className="space-y-4">
+            {/* Pre-Layout & Scroll Behavior Settings Card */}
+            <div className="bg-white rounded-xl border-2 border-slate-900 p-4 shadow-sm space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div>
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-slate-500">
+                    PRE-LAYOUT CONFIGURATION
+                  </span>
+                  <h4 className="text-xs font-black uppercase tracking-tight text-slate-950 font-heading">
+                    Navbar Scroll Behavior & Dynamic Palette
+                  </h4>
+                  <p className="text-[11px] text-slate-600">
+                    Control transparent hero overlay and sticky scrolled color palettes.
+                  </p>
+                </div>
+                <span className="text-[9px] font-mono uppercase tracking-widest px-2 py-0.5 bg-slate-950 text-white font-bold rounded">
+                  NEW
+                </span>
+              </div>
+
+              {/* Behavior Mode Selector */}
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-slate-900 uppercase tracking-wide">
+                  1. Scroll Behavior Mode
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {[
+                    {
+                      id: 'transparent-to-sticky',
+                      title: 'Transparent → Sticky Solid',
+                      desc: 'Initially 100% transparent at top; transitions to solid sticky on scroll.',
+                      recommended: true,
+                    },
+                    {
+                      id: 'always-sticky',
+                      title: 'Always Solid Sticky',
+                      desc: 'Pinned with solid background at all scroll positions.',
+                    },
+                    {
+                      id: 'always-transparent',
+                      title: 'Always Transparent',
+                      desc: 'Floating transparent header over page content.',
+                    },
+                    {
+                      id: 'static',
+                      title: 'Static Header',
+                      desc: 'Standard non-sticky header that scrolls off screen with content.',
+                    },
+                  ].map((mode) => {
+                    const isSelected = (config.scrollBehavior || 'transparent-to-sticky') === mode.id;
+                    return (
+                      <button
+                        key={mode.id}
+                        type="button"
+                        onClick={() => updateField('scrollBehavior', mode.id as any)}
+                        className={`p-3 rounded-xl text-left border-2 transition cursor-pointer flex flex-col justify-between ${
+                          isSelected
+                            ? 'bg-slate-950 text-white border-slate-950 shadow-sm'
+                            : 'bg-white text-slate-900 border-slate-200 hover:border-slate-400'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-extrabold text-xs">{mode.title}</span>
+                          {mode.recommended && (
+                            <span
+                              className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
+                                isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700 font-bold'
+                              }`}
+                            >
+                              RECOMMENDED
+                            </span>
+                          )}
+                        </div>
+                        <p
+                          className={`text-[10px] mt-1 line-clamp-2 ${
+                            isSelected ? 'text-slate-300' : 'text-slate-500'
+                          }`}
+                        >
+                          {mode.desc}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Scrolled Color Palette Mode Selector */}
+              <div className="space-y-2 border-t border-slate-100 pt-3">
+                <label className="block text-xs font-bold text-slate-900 uppercase tracking-wide">
+                  2. Scrolled Background Color Palette
+                </label>
+                <p className="text-[11px] text-slate-500">
+                  Select the palette applied when header becomes sticky after scrolling.
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {[
+                    {
+                      id: 'theme-palette',
+                      label: 'Theme Palette',
+                      sub: 'Adaptive',
+                      bg: '#0f172a',
+                      text: '#ffffff',
+                    },
+                    {
+                      id: 'black',
+                      label: 'Monochrome Black',
+                      sub: '#000000',
+                      bg: '#000000',
+                      text: '#ffffff',
+                    },
+                    {
+                      id: 'white',
+                      label: 'Pure White',
+                      sub: '#ffffff',
+                      bg: '#ffffff',
+                      text: '#000000',
+                    },
+                    {
+                      id: 'glass-dark',
+                      label: 'Glass Dark',
+                      sub: 'Blur 82%',
+                      bg: 'rgba(0,0,0,0.82)',
+                      text: '#ffffff',
+                    },
+                    {
+                      id: 'glass-light',
+                      label: 'Glass Light',
+                      sub: 'Blur 88%',
+                      bg: 'rgba(255,255,255,0.88)',
+                      text: '#000000',
+                    },
+                    {
+                      id: 'custom',
+                      label: 'Custom Hex',
+                      sub: 'Color Pickers',
+                      bg: config.scrolledCustomBgColor || '#3b82f6',
+                      text: '#ffffff',
+                    },
+                  ].map((pal) => {
+                    const isSelected = (config.scrolledBgPalette || 'theme-palette') === pal.id;
+                    return (
+                      <button
+                        key={pal.id}
+                        type="button"
+                        onClick={() => updateField('scrolledBgPalette', pal.id as any)}
+                        className={`p-2.5 rounded-xl border-2 transition cursor-pointer flex flex-col items-start ${
+                          isSelected
+                            ? 'border-slate-950 bg-slate-50 shadow-xs'
+                            : 'border-slate-200 bg-white hover:border-slate-400'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 w-full">
+                          <span
+                            className="w-3.5 h-3.5 rounded-full border border-slate-300 shrink-0"
+                            style={{ backgroundColor: pal.bg }}
+                          />
+                          <span className="text-xs font-bold text-slate-950 truncate">{pal.label}</span>
+                        </div>
+                        <span className="text-[10px] text-slate-500 mt-0.5">{pal.sub}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Custom Scrolled Color Pickers (when custom is chosen) */}
+              {(config.scrolledBgPalette === 'custom') && (
+                <div className="grid grid-cols-3 gap-2.5 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold text-slate-700 block">Scrolled Bg</span>
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="color"
+                        value={config.scrolledCustomBgColor || '#000000'}
+                        onChange={(e) => updateField('scrolledCustomBgColor', e.target.value)}
+                        className="w-8 h-8 rounded border border-slate-300 cursor-pointer p-0.5 bg-white"
+                      />
+                      <input
+                        type="text"
+                        value={config.scrolledCustomBgColor || '#000000'}
+                        onChange={(e) => updateField('scrolledCustomBgColor', e.target.value)}
+                        className="w-full border border-slate-200 bg-white px-2 py-1 text-[11px] font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold text-slate-700 block">Scrolled Text</span>
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="color"
+                        value={config.scrolledCustomTextColor || '#ffffff'}
+                        onChange={(e) => updateField('scrolledCustomTextColor', e.target.value)}
+                        className="w-8 h-8 rounded border border-slate-300 cursor-pointer p-0.5 bg-white"
+                      />
+                      <input
+                        type="text"
+                        value={config.scrolledCustomTextColor || '#ffffff'}
+                        onChange={(e) => updateField('scrolledCustomTextColor', e.target.value)}
+                        className="w-full border border-slate-200 bg-white px-2 py-1 text-[11px] font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold text-slate-700 block">Scrolled Border</span>
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="color"
+                        value={config.scrolledCustomBorderColor || '#262626'}
+                        onChange={(e) => updateField('scrolledCustomBorderColor', e.target.value)}
+                        className="w-8 h-8 rounded border border-slate-300 cursor-pointer p-0.5 bg-white"
+                      />
+                      <input
+                        type="text"
+                        value={config.scrolledCustomBorderColor || '#262626'}
+                        onChange={(e) => updateField('scrolledCustomBorderColor', e.target.value)}
+                        className="w-full border border-slate-200 bg-white px-2 py-1 text-[11px] font-mono"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Initial Transparent State Adjustments */}
+              {((config.scrollBehavior || 'transparent-to-sticky') === 'transparent-to-sticky') && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-slate-100 pt-3">
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-bold text-slate-700 block">
+                      Initial Transparent Text Color
+                    </span>
+                    <p className="text-[10px] text-slate-500">Color over hero when transparent</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <input
+                        type="color"
+                        value={config.initialTextColor || '#ffffff'}
+                        onChange={(e) => updateField('initialTextColor', e.target.value)}
+                        className="w-8 h-8 rounded border border-slate-300 cursor-pointer p-0.5 bg-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => updateField('initialTextColor', '#ffffff')}
+                        className={`px-2 py-1 text-[10px] font-bold uppercase rounded border ${
+                          (config.initialTextColor || '#ffffff') === '#ffffff'
+                            ? 'bg-slate-950 text-white'
+                            : 'bg-white text-slate-700'
+                        }`}
+                      >
+                        White (#fff)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateField('initialTextColor', '#000000')}
+                        className={`px-2 py-1 text-[10px] font-bold uppercase rounded border ${
+                          config.initialTextColor === '#000000'
+                            ? 'bg-slate-950 text-white'
+                            : 'bg-white text-slate-700'
+                        }`}
+                      >
+                        Black (#000)
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-bold text-slate-700 block">
+                      Scroll Threshold (px)
+                    </span>
+                    <p className="text-[10px] text-slate-500">Pixels scrolled before becoming solid sticky</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <input
+                        type="range"
+                        min="10"
+                        max="120"
+                        step="5"
+                        value={config.scrollThresholdPx || 30}
+                        onChange={(e) => updateField('scrollThresholdPx', Number(e.target.value))}
+                        className="w-full accent-slate-950 cursor-pointer"
+                      />
+                      <span className="text-xs font-mono font-bold w-12 text-right">
+                        {config.scrollThresholdPx || 30}px
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-2 pt-1">
+                    <label className="flex items-start gap-2.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={config.transparentOnlyOnHomepage ?? true}
+                        onChange={(e) => updateField('transparentOnlyOnHomepage', e.target.checked)}
+                        className="mt-0.5 h-4 w-4 rounded border-slate-300 text-slate-950 focus:ring-slate-950"
+                      />
+                      <div>
+                        <p className="text-xs font-bold text-slate-950">
+                          Transparent Only on Homepage Hero
+                        </p>
+                        <p className="text-[10px] text-slate-500">
+                          When checked, catalog and product detail pages start in solid sticky so content is always high contrast.
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Height Controls Card (Slider + Px Input + Presets) */}
             <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs space-y-3.5">
               <div className="flex items-center justify-between">
@@ -379,6 +685,183 @@ export function NavEditorPanel({
               </div>
             </div>
 
+            {/* Border Styles & Edge Controls Card */}
+            <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                <div>
+                  <label className="block text-xs font-bold text-slate-900 uppercase tracking-wide">
+                    Border Styles & Controls
+                  </label>
+                  <p className="text-[11px] text-slate-600">
+                    Configure navbar bottom border and action button borders (No border vs styled).
+                  </p>
+                </div>
+              </div>
+
+              {/* 1. Header Bottom Border Style */}
+              <div className="space-y-2">
+                <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider block">
+                  Navbar Bottom Border
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { id: 'none', label: 'No Border', sub: 'Clean Edge' },
+                    { id: 'solid', label: 'Solid Line', sub: 'Standard 1px' },
+                    { id: 'subtle-glass', label: 'Subtle Glass', sub: 'Translucent' },
+                    { id: 'dashed', label: 'Dashed Line', sub: 'Editorial' },
+                  ].map((style) => {
+                    const isSelected =
+                      (config.headerBorderStyle || (config.borderBottom ? 'solid' : 'none')) === style.id;
+                    return (
+                      <button
+                        key={style.id}
+                        type="button"
+                        onClick={() => {
+                          updateField('headerBorderStyle', style.id as any);
+                          updateField('borderBottom', style.id !== 'none');
+                        }}
+                        className={`p-2.5 rounded-xl border-2 transition cursor-pointer flex flex-col items-start ${
+                          isSelected
+                            ? 'bg-slate-950 text-white border-slate-950 shadow-xs'
+                            : 'bg-white text-slate-800 border-slate-200 hover:border-slate-400'
+                        }`}
+                      >
+                        <span className="text-xs font-bold">{style.label}</span>
+                        <span
+                          className={`text-[10px] mt-0.5 ${
+                            isSelected ? 'text-slate-300' : 'text-slate-500'
+                          }`}
+                        >
+                          {style.sub}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Border Width & Color (when not none) */}
+                {(config.headerBorderStyle || 'solid') !== 'none' && config.borderBottom !== false && (
+                  <div className="grid grid-cols-2 gap-3 pt-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-slate-700 block">Border Thickness</span>
+                      <div className="flex gap-2">
+                        {['1px', '2px'].map((w) => (
+                          <button
+                            key={w}
+                            type="button"
+                            onClick={() => updateField('headerBorderWidth', w as any)}
+                            className={`px-3 py-1 rounded-md text-xs font-bold cursor-pointer border ${
+                              (config.headerBorderWidth || '1px') === w
+                                ? 'bg-slate-950 text-white border-slate-950'
+                                : 'bg-white text-slate-700 border-slate-300'
+                            }`}
+                          >
+                            {w}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-slate-700 block">Border Color</span>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={config.borderColor?.startsWith('#') ? config.borderColor : '#e2e8f0'}
+                          onChange={(e) => updateField('borderColor', e.target.value)}
+                          className="w-8 h-8 rounded border border-slate-300 cursor-pointer p-0.5 bg-white"
+                        />
+                        <input
+                          type="text"
+                          value={config.borderColor || '#e2e8f0'}
+                          onChange={(e) => updateField('borderColor', e.target.value)}
+                          className="w-full border border-slate-200 bg-white px-2 py-1 text-xs font-mono"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 2. Action Icons Border Style */}
+              <div className="space-y-2 border-t border-slate-100 pt-3">
+                <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider block">
+                  Action Icons & Buttons Border (Search, Account, Bag)
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { id: 'none', label: 'No Border', sub: 'Minimal (Clean)' },
+                    { id: 'rounded-button', label: 'Circular Border', sub: 'Rounded Full' },
+                    { id: 'square-button', label: 'Square Border', sub: 'Sharp Box' },
+                    { id: 'minimal-pill', label: 'Pill Shape', sub: 'Horizontal' },
+                  ].map((style) => {
+                    const isSelected = (config.actionIconBorderStyle || 'none') === style.id;
+                    return (
+                      <button
+                        key={style.id}
+                        type="button"
+                        onClick={() => {
+                          updateField('actionIconBorderStyle', style.id as any);
+                          updateField('iconStyle', style.id as any);
+                        }}
+                        className={`p-2.5 rounded-xl border-2 transition cursor-pointer flex flex-col items-start ${
+                          isSelected
+                            ? 'bg-slate-950 text-white border-slate-950 shadow-xs'
+                            : 'bg-white text-slate-800 border-slate-200 hover:border-slate-400'
+                        }`}
+                      >
+                        <span className="text-xs font-bold">{style.label}</span>
+                        <span
+                          className={`text-[10px] mt-0.5 ${
+                            isSelected ? 'text-slate-300' : 'text-slate-500'
+                          }`}
+                        >
+                          {style.sub}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 3. Account / Sign In Presentation */}
+              <div className="space-y-2 border-t border-slate-100 pt-3">
+                <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider block">
+                  Account & Sign In Button Display
+                </span>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'icon', label: 'User Icon', sub: 'Symmetrical Icon' },
+                    { id: 'pill', label: 'Sign In Pill', sub: 'Rounded Badge' },
+                    { id: 'text', label: 'Text Link', sub: 'Minimal Plain Text' },
+                  ].map((style) => {
+                    const isSelected = (config.accountButtonType || 'icon') === style.id;
+                    return (
+                      <button
+                        key={style.id}
+                        type="button"
+                        onClick={() => updateField('accountButtonType', style.id as any)}
+                        className={`p-2.5 rounded-xl border-2 transition cursor-pointer flex flex-col items-start ${
+                          isSelected
+                            ? 'bg-slate-950 text-white border-slate-950 shadow-xs'
+                            : 'bg-white text-slate-800 border-slate-200 hover:border-slate-400'
+                        }`}
+                      >
+                        <span className="text-xs font-bold">{style.label}</span>
+                        <span
+                          className={`text-[10px] mt-0.5 ${
+                            isSelected ? 'text-slate-300' : 'text-slate-500'
+                          }`}
+                        >
+                          {style.sub}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
             {/* Behavior & Display Toggles Card */}
             <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs space-y-3">
               <label className="block text-xs font-bold text-slate-900 uppercase tracking-wide">
@@ -395,11 +878,6 @@ export function NavEditorPanel({
                     key: 'translucentBlur',
                     label: 'Frosted Glass Backdrop Blur',
                     desc: 'Translucent background blur overlay over page content',
-                  },
-                  {
-                    key: 'borderBottom',
-                    label: 'Bottom Border Line',
-                    desc: 'Clean subtle divider under the navigation bar',
                   },
                 ].map((item) => (
                   <label
@@ -969,7 +1447,7 @@ export function NavEditorPanel({
                 </div>
                 <button
                   type="button"
-                  onClick={() => onPreviewMegamenuChange(previewMegamenuCategory ? null : 'MEN')}
+                  onClick={() => onPreviewMegamenuChange?.(previewMegamenuCategory ? null : 'MEN')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-extrabold uppercase tracking-wider transition cursor-pointer ${
                     previewMegamenuCategory
                       ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-xs'
@@ -992,7 +1470,7 @@ export function NavEditorPanel({
                     <button
                       key={cat}
                       type="button"
-                      onClick={() => onPreviewMegamenuChange(cat)}
+                      onClick={() => onPreviewMegamenuChange?.(cat)}
                       className={`px-2.5 py-1 rounded-md text-[11px] font-extrabold uppercase transition cursor-pointer ${
                         previewMegamenuCategory === cat
                           ? 'bg-slate-950 text-white'

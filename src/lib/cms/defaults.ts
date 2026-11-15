@@ -100,8 +100,11 @@ export const defaultInstagramSettings: InstagramSettingsConfig = {
 };
 
 export const defaultSiteDesignTokens: SiteDesignTokens = {
-  primaryFont: "'Plus Jakarta Sans', sans-serif",
-  headingFont: "'Space Grotesk', sans-serif",
+  primaryFont: "'Clash Display', sans-serif",
+  headingFont: "'Clash Display', sans-serif",
+  paragraphFont: "'Plus Jakarta Sans', sans-serif",
+  accentFont: "'Cinzel', serif",
+  monoFont: "'JetBrains Mono', monospace",
   headingTracking: 'tighter',
   headingTransform: 'uppercase',
   headingWeight: '800',

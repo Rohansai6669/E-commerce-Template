@@ -57,7 +57,7 @@ export function Search({ className }: { className?: string } = {}) {
         suppressHydrationWarning
         onClick={() => setIsOpen(true)}
         className={cn(
-          "flex items-center justify-center h-9 w-9 text-foreground transition-colors cursor-pointer",
+          "flex items-center justify-center h-9 w-9 text-current transition-colors cursor-pointer",
           className || "rounded-full border border-border bg-background hover:bg-accent"
         )}
         aria-label="Open search bar"

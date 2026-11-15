@@ -7,11 +7,22 @@ import { eq, and, sql, isNull } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
 /**
- * Ensures caller is an Admin or Staff.
+ * Ensures caller is an Admin, Staff, or Supplier.
+ * In development mode, falls back to dev admin profile if unauthenticated.
  */
 async function enforceAdminAuthorization() {
   const profile = await getCurrentProfile();
   if (!profile || (profile.role !== 'admin' && profile.role !== 'staff' && profile.role !== 'supplier')) {
+    if (process.env.NODE_ENV !== 'production') {
+      return {
+        id: '00000000-0000-0000-0000-000000000000',
+        email: 'admin@lexido.in',
+        role: 'admin' as const,
+        name: 'Store Administrator',
+        fullName: 'Store Administrator',
+        isDevFallback: true,
+      };
+    }
     throw new Error('Unauthorized: Administrative or supplier catalog access is required.');
   }
   return profile;

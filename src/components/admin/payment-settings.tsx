@@ -27,7 +27,7 @@ export function RazorpaySettingsPanel() {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-3xl py-2">
+    <div className="flex flex-col gap-6 w-full py-2">
       {/* Gateway Status Header */}
       <div className="p-5 rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50 via-white to-slate-50 dark:from-indigo-950/20 dark:via-background dark:to-background shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">

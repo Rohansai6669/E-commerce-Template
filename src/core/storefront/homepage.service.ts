@@ -64,7 +64,7 @@ export class HomepageService {
    */
   async getSeasonalSaleSections(providedProducts?: ProductCardModel[]): Promise<SeasonalCampaignData[]> {
     await connection();
-    let activeCampaigns = await safeQuery(
+    const activeCampaigns = await safeQuery(
       () =>
         db
           .select()
@@ -78,64 +78,6 @@ export class HomepageService {
           .orderBy(desc(salesCampaigns.priority)),
       'active_seasonal_campaigns'
     );
-
-    // Auto-seed Dussehra Special & Daily Sale into PostgreSQL DB if unpopulated
-    if (activeCampaigns.length === 0) {
-      try {
-        const dussehraStarts = new Date(Date.now() - 24 * 60 * 60 * 1000);
-        const dussehraEnds = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
-        const dailyStarts = new Date(Date.now() - 24 * 60 * 60 * 1000);
-        const dailyEnds = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
-        await safeQuery(
-          () =>
-            db.insert(salesCampaigns).values([
-              {
-                name: 'Dussehra Special Sale',
-                description: 'Celebrate the festive season with up to 25% OFF across top collections!',
-                discountType: 'percentage',
-                discountValue: '25',
-                startsAt: dussehraStarts,
-                endsAt: dussehraEnds,
-                status: 'active',
-                priority: 100,
-                isStackable: true,
-                metadata: { badgeLabel: 'DUSSEHRA SPECIAL • 25% OFF' },
-              },
-              {
-                name: 'Daily Flash Sale',
-                description: 'Limited 24-hour deals on best-selling luxury apparel & footwear.',
-                discountType: 'fixed',
-                discountValue: '500',
-                startsAt: dailyStarts,
-                endsAt: dailyEnds,
-                status: 'active',
-                priority: 90,
-                isStackable: true,
-                metadata: { badgeLabel: 'DAILY FLASH SALE • ₹500 OFF' },
-              },
-            ]),
-          'seed_default_sales_campaigns'
-        );
-
-        activeCampaigns = await safeQuery(
-          () =>
-            db
-              .select()
-              .from(salesCampaigns)
-              .where(
-                and(
-                  eq(salesCampaigns.status, 'active'),
-                  sql`${salesCampaigns.deletedAt} IS NULL`
-                )
-              )
-              .orderBy(desc(salesCampaigns.priority)),
-          'active_seasonal_campaigns_re-query'
-        );
-      } catch (err) {
-        console.warn('Failed to seed default sales campaigns to database:', err);
-      }
-    }
 
     // Deduplicate active campaigns by name to ensure no duplicate sections render
     const uniqueCampaignsMap = new Map<string, typeof activeCampaigns[number]>();

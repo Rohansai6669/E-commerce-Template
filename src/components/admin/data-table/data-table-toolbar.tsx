@@ -100,6 +100,7 @@ export function DataTableToolbar({
                   key={cfg.id}
                   value={currentVal}
                   onChange={(e) => onFilterChange(cfg.id, e.target.value)}
+                  suppressHydrationWarning
                   className={cn(
                     "h-9 px-3 text-xs bg-white border border-slate-200 rounded text-slate-800 font-semibold outline-none cursor-pointer hover:border-slate-400 transition",
                     currentVal !== 'all' && currentVal !== '' && "border-slate-950 bg-slate-900 text-white font-bold"
