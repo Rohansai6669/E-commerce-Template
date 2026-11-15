@@ -298,7 +298,7 @@ export function ProductsCatalogView({
       ) : (
         <>
           {/* Product Grid */}
-          <div className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 w-full pt-2">
+          <div className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 w-full pt-2">
             {products.map((product) => (
               <ConfigurableProductCard key={product.id} product={product} />
             ))}

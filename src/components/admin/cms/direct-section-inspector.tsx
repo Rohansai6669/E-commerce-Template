@@ -30,6 +30,11 @@ import {
   Sparkles,
   Play,
   Square,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 
 import {
@@ -81,6 +86,7 @@ export function DirectSectionInspector({
   products = [],
 }: DirectSectionInspectorProps) {
   const [activeTab, setActiveTab] = useState<'content' | 'dimensions' | 'style' | 'cta'>('content');
+  const [expandedSlideIdx, setExpandedSlideIdx] = useState<number | null>(0);
 
   const registryEntry = SECTION_REGISTRY[section.type];
   const isHero = section.type === 'HERO';
@@ -110,11 +116,55 @@ export function DirectSectionInspector({
     section.type === 'BUNDLE_SAVE_SHOWCASE' ||
     section.productSource !== undefined;
 
-  const handleSlideChange = (index: number, field: keyof HeroSlide, value: any) => {
+  const handleSlideChange = (index: number, fieldOrPatch: keyof HeroSlide | Partial<HeroSlide>, value?: any) => {
     if (!heroConfig.slides) return;
     const updated = [...heroConfig.slides];
-    updated[index] = { ...updated[index], [field]: value };
-    onUpdateField('slides', updated);
+    if (typeof fieldOrPatch === 'object') {
+      updated[index] = { ...updated[index], ...fieldOrPatch };
+    } else {
+      updated[index] = { ...updated[index], [fieldOrPatch]: value };
+    }
+
+    const patch: Record<string, any> = { slides: updated };
+    // Synchronize slide 0 with root fallback properties for seamless instant rendering
+    if (index === 0 && updated[0]) {
+      const s0 = updated[0];
+      if (s0.heading !== undefined) patch.heading = s0.heading;
+      if (s0.eyebrow !== undefined) patch.eyebrow = s0.eyebrow;
+      if (s0.description !== undefined) patch.description = s0.description;
+      if (s0.subTitle !== undefined) patch.subTitle = s0.subTitle;
+      if (s0.primaryCtaText !== undefined) patch.primaryCtaText = s0.primaryCtaText;
+      if (s0.primaryCtaUrl !== undefined) patch.primaryCtaUrl = s0.primaryCtaUrl;
+      if (s0.secondaryCtaText !== undefined) patch.secondaryCtaText = s0.secondaryCtaText;
+      if (s0.secondaryCtaUrl !== undefined) patch.secondaryCtaUrl = s0.secondaryCtaUrl;
+      if (s0.mediaUrl !== undefined) patch.desktopImage = s0.mediaUrl;
+      if (s0.overlayOpacity !== undefined) patch.overlayOpacity = s0.overlayOpacity;
+      if (s0.contentPosition !== undefined) {
+        patch.contentPosition = s0.contentPosition;
+        patch.headingAlignment = s0.contentPosition;
+      }
+    }
+    onUpdateField(patch);
+  };
+
+  const handleAlignmentChange = (pos: 'left' | 'center' | 'right') => {
+    const contentPosMap: Record<string, 'center-left' | 'center' | 'center-right'> = {
+      left: 'center-left',
+      center: 'center',
+      right: 'center-right',
+    };
+    const newPos = contentPosMap[pos];
+    const patch: Record<string, any> = {
+      headingAlignment: pos,
+      contentAlignment: pos,
+      contentPosition: newPos,
+    };
+    if (isHero && heroConfig.slides && heroConfig.slides.length > 0) {
+      const updated = [...heroConfig.slides];
+      updated[0] = { ...updated[0], contentPosition: newPos };
+      patch.slides = updated;
+    }
+    onUpdateField(patch);
   };
 
   const addHeroSlide = () => {
@@ -295,59 +345,156 @@ export function DirectSectionInspector({
         {activeTab === 'content' && (
           <div className="space-y-4">
             {/* General Text Fields Card */}
-            <div className="p-3.5 rounded-xl border border-slate-200 bg-white space-y-3 shadow-2xs">
-              <div className="space-y-1">
-                <label className="text-[11px] font-bold uppercase tracking-tight text-slate-800">
-                  Section Custom Name
-                </label>
-                <input
-                  type="text"
-                  value={section.name || ''}
-                  onChange={(e) => onUpdateField('name', e.target.value)}
-                  placeholder="e.g. 02 — HERO CAROUSEL"
-                  className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 bg-white font-bold text-slate-900 focus:outline-none focus:border-slate-950"
-                />
-              </div>
+            {(() => {
+              const heroSlide0 = isHero && heroConfig.slides && heroConfig.slides.length > 0 ? heroConfig.slides[0] : null;
+              const displayEyebrow = heroSlide0?.eyebrow !== undefined ? heroSlide0.eyebrow : (section.eyebrow || '');
+              const displayHeading = heroSlide0?.heading !== undefined ? heroSlide0.heading : (section.heading || '');
+              const displayDescription = heroSlide0?.description !== undefined
+                ? heroSlide0.description
+                : heroSlide0?.subTitle !== undefined
+                ? heroSlide0.subTitle
+                : (section.description || '');
 
-              <div className="space-y-1">
-                <label className="text-[11px] font-bold uppercase tracking-tight text-slate-800">
-                  Eyebrow / Badge Text
-                </label>
-                <input
-                  type="text"
-                  value={section.eyebrow || ''}
-                  onChange={(e) => onUpdateField('eyebrow', e.target.value)}
-                  placeholder="e.g. CURATED NEW RELEASES"
-                  className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:border-slate-950"
-                />
-              </div>
+              const rawAlign = String(
+                heroSlide0?.contentPosition || section.headingAlignment || section.contentAlignment || 'center'
+              ).toLowerCase();
 
-              <div className="space-y-1">
-                <label className="text-[11px] font-bold uppercase tracking-tight text-slate-800">
-                  Main Heading Title
-                </label>
-                <input
-                  type="text"
-                  value={section.heading || ''}
-                  onChange={(e) => onUpdateField('heading', e.target.value)}
-                  placeholder="e.g. TRENDING ARRIVALS"
-                  className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-bold focus:outline-none focus:border-slate-950"
-                />
-              </div>
+              const isAlignLeft = rawAlign.includes('left') || rawAlign === 'left';
+              const isAlignRight = rawAlign.includes('right') || rawAlign === 'right';
+              const isAlignCenter = !isAlignLeft && !isAlignRight;
+              const currentAlignmentLabel = isAlignLeft ? 'Left' : isAlignRight ? 'Right' : 'Center';
 
-              <div className="space-y-1">
-                <label className="text-[11px] font-bold uppercase tracking-tight text-slate-800">
-                  Description / Copy
-                </label>
-                <textarea
-                  rows={2}
-                  value={section.description || ''}
-                  onChange={(e) => onUpdateField('description', e.target.value)}
-                  placeholder="Add explanatory text or subtitle..."
-                  className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:border-slate-950"
-                />
-              </div>
-            </div>
+              return (
+                <div className="p-3.5 rounded-xl border border-slate-200 bg-white space-y-3 shadow-2xs">
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase tracking-tight text-slate-800">
+                      Section Custom Name
+                    </label>
+                    <input
+                      type="text"
+                      value={section.name || ''}
+                      onChange={(e) => onUpdateField('name', e.target.value)}
+                      placeholder="e.g. 02 — HERO CAROUSEL"
+                      className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 bg-white font-bold text-slate-900 focus:outline-none focus:border-slate-950"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase tracking-tight text-slate-800">
+                      Eyebrow / Badge Text
+                    </label>
+                    <input
+                      type="text"
+                      value={displayEyebrow}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (isHero && heroConfig.slides && heroConfig.slides.length > 0) {
+                          const updated = [...heroConfig.slides];
+                          updated[0] = { ...updated[0], eyebrow: val };
+                          onUpdateField({ eyebrow: val, slides: updated });
+                        } else {
+                          onUpdateField('eyebrow', val);
+                        }
+                      }}
+                      placeholder="e.g. CURATED NEW RELEASES"
+                      className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:border-slate-950"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase tracking-tight text-slate-800">
+                      Main Heading Title
+                    </label>
+                    <input
+                      type="text"
+                      value={displayHeading}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (isHero && heroConfig.slides && heroConfig.slides.length > 0) {
+                          const updated = [...heroConfig.slides];
+                          updated[0] = { ...updated[0], heading: val };
+                          onUpdateField({ heading: val, slides: updated });
+                        } else {
+                          onUpdateField('heading', val);
+                        }
+                      }}
+                      placeholder="e.g. TRENDING ARRIVALS"
+                      className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-bold focus:outline-none focus:border-slate-950"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase tracking-tight text-slate-800">
+                      Description / Paragraph Copy
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={displayDescription}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (isHero && heroConfig.slides && heroConfig.slides.length > 0) {
+                          const updated = [...heroConfig.slides];
+                          updated[0] = { ...updated[0], description: val, subTitle: val };
+                          onUpdateField({ description: val, subTitle: val, slides: updated });
+                        } else {
+                          onUpdateField({ description: val, subTitle: val });
+                        }
+                      }}
+                      placeholder="Add explanatory text, paragraph, or subtitle..."
+                      className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:border-slate-950"
+                    />
+                  </div>
+
+                  {/* Heading & Content Alignment Selector */}
+                  <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                    <label className="text-[11px] font-bold uppercase tracking-tight text-slate-800 flex items-center justify-between">
+                      <span>Heading Alignment</span>
+                      <span className="text-[10px] font-mono text-indigo-600 uppercase font-semibold">
+                        {currentAlignmentLabel}
+                      </span>
+                    </label>
+                    <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200">
+                      <button
+                        type="button"
+                        onClick={() => handleAlignmentChange('left')}
+                        className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                          isAlignLeft
+                            ? 'bg-white text-slate-950 shadow-xs'
+                            : 'text-slate-600 hover:text-slate-950'
+                        }`}
+                      >
+                        <AlignLeft className="w-3.5 h-3.5" />
+                        <span>Left</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleAlignmentChange('center')}
+                        className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                          isAlignCenter
+                            ? 'bg-white text-slate-950 shadow-xs'
+                            : 'text-slate-600 hover:text-slate-950'
+                        }`}
+                      >
+                        <AlignCenter className="w-3.5 h-3.5" />
+                        <span>Center</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleAlignmentChange('right')}
+                        className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                          isAlignRight
+                            ? 'bg-white text-slate-950 shadow-xs'
+                            : 'text-slate-600 hover:text-slate-950'
+                        }`}
+                      >
+                        <AlignRight className="w-3.5 h-3.5" />
+                        <span>Right</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* CATEGORY & CARD SECTION: Cards Architecture & Database Linkage Suite */}
             {isCategorySection && (
@@ -471,79 +618,277 @@ export function DirectSectionInspector({
                     </button>
                   </div>
 
-                  {heroConfig.slides?.map((slide, idx) => (
-                    <div
-                      key={slide.id}
-                      className="p-3 rounded-xl border border-slate-200 bg-white space-y-2.5 shadow-2xs"
-                    >
-                      <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded border border-slate-200 bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center">
-                            {slide.mediaUrl ? (
-                              <img src={slide.mediaUrl} alt="" className="w-full h-full object-cover" />
-                            ) : (
-                              <ImageIcon className="w-3.5 h-3.5 text-slate-400" />
-                            )}
+                  {heroConfig.slides?.map((slide, idx) => {
+                    const isExpanded = expandedSlideIdx === idx;
+                    const slidePos = slide.contentPosition || 'center';
+                    const isSlideLeft = ['left', 'top-left', 'center-left', 'bottom-left'].includes(slidePos);
+                    const isSlideRight = ['right', 'top-right', 'center-right', 'bottom-right'].includes(slidePos);
+                    const isSlideCenter = !isSlideLeft && !isSlideRight;
+
+                    return (
+                      <div
+                        key={slide.id}
+                        className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-2xs transition-all"
+                      >
+                        {/* Slide Accordion Bar */}
+                        <div
+                          onClick={() => setExpandedSlideIdx(isExpanded ? null : idx)}
+                          className="flex items-center justify-between p-3 bg-slate-50/80 hover:bg-slate-100/80 transition cursor-pointer border-b border-slate-100"
+                        >
+                          <div className="flex items-center gap-2.5 overflow-hidden">
+                            <div className="w-9 h-9 rounded-lg border border-slate-200 bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center">
+                              {slide.mediaUrl ? (
+                                <img
+                                  src={slide.mediaUrl}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    (e.target as HTMLElement).style.display = 'none';
+                                  }}
+                                />
+                              ) : (
+                                <ImageIcon className="w-3.5 h-3.5 text-slate-400" />
+                              )}
+                            </div>
+                            <div className="truncate">
+                              <span className="text-[11px] font-extrabold text-slate-950 block">
+                                Slide #{idx + 1}
+                              </span>
+                              <span className="text-[10px] text-slate-500 font-medium block truncate max-w-[150px]">
+                                {slide.heading || slide.eyebrow || 'Untitled Slide'}
+                              </span>
+                            </div>
                           </div>
-                          <div>
-                            <span className="text-[11px] font-bold text-slate-950 block">Slide #{idx + 1}</span>
-                            <span className="text-[10px] text-slate-400 block truncate max-w-[150px]">
-                              {slide.heading || 'Untitled'}
-                            </span>
+
+                          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              type="button"
+                              onClick={() => moveHeroSlide(idx, 'up')}
+                              disabled={idx === 0}
+                              className="p-1 rounded text-slate-400 hover:text-slate-950 disabled:opacity-20 cursor-pointer"
+                              title="Move Up"
+                            >
+                              <ArrowUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveHeroSlide(idx, 'down')}
+                              disabled={idx === (heroConfig.slides?.length || 1) - 1}
+                              className="p-1 rounded text-slate-400 hover:text-slate-950 disabled:opacity-20 cursor-pointer"
+                              title="Move Down"
+                            >
+                              <ArrowDown className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeHeroSlide(idx)}
+                              className="p-1 rounded text-rose-500 hover:bg-rose-50 transition cursor-pointer"
+                              title="Remove Slide"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setExpandedSlideIdx(isExpanded ? null : idx)}
+                              className="p-1 text-slate-400 hover:text-slate-950 cursor-pointer"
+                            >
+                              {isExpanded ? (
+                                <ChevronUp className="w-3.5 h-3.5" />
+                              ) : (
+                                <ChevronDown className="w-3.5 h-3.5" />
+                              )}
+                            </button>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => moveHeroSlide(idx, 'up')}
-                            disabled={idx === 0}
-                            className="p-1 rounded text-slate-400 hover:text-slate-950 disabled:opacity-20 cursor-pointer"
-                          >
-                            <ArrowUp className="w-3 h-3" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => moveHeroSlide(idx, 'down')}
-                            disabled={idx === (heroConfig.slides?.length || 1) - 1}
-                            className="p-1 rounded text-slate-400 hover:text-slate-950 disabled:opacity-20 cursor-pointer"
-                          >
-                            <ArrowDown className="w-3 h-3" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => removeHeroSlide(idx)}
-                            className="p-1 rounded text-rose-500 hover:bg-rose-50 transition cursor-pointer"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        </div>
-                      </div>
+                        {/* Expanded Slide Detail Controls */}
+                        {isExpanded && (
+                          <div className="p-3.5 space-y-3 bg-white">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-slate-700">Slide Eyebrow</label>
+                              <input
+                                type="text"
+                                value={slide.eyebrow || ''}
+                                onChange={(e) => handleSlideChange(idx, 'eyebrow', e.target.value)}
+                                placeholder="e.g. SUSTAINABLE TAILORING"
+                                className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium"
+                              />
+                            </div>
 
-                      <div className="space-y-2 text-xs">
-                        <input
-                          type="text"
-                          value={slide.heading || ''}
-                          onChange={(e) => handleSlideChange(idx, 'heading', e.target.value)}
-                          placeholder="Slide heading..."
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-900"
-                        />
-                        <ImagePreviewInput
-                          label="Slide Media Asset"
-                          value={slide.mediaUrl || ''}
-                          placeholder="Image URL or Cloudflare R2"
-                          onChange={(url) => handleSlideChange(idx, 'mediaUrl', url)}
-                          aspectRatio="banner"
-                        />
-                        <NineAlignmentMatrix
-                          label="Slide Text Alignment (9-Point)"
-                          value={slide.contentPosition || 'center'}
-                          size="sm"
-                          onChange={(val) => handleSlideChange(idx, 'contentPosition', val)}
-                        />
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-slate-700">Main Slide Heading</label>
+                              <input
+                                type="text"
+                                value={slide.heading || ''}
+                                onChange={(e) => handleSlideChange(idx, 'heading', e.target.value)}
+                                placeholder="e.g. LEXIDO"
+                                className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-bold text-slate-900"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-slate-700">
+                                Paragraph & Description
+                              </label>
+                              <textarea
+                                rows={2}
+                                value={slide.description || slide.subTitle || ''}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  handleSlideChange(idx, { description: val, subTitle: val });
+                                }}
+                                placeholder="e.g. Zero-emission production ateliers in Milan & Florence."
+                                className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium"
+                              />
+                            </div>
+
+                            {/* Primary Button */}
+                            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
+                              <div className="text-[10px] font-extrabold uppercase tracking-tight text-slate-800">
+                                Primary Action Button (CTA)
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-bold text-slate-600">Button Label</label>
+                                  <input
+                                    type="text"
+                                    value={slide.primaryCtaText || ''}
+                                    onChange={(e) => handleSlideChange(idx, 'primaryCtaText', e.target.value)}
+                                    placeholder="e.g. SHOP OUTERWEAR"
+                                    className="w-full text-xs px-2 py-1.5 rounded-lg border border-slate-300 bg-white font-bold text-slate-900"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-bold text-slate-600">Button URL</label>
+                                  <input
+                                    type="text"
+                                    value={slide.primaryCtaUrl || ''}
+                                    onChange={(e) => handleSlideChange(idx, 'primaryCtaUrl', e.target.value)}
+                                    placeholder="/products?category=outerwear"
+                                    className="w-full text-xs px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Secondary Button */}
+                            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
+                              <div className="text-[10px] font-extrabold uppercase tracking-tight text-slate-800">
+                                Secondary Action Button (Optional)
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-bold text-slate-600">Button Label</label>
+                                  <input
+                                    type="text"
+                                    value={slide.secondaryCtaText || ''}
+                                    onChange={(e) => handleSlideChange(idx, 'secondaryCtaText', e.target.value)}
+                                    placeholder="e.g. DISCOVER ATELIER"
+                                    className="w-full text-xs px-2 py-1.5 rounded-lg border border-slate-300 bg-white font-bold text-slate-900"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[9px] font-bold text-slate-600">Button URL</label>
+                                  <input
+                                    type="text"
+                                    value={slide.secondaryCtaUrl || ''}
+                                    onChange={(e) => handleSlideChange(idx, 'secondaryCtaUrl', e.target.value)}
+                                    placeholder="/about"
+                                    className="w-full text-xs px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Media Asset with ImagePreviewInput */}
+                            <ImagePreviewInput
+                              label="Slide Background Media"
+                              value={slide.mediaUrl || ''}
+                              placeholder="Image URL or Cloudflare R2"
+                              onChange={(url) => handleSlideChange(idx, 'mediaUrl', url)}
+                              allowVideo={true}
+                              mediaType={slide.mediaType || 'image'}
+                              onMediaTypeChange={(type) => handleSlideChange(idx, 'mediaType', type)}
+                              aspectRatio="banner"
+                            />
+
+                            {/* Dark Dimmer Slider */}
+                            <div className="space-y-1.5 p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                              <div className="flex items-center justify-between">
+                                <label className="text-[10px] font-bold text-slate-700">Dark Overlay Dimmer</label>
+                                <span className="text-[10px] font-mono font-bold text-indigo-600">
+                                  {Math.round((slide.overlayOpacity ?? 0.35) * 100)}%
+                                </span>
+                              </div>
+                              <input
+                                type="range"
+                                min={0}
+                                max={1}
+                                step={0.05}
+                                value={slide.overlayOpacity ?? 0.35}
+                                onChange={(e) => handleSlideChange(idx, 'overlayOpacity', parseFloat(e.target.value))}
+                                className="w-full accent-slate-900 cursor-pointer"
+                              />
+                            </div>
+
+                            {/* Alignment Controls */}
+                            <div className="space-y-1.5 p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                              <label className="text-[10px] font-bold text-slate-700 flex items-center justify-between">
+                                <span>Slide Content Alignment</span>
+                                <span className="text-[9px] font-mono text-indigo-600 uppercase font-semibold">
+                                  {slide.contentPosition || 'center'}
+                                </span>
+                              </label>
+                              <div className="grid grid-cols-3 gap-1 mb-2">
+                                <button
+                                  type="button"
+                                  onClick={() => handleSlideChange(idx, 'contentPosition', 'center-left')}
+                                  className={`py-1 text-center rounded text-[10px] font-bold border transition cursor-pointer flex items-center justify-center gap-1 ${
+                                    isSlideLeft
+                                      ? 'bg-slate-900 border-slate-900 text-white'
+                                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
+                                  }`}
+                                >
+                                  <AlignLeft className="w-3 h-3" />
+                                  Left
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSlideChange(idx, 'contentPosition', 'center')}
+                                  className={`py-1 text-center rounded text-[10px] font-bold border transition cursor-pointer flex items-center justify-center gap-1 ${
+                                    isSlideCenter
+                                      ? 'bg-slate-900 border-slate-900 text-white'
+                                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
+                                  }`}
+                                >
+                                  <AlignCenter className="w-3 h-3" />
+                                  Center
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSlideChange(idx, 'contentPosition', 'center-right')}
+                                  className={`py-1 text-center rounded text-[10px] font-bold border transition cursor-pointer flex items-center justify-center gap-1 ${
+                                    isSlideRight
+                                      ? 'bg-slate-900 border-slate-900 text-white'
+                                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
+                                  }`}
+                                >
+                                  <AlignRight className="w-3 h-3" />
+                                  Right
+                                </button>
+                              </div>
+                              <NineAlignmentMatrix
+                                label="Slide Text Alignment (9-Point)"
+                                value={slide.contentPosition || 'center'}
+                                size="sm"
+                                onChange={(val) => handleSlideChange(idx, 'contentPosition', val)}
+                              />
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -1176,9 +1521,17 @@ export function DirectSectionInspector({
                 description="Fine-tune horizontal and vertical text placement (Figma / Word matrix)"
                 value={section.headingAlignment || 'center'}
                 onChange={(val, h) => {
-                  onUpdateField('headingAlignment', val);
-                  onUpdateField('contentAlignment', val);
-                  onUpdateField('contentPosition', val);
+                  const patch: Record<string, any> = {
+                    headingAlignment: val,
+                    contentAlignment: val,
+                    contentPosition: val,
+                  };
+                  if (isHero && heroConfig.slides && heroConfig.slides.length > 0) {
+                    const updated = [...heroConfig.slides];
+                    updated[0] = { ...updated[0], contentPosition: val as any };
+                    patch.slides = updated;
+                  }
+                  onUpdateField(patch);
                 }}
               />
             </div>
@@ -1462,6 +1815,11 @@ export function DirectSectionInspector({
         {/* TAB 4: BUTTONS & CTAs */}
         {activeTab === 'cta' && (
           <div className="space-y-4">
+            {isHero && heroConfig.slides && heroConfig.slides.length > 0 && (
+              <div className="p-3 rounded-xl bg-indigo-50/70 border border-indigo-200/70 text-xs text-indigo-950 font-medium">
+                <span className="font-bold">✨ Hero Slide Sync Active:</span> Button changes made here immediately sync to Slide #1. You can also configure individual buttons per slide in the <button type="button" onClick={() => setActiveTab('content')} className="underline font-bold text-indigo-700 cursor-pointer">Content Tab → Carousel Slides</button>.
+              </div>
+            )}
             <div className="p-3.5 rounded-xl border border-slate-200 bg-white space-y-3 shadow-2xs">
               <h4 className="text-[11px] font-extrabold uppercase tracking-tight text-slate-900">
                 Primary CTA Button
@@ -1471,8 +1829,21 @@ export function DirectSectionInspector({
                   <label className="text-[10px] font-bold text-slate-700">Button Label</label>
                   <input
                     type="text"
-                    value={section.primaryCtaText || ''}
-                    onChange={(e) => onUpdateField('primaryCtaText', e.target.value)}
+                    value={
+                      isHero && heroConfig.slides?.[0]?.primaryCtaText !== undefined
+                        ? heroConfig.slides[0].primaryCtaText
+                        : (section.primaryCtaText || '')
+                    }
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (isHero && heroConfig.slides && heroConfig.slides.length > 0) {
+                        const updated = [...heroConfig.slides];
+                        updated[0] = { ...updated[0], primaryCtaText: val };
+                        onUpdateField({ primaryCtaText: val, slides: updated });
+                      } else {
+                        onUpdateField('primaryCtaText', val);
+                      }
+                    }}
                     placeholder="e.g. SHOP NOW"
                     className="w-full text-xs px-2.5 py-2 rounded-lg border border-slate-300 font-bold text-slate-900"
                   />
@@ -1481,8 +1852,21 @@ export function DirectSectionInspector({
                   <label className="text-[10px] font-bold text-slate-700">Button Link URL</label>
                   <input
                     type="text"
-                    value={section.primaryCtaUrl || ''}
-                    onChange={(e) => onUpdateField('primaryCtaUrl', e.target.value)}
+                    value={
+                      isHero && heroConfig.slides?.[0]?.primaryCtaUrl !== undefined
+                        ? heroConfig.slides[0].primaryCtaUrl
+                        : (section.primaryCtaUrl || '')
+                    }
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (isHero && heroConfig.slides && heroConfig.slides.length > 0) {
+                        const updated = [...heroConfig.slides];
+                        updated[0] = { ...updated[0], primaryCtaUrl: val };
+                        onUpdateField({ primaryCtaUrl: val, slides: updated });
+                      } else {
+                        onUpdateField('primaryCtaUrl', val);
+                      }
+                    }}
                     placeholder="/products"
                     className="w-full text-xs px-2.5 py-2 rounded-lg border border-slate-300 text-slate-900"
                   />
@@ -1499,8 +1883,21 @@ export function DirectSectionInspector({
                   <label className="text-[10px] font-bold text-slate-700">Button Label</label>
                   <input
                     type="text"
-                    value={section.secondaryCtaText || ''}
-                    onChange={(e) => onUpdateField('secondaryCtaText', e.target.value)}
+                    value={
+                      isHero && heroConfig.slides?.[0]?.secondaryCtaText !== undefined
+                        ? heroConfig.slides[0].secondaryCtaText
+                        : (section.secondaryCtaText || '')
+                    }
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (isHero && heroConfig.slides && heroConfig.slides.length > 0) {
+                        const updated = [...heroConfig.slides];
+                        updated[0] = { ...updated[0], secondaryCtaText: val };
+                        onUpdateField({ secondaryCtaText: val, slides: updated });
+                      } else {
+                        onUpdateField('secondaryCtaText', val);
+                      }
+                    }}
                     placeholder="e.g. EXPLORE LOOKBOOK"
                     className="w-full text-xs px-2.5 py-2 rounded-lg border border-slate-300 font-bold text-slate-900"
                   />
@@ -1509,8 +1906,21 @@ export function DirectSectionInspector({
                   <label className="text-[10px] font-bold text-slate-700">Button Link URL</label>
                   <input
                     type="text"
-                    value={section.secondaryCtaUrl || ''}
-                    onChange={(e) => onUpdateField('secondaryCtaUrl', e.target.value)}
+                    value={
+                      isHero && heroConfig.slides?.[0]?.secondaryCtaUrl !== undefined
+                        ? heroConfig.slides[0].secondaryCtaUrl
+                        : (section.secondaryCtaUrl || '')
+                    }
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (isHero && heroConfig.slides && heroConfig.slides.length > 0) {
+                        const updated = [...heroConfig.slides];
+                        updated[0] = { ...updated[0], secondaryCtaUrl: val };
+                        onUpdateField({ secondaryCtaUrl: val, slides: updated });
+                      } else {
+                        onUpdateField('secondaryCtaUrl', val);
+                      }
+                    }}
                     placeholder="/about"
                     className="w-full text-xs px-2.5 py-2 rounded-lg border border-slate-300 text-slate-900"
                   />

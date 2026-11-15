@@ -101,11 +101,32 @@ export function SectionEditorModal({
     setEdited((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSlideChange = (index: number, field: keyof HeroSlide, value: any) => {
+  const handleSlideChange = (index: number, fieldOrPatch: keyof HeroSlide | Partial<HeroSlide>, value?: any) => {
     if (!heroConfig.slides) return;
     const updatedSlides = [...heroConfig.slides];
-    updatedSlides[index] = { ...updatedSlides[index], [field]: value };
-    setEdited({ ...heroConfig, slides: updatedSlides });
+    if (typeof fieldOrPatch === 'object') {
+      updatedSlides[index] = { ...updatedSlides[index], ...fieldOrPatch };
+    } else {
+      updatedSlides[index] = { ...updatedSlides[index], [fieldOrPatch]: value };
+    }
+    const patch: any = { ...heroConfig, slides: updatedSlides };
+    if (index === 0 && updatedSlides[0]) {
+      const s0 = updatedSlides[0];
+      if (s0.heading !== undefined) patch.heading = s0.heading;
+      if (s0.eyebrow !== undefined) patch.eyebrow = s0.eyebrow;
+      if (s0.description !== undefined) patch.description = s0.description;
+      if (s0.subTitle !== undefined) patch.subTitle = s0.subTitle;
+      if (s0.primaryCtaText !== undefined) patch.primaryCtaText = s0.primaryCtaText;
+      if (s0.primaryCtaUrl !== undefined) patch.primaryCtaUrl = s0.primaryCtaUrl;
+      if (s0.secondaryCtaText !== undefined) patch.secondaryCtaText = s0.secondaryCtaText;
+      if (s0.secondaryCtaUrl !== undefined) patch.secondaryCtaUrl = s0.secondaryCtaUrl;
+      if (s0.overlayOpacity !== undefined) patch.overlayOpacity = s0.overlayOpacity;
+      if (s0.contentPosition !== undefined) {
+        patch.contentPosition = s0.contentPosition;
+        patch.headingAlignment = s0.contentPosition;
+      }
+    }
+    setEdited(patch);
   };
 
   const addHeroSlide = () => {
@@ -513,35 +534,81 @@ export function SectionEditorModal({
                             </div>
 
                             <div className="space-y-1 sm:col-span-2">
-                              <label className="text-[11px] font-bold text-slate-800">Subtitle / Caption</label>
-                              <input
-                                type="text"
-                                value={slide.subTitle || ''}
-                                onChange={(e) => handleSlideChange(idx, 'subTitle', e.target.value)}
+                              <label className="text-[11px] font-bold text-slate-800">
+                                Paragraph & Subtitle Description
+                              </label>
+                              <textarea
+                                rows={2}
+                                value={slide.description || slide.subTitle || ''}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  handleSlideChange(idx, { description: val, subTitle: val });
+                                }}
                                 placeholder="Precision tailored outerwear designed to last a lifetime..."
-                                className="w-full rounded-xl border border-slate-200 bg-white p-2 text-xs text-slate-900 focus:border-slate-950"
+                                className="w-full rounded-xl border border-slate-200 bg-white p-2 text-xs text-slate-900 focus:border-slate-950 font-medium"
                               />
                             </div>
 
                             <div className="space-y-1">
-                              <label className="text-[11px] font-bold text-slate-800">CTA Text</label>
+                              <label className="text-[11px] font-bold text-slate-800">Primary CTA Text</label>
                               <input
                                 type="text"
                                 value={slide.primaryCtaText || ''}
                                 onChange={(e) => handleSlideChange(idx, 'primaryCtaText', e.target.value)}
                                 placeholder="SHOP NOW"
-                                className="w-full rounded-xl border border-slate-200 bg-white p-2 text-xs text-slate-900 focus:border-slate-950"
+                                className="w-full rounded-xl border border-slate-200 bg-white p-2 text-xs text-slate-900 font-bold focus:border-slate-950"
                               />
                             </div>
 
                             <div className="space-y-1">
-                              <label className="text-[11px] font-bold text-slate-800">CTA Link URL</label>
+                              <label className="text-[11px] font-bold text-slate-800">Primary CTA Link URL</label>
                               <input
                                 type="text"
                                 value={slide.primaryCtaUrl || ''}
                                 onChange={(e) => handleSlideChange(idx, 'primaryCtaUrl', e.target.value)}
                                 placeholder="/products"
                                 className="w-full rounded-xl border border-slate-200 bg-white p-2 text-xs text-slate-900 focus:border-slate-950"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[11px] font-bold text-slate-800">Secondary CTA Text (Optional)</label>
+                              <input
+                                type="text"
+                                value={slide.secondaryCtaText || ''}
+                                onChange={(e) => handleSlideChange(idx, 'secondaryCtaText', e.target.value)}
+                                placeholder="EXPLORE ATELIER"
+                                className="w-full rounded-xl border border-slate-200 bg-white p-2 text-xs text-slate-900 font-bold focus:border-slate-950"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[11px] font-bold text-slate-800">Secondary CTA Link URL</label>
+                              <input
+                                type="text"
+                                value={slide.secondaryCtaUrl || ''}
+                                onChange={(e) => handleSlideChange(idx, 'secondaryCtaUrl', e.target.value)}
+                                placeholder="/about"
+                                className="w-full rounded-xl border border-slate-200 bg-white p-2 text-xs text-slate-900 focus:border-slate-950"
+                              />
+                            </div>
+
+                            {/* Dark Dimmer Slider */}
+                            <div className="sm:col-span-2 space-y-1.5 p-3 rounded-xl bg-white border border-slate-200">
+                              <div className="flex items-center justify-between">
+                                <label className="text-[11px] font-bold text-slate-800">Dark Overlay Dimmer</label>
+                                <span className="text-xs font-mono font-bold text-indigo-600">
+                                  {Math.round((slide.overlayOpacity ?? 0.35) * 100)}%
+                                </span>
+                              </div>
+                              <input
+                                type="range"
+                                min={0}
+                                max={1}
+                                step={0.05}
+                                value={slide.overlayOpacity ?? 0.35}
+                                onChange={(e) => handleSlideChange(idx, 'overlayOpacity', parseFloat(e.target.value))}
+                                className="w-full accent-slate-900 cursor-pointer"
                               />
                             </div>
 

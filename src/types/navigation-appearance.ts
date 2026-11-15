@@ -158,10 +158,6 @@ export interface NavAppearanceConfig {
 export const DEFAULT_NAV_LINKS: NavLinkItem[] = [
   { id: 'nav-men', label: 'MEN', href: '/products?category=men', hasMega: true },
   { id: 'nav-women', label: 'WOMEN', href: '/products?category=women', hasMega: true },
-  { id: 'nav-collections', label: 'COLLECTIONS', href: '/collections', hasMega: true },
-  { id: 'nav-shop-all', label: 'SHOP ALL', href: '/products', hasMega: false },
-  { id: 'nav-festive', label: 'FESTIVE & LIMITED', href: '/products?edition=limited', hasMega: false, highlight: true, badgeText: 'LIMITED', badgeColor: '#4f46e5' },
-  { id: 'nav-offers', label: 'OFFERS', href: '/products?availability=in-stock', hasMega: false },
 ];
 
 export const defaultNavAppearanceConfig: NavAppearanceConfig = {
@@ -192,7 +188,7 @@ export const defaultNavAppearanceConfig: NavAppearanceConfig = {
   borderColor: '#e2e8f0',
   textColor: '#0f172a',
   activeTextColor: '#000000',
-  maxWidth: 'wide',
+  maxWidth: 'full',
 
   // 2. Logo
   logoType: 'text',

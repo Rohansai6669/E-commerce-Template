@@ -1,7 +1,7 @@
 import React from 'react';
 import { redirect } from 'next/navigation';
 import { getCurrentUser, getCurrentProfile } from '@/core/auth/session';
-import { getCmsPageConfigServer, getSiteDesignTokensServer, getNavAppearanceConfigServer } from '@/lib/cms/cms-server';
+import { getCmsPageConfigServer, getSiteDesignTokensServer, getNavAppearanceConfigServer, getFooterConfigServer } from '@/lib/cms/cms-server';
 import { defaultSiteDesignTokens } from '@/lib/cms/defaults';
 import { fetchHomepageVisualBuilderData } from '@/app/actions/cms-actions';
 import { VisualBuilderStudio } from '@/components/admin/cms/visual-builder-studio';
@@ -35,6 +35,7 @@ export default async function VisualBuilderPage() {
     pageConfig,
     themeTokens,
     navConfig,
+    footerConfig,
     builderData,
     categoriesList,
     brandsList,
@@ -45,6 +46,7 @@ export default async function VisualBuilderPage() {
     getCmsPageConfigServer('/'),
     getSiteDesignTokensServer().then((t) => t || defaultSiteDesignTokens),
     getNavAppearanceConfigServer(),
+    getFooterConfigServer(),
     fetchHomepageVisualBuilderData(),
     safeQuery(
       () =>
@@ -166,6 +168,7 @@ export default async function VisualBuilderPage() {
         initialPageConfig={pageConfig}
         initialThemeTokens={themeTokens}
         initialNavConfig={navConfig}
+        initialFooterConfig={footerConfig}
         products={mappedProducts}
         seasonalSections={builderData.seasonalSections}
         categories={categoriesList || []}

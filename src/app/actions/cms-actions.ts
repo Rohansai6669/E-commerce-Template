@@ -2,9 +2,10 @@
 
 import fs from 'fs';
 import path from 'path';
+import bundledCmsStorage from '@/lib/cms/cms-storage.json';
 import { revalidatePath } from 'next/cache';
-import { PageConfig, SiteDesignTokens, NavAppearanceConfig } from '@/types/cms';
-import { defaultHomepageConfig, defaultNavAppearanceConfig } from '@/lib/cms/defaults';
+import { PageConfig, SiteDesignTokens, NavAppearanceConfig, FooterConfig } from '@/types/cms';
+import { defaultHomepageConfig, defaultNavAppearanceConfig, defaultFooterConfig } from '@/lib/cms/defaults';
 import { homepageService, type SeasonalCampaignData } from '@/core/storefront/homepage.service';
 import { type ProductCardModel } from '@/core/product/product.types';
 
@@ -228,7 +229,110 @@ export async function getNavAppearanceConfigServer(): Promise<NavAppearanceConfi
     console.error('getNavAppearanceConfigServer storage error:', err);
   }
 
+  if ((bundledCmsStorage as any).nav_appearance) {
+    return {
+      ...defaultNavAppearanceConfig,
+      ...(bundledCmsStorage as any).nav_appearance,
+    };
+  }
+
   return defaultNavAppearanceConfig;
+}
+
+/**
+ * Saves Storefront Footer Configuration with full Database & Disk Sync.
+ */
+export async function saveFooterConfigAction(config: FooterConfig): Promise<boolean> {
+  try {
+    // Save to Disk Storage
+    let existingData: Record<string, any> = {};
+    if (fs.existsSync(CMS_STORAGE_PATH)) {
+      try {
+        const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
+        existingData = JSON.parse(raw);
+      } catch (e) {
+        existingData = {};
+      }
+    }
+    existingData.footer_config = config;
+    fs.writeFileSync(CMS_STORAGE_PATH, JSON.stringify(existingData, null, 2), 'utf-8');
+
+    // Sync to Database
+    try {
+      if (db) {
+        await db
+          .insert(cmsSiteSettings)
+          .values({
+            key: 'footer_config',
+            value: config as any,
+          })
+          .onConflictDoUpdate({
+            target: cmsSiteSettings.key,
+            set: {
+              value: config as any,
+              updatedAt: new Date(),
+            },
+          });
+      }
+    } catch (dbErr) {
+      console.warn('saveFooterConfigAction DB sync write warning:', dbErr);
+    }
+
+    invalidateCmsCache('footer_config');
+    revalidatePath('/', 'layout');
+    return true;
+  } catch (err) {
+    console.error('saveFooterConfigAction error:', err);
+    return false;
+  }
+}
+
+/**
+ * Reads Storefront Footer Configuration with DB sync.
+ */
+export async function getFooterConfigServer(): Promise<FooterConfig> {
+  try {
+    if (db) {
+      const [res] = await db
+        .select()
+        .from(cmsSiteSettings)
+        .where(eq(cmsSiteSettings.key, 'footer_config'))
+        .limit(1);
+
+      if (res && res.value) {
+        return {
+          ...defaultFooterConfig,
+          ...(res.value as Partial<FooterConfig>),
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('getFooterConfigServer DB sync error:', err);
+  }
+
+  try {
+    if (fs.existsSync(CMS_STORAGE_PATH)) {
+      const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
+      const data = JSON.parse(raw);
+      if (data.footer_config) {
+        return {
+          ...defaultFooterConfig,
+          ...data.footer_config,
+        };
+      }
+    }
+  } catch (err) {
+    console.error('getFooterConfigServer storage error:', err);
+  }
+
+  if ((bundledCmsStorage as any).footer_config) {
+    return {
+      ...defaultFooterConfig,
+      ...(bundledCmsStorage as any).footer_config,
+    };
+  }
+
+  return defaultFooterConfig;
 }
 
 /**

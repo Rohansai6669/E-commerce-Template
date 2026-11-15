@@ -16,7 +16,7 @@ import { reviews } from '@/lib/db/schema/reviews';
 import { productCategories } from '@/lib/db/schema/catalog/product-taxonomy';
 import { collections, collectionProducts } from '@/lib/db/schema/catalog/collections';
 import { audiences, productAudiences } from '@/lib/db/schema/catalog/audiences';
-import { eq, and, or, like, gte, lte, sql, desc, asc, inArray } from 'drizzle-orm';
+import { eq, and, or, like, ilike, gte, lte, sql, desc, asc, inArray } from 'drizzle-orm';
 import { type ProductFilters, type FilterFacets, type FacetOption } from './product.types';
 
 /**
@@ -89,10 +89,12 @@ export class ProductRepository {
     }
 
     if (search) {
+      const pattern = `%${search.trim()}%`;
       conditions.push(
         or(
-          like(products.name, `%${search}%`),
-          like(products.description, `%${search}%`)
+          ilike(products.name, pattern),
+          ilike(products.description, pattern),
+          ilike(products.slug, pattern)
         )
       );
     }

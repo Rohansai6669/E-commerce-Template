@@ -28,15 +28,15 @@ export function InfoLayout({ title, subtitle, children }: InfoLayoutProps) {
     <Container className="py-12">
       <div className="flex flex-col lg:flex-row gap-10">
         {/* Navigation Sidebar */}
-        <aside className="w-full lg:w-64 shrink-0 flex flex-col gap-1 border-b lg:border-b-0 lg:border-r border-slate-800 pb-6 lg:pb-0 lg:pr-6">
-          <Text className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 px-3">
+        <aside className="w-full lg:w-64 shrink-0 flex flex-col gap-1 border-b lg:border-b-0 lg:border-r border-neutral-200 pb-6 lg:pb-0 lg:pr-6">
+          <Text className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 px-3 font-mono">
             Customer Care
           </Text>
           {SIDE_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="px-3 py-2 rounded-md text-sm font-semibold text-slate-400 hover:text-slate-100 hover:bg-slate-900/40 transition-all duration-150"
+              className="px-3 py-2 rounded-none text-xs font-bold uppercase tracking-wider text-neutral-600 hover:text-neutral-950 hover:bg-neutral-100 transition-all duration-150"
             >
               {link.label}
             </Link>
@@ -44,18 +44,18 @@ export function InfoLayout({ title, subtitle, children }: InfoLayoutProps) {
         </aside>
 
         {/* Content Box */}
-        <div className="flex-1 flex flex-col gap-6 max-w-3xl">
-          <div className="flex flex-col gap-2 pb-4 border-b border-slate-850">
-            <Heading level={1} className="text-3xl font-extrabold text-slate-100 tracking-tight">
+        <div className="flex-1 flex flex-col gap-6 max-w-4xl">
+          <div className="flex flex-col gap-2 pb-4 border-b border-neutral-200">
+            <h1 className="text-3xl sm:text-4xl font-black text-neutral-950 dark:text-white tracking-tight font-heading uppercase">
               {title}
-            </Heading>
+            </h1>
             {subtitle && (
-              <Text className="text-sm text-slate-400">
+              <p className="text-sm text-neutral-500">
                 {subtitle}
-              </Text>
+              </p>
             )}
           </div>
-          <article className="prose prose-invert prose-slate text-sm text-slate-300 leading-relaxed space-y-4">
+          <article className="prose prose-neutral text-sm text-neutral-800 dark:text-neutral-200 leading-relaxed space-y-4 max-w-none">
             {children}
           </article>
         </div>

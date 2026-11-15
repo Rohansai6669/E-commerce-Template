@@ -359,3 +359,4 @@ export const defaultOrdersTableConfig: TableConfig = {
 };
 
 export { defaultNavAppearanceConfig } from '@/types/navigation-appearance';
+export { defaultFooterConfig } from '@/types/footer-config';

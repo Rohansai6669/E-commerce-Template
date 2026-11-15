@@ -1,15 +1,16 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { PageConfig, AnySectionConfig, ProductCardConfig, TableConfig, AnnouncementBarConfig, SiteDesignTokens } from '@/types/cms';
-import { getCmsPageConfig, saveCmsPageConfig, getTableConfig, saveTableConfig, getAnnouncementBar, saveAnnouncementBar, getSiteDesignTokens, saveSiteDesignTokens } from '@/lib/cms/service';
-import { defaultProductCardConfig, defaultSiteDesignTokens } from '@/lib/cms/defaults';
+import { PageConfig, AnySectionConfig, ProductCardConfig, TableConfig, AnnouncementBarConfig, SiteDesignTokens, FooterConfig } from '@/types/cms';
+import { getCmsPageConfig, saveCmsPageConfig, getTableConfig, saveTableConfig, getAnnouncementBar, saveAnnouncementBar, getSiteDesignTokens, saveSiteDesignTokens, getFooterConfig, saveFooterConfig } from '@/lib/cms/service';
+import { defaultProductCardConfig, defaultSiteDesignTokens, defaultFooterConfig } from '@/lib/cms/defaults';
 import { useThemeVariables } from '@/providers/ThemeVariableProvider';
 import { SectionEditorModal } from '@/components/admin/cms/section-editor-modal';
 import Link from 'next/link';
-import { Sliders, Eye, ArrowUp, ArrowDown, Save, CheckCircle, Layout, Table as TableIcon, Megaphone, Palette, Edit3, Sparkles, LifeBuoy, Compass } from 'lucide-react';
+import { Sliders, Eye, ArrowUp, ArrowDown, Save, CheckCircle, Layout, Table as TableIcon, Megaphone, Palette, Edit3, Sparkles, LifeBuoy, Compass, LayoutGrid } from 'lucide-react';
 import { HelpPagesManager } from '@/components/admin/cms/help-pages-manager';
 import { NavEditorPanel } from '@/components/admin/cms/nav-editor-panel';
+import { FooterEditorPanel } from '@/components/admin/cms/footer-editor-panel';
 import { NavAppearanceConfig, defaultNavAppearanceConfig } from '@/types/navigation-appearance';
 import { getNavAppearanceConfig, saveNavAppearanceConfig } from '@/lib/cms/service';
 import { TypographyStudio } from '@/components/admin/cms/typography-studio';
@@ -23,9 +24,10 @@ export default function AdminCmsPage() {
   const [announcementBar, setAnnouncementBarState] = useState<AnnouncementBarConfig | null>(null);
   const [themeTokens, setThemeTokens] = useState<SiteDesignTokens>(currentThemeTokens || defaultSiteDesignTokens);
   const [navConfig, setNavConfig] = useState<NavAppearanceConfig>(defaultNavAppearanceConfig);
+  const [footerConfig, setFooterConfig] = useState<FooterConfig>(defaultFooterConfig);
 
   const [editingSection, setEditingSection] = useState<AnySectionConfig | null>(null);
-  const [activeTab, setActiveTab] = useState<'theme' | 'sections' | 'navigation' | 'product_cards' | 'tables' | 'announcement' | 'help_pages'>('navigation');
+  const [activeTab, setActiveTab] = useState<'theme' | 'sections' | 'navigation' | 'footer' | 'product_cards' | 'tables' | 'announcement' | 'help_pages'>('navigation');
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   useEffect(() => {
@@ -44,6 +46,9 @@ export default function AdminCmsPage() {
 
       const nav = await getNavAppearanceConfig();
       setNavConfig(nav);
+
+      const foot = await getFooterConfig();
+      setFooterConfig(foot);
     }
     loadData();
   }, []);
@@ -64,6 +69,9 @@ export default function AdminCmsPage() {
     }
     if (navConfig) {
       await saveNavAppearanceConfig(navConfig);
+    }
+    if (footerConfig) {
+      await saveFooterConfig(footerConfig);
     }
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
@@ -198,6 +206,18 @@ export default function AdminCmsPage() {
         >
           <Compass className="h-4 w-4" />
           Nav & Layout ({navConfig.scrollBehavior === 'transparent-to-sticky' ? 'Transparent Sticky' : navConfig.scrollBehavior})
+        </button>
+
+        <button
+          onClick={() => setActiveTab('footer')}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors ${
+            activeTab === 'footer'
+              ? 'bg-primary text-primary-foreground shadow'
+              : 'bg-muted/60 text-muted-foreground hover:bg-muted'
+          }`}
+        >
+          <LayoutGrid className="h-4 w-4" />
+          Storefront Footer
         </button>
 
         <button
@@ -469,6 +489,33 @@ export default function AdminCmsPage() {
 
           <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
             <NavEditorPanel config={navConfig} onChange={setNavConfig} />
+          </div>
+        </div>
+      )}
+
+      {/* TAB: Storefront Footer Studio */}
+      {activeTab === 'footer' && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
+            <div>
+              <h3 className="text-lg font-bold tracking-tight text-foreground font-heading">
+                Storefront Footer Studio
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Configure footer navigation columns, newsletter capture, social links, copyright, and visual theme presets.
+              </p>
+            </div>
+
+            <button
+              onClick={handleSaveAll}
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-bold uppercase tracking-wider text-primary-foreground shadow hover:bg-primary/90 transition-all cursor-pointer"
+            >
+              <Save className="h-4 w-4" /> Save Footer
+            </button>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-card shadow-xs p-5">
+            <FooterEditorPanel config={footerConfig} onChange={setFooterConfig} />
           </div>
         </div>
       )}

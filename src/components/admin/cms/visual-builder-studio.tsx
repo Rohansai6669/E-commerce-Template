@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { PageConfig, AnySectionConfig, SiteDesignTokens } from '@/types/cms';
+import { PageConfig, AnySectionConfig, SiteDesignTokens, FooterConfig, defaultFooterConfig } from '@/types/cms';
 import { NavAppearanceConfig, defaultNavAppearanceConfig } from '@/types/navigation-appearance';
-import { saveCmsPageConfig, saveSiteDesignTokens, saveNavAppearanceConfig } from '@/lib/cms/service';
+import { saveCmsPageConfig, saveSiteDesignTokens, saveNavAppearanceConfig, saveFooterConfig } from '@/lib/cms/service';
 import { useThemeVariables } from '@/providers/ThemeVariableProvider';
 import { BuilderPreviewCanvas, type DeviceViewport } from './builder-preview-canvas';
 import { SECTION_REGISTRY, RegistryEntry } from '@/lib/cms/registry';
@@ -12,6 +12,7 @@ import { SectionPicker } from './section-picker';
 import { DynamicEditorForm } from './dynamic-editor-form';
 import { ThemeEditorPanel } from './theme-editor-panel';
 import { NavEditorPanel } from './nav-editor-panel';
+import { FooterEditorPanel } from './footer-editor-panel';
 import { ThemePreset } from '@/lib/cms/theme/presets';
 import { SectionEditorModal } from './section-editor-modal';
 import { DirectSectionInspector } from './direct-section-inspector';
@@ -48,6 +49,8 @@ import {
   ExternalLink,
   Columns2,
   Compass,
+  LayoutGrid,
+  GripVertical,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -55,6 +58,7 @@ interface VisualBuilderStudioProps {
   initialPageConfig: PageConfig;
   initialThemeTokens: SiteDesignTokens;
   initialNavConfig?: NavAppearanceConfig;
+  initialFooterConfig?: FooterConfig;
   products: ProductData[];
   seasonalSections: SeasonalCampaignData[];
   categories?: { id: string; name: string; parentId?: string | null; slug?: string; imageUrl?: string | null; description?: string | null }[];
@@ -67,6 +71,7 @@ export function VisualBuilderStudio({
   initialPageConfig,
   initialThemeTokens,
   initialNavConfig,
+  initialFooterConfig,
   products,
   seasonalSections,
   categories = [],
@@ -81,15 +86,129 @@ export function VisualBuilderStudio({
   const [navConfig, setNavConfig] = useState<NavAppearanceConfig>(
     initialNavConfig || defaultNavAppearanceConfig
   );
+  const [footerConfig, setFooterConfig] = useState<FooterConfig>(
+    initialFooterConfig || defaultFooterConfig
+  );
   const [previewMegamenuCategory, setPreviewMegamenuCategory] = useState<string | null>(null);
   const [device, setDevice] = useState<DeviceViewport>('desktop');
-  const [activeTab, setActiveTab] = useState<'sections' | 'nav' | 'products' | 'theme'>('sections');
+  const [activeTab, setActiveTab] = useState<'sections' | 'nav' | 'footer' | 'products' | 'theme'>('sections');
   const [showSectionPicker, setShowSectionPicker] = useState(false);
   const [editingModalSection, setEditingModalSection] = useState<AnySectionConfig | null>(null);
 
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'split' | 'canvas' | 'inspector'>('split');
-  const [mobileTab, setMobileTab] = useState<'canvas' | 'editor'>('canvas');
+  const [mobileTab, setMobileTab] = useState<'canvas' | 'split' | 'editor'>('canvas');
+
+  // VS Code-style Resizable Panel State & Persistence
+  const DEFAULT_SIDEBAR_WIDTH = 420;
+  const [sidebarWidth, setSidebarWidth] = useState<number>(DEFAULT_SIDEBAR_WIDTH);
+  const [isResizing, setIsResizing] = useState<boolean>(false);
+  const [isMobileScreen, setIsMobileScreen] = useState<boolean>(false);
+
+  const splitContainerRef = useRef<HTMLDivElement>(null);
+  const rafIdRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const checkMobile = () => {
+        const mobile = window.innerWidth < 768;
+        setIsMobileScreen(mobile);
+        if (mobile) {
+          setSidebarWidth((prev) => Math.min(prev, Math.round(window.innerWidth * 0.65)));
+        }
+      };
+      checkMobile();
+      window.addEventListener('resize', checkMobile);
+
+      const saved = localStorage.getItem('builder_sidebar_width');
+      if (saved) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed) && parsed >= 260 && parsed <= 1200) {
+          setSidebarWidth(parsed);
+        }
+      }
+
+      return () => window.removeEventListener('resize', checkMobile);
+    }
+  }, []);
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    e.preventDefault();
+    setIsResizing(true);
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isResizing) return;
+    e.preventDefault();
+
+    const clientX = e.clientX;
+    if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
+
+    rafIdRef.current = requestAnimationFrame(() => {
+      const container = splitContainerRef.current;
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      const currentWidth = clientX - rect.left;
+
+      const isMobile = window.innerWidth < 768;
+      const minWidth = isMobile ? 150 : 280;
+      const maxWidth = isMobile ? window.innerWidth - 70 : Math.min(1000, window.innerWidth - 260);
+
+      const clamped = Math.max(minWidth, Math.min(maxWidth, currentWidth));
+      setSidebarWidth(clamped);
+    });
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isResizing) return;
+    if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
+    setIsResizing(false);
+    try {
+      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {}
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('builder_sidebar_width', String(Math.round(sidebarWidth)));
+    }
+  };
+
+  const handleDoubleClick = () => {
+    setSidebarWidth((prev) => {
+      let next = 420;
+      if (prev < 380) next = 440;
+      else if (prev < 550) next = 620;
+      else next = 340;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('builder_sidebar_width', String(next));
+      }
+      return next;
+    });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      setSidebarWidth((w) => {
+        const next = Math.max(280, w - 20);
+        if (typeof window !== 'undefined') localStorage.setItem('builder_sidebar_width', String(next));
+        return next;
+      });
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      setSidebarWidth((w) => {
+        const next = Math.min(Math.min(1000, window.innerWidth - 260), w + 20);
+        if (typeof window !== 'undefined') localStorage.setItem('builder_sidebar_width', String(next));
+        return next;
+      });
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      setSidebarWidth(340);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      setSidebarWidth(620);
+    }
+  };
 
   useEffect(() => {
     if (selectedSectionId) {
@@ -129,8 +248,11 @@ export function VisualBuilderStudio({
       if (navConfig) {
         await saveNavAppearanceConfig(navConfig);
       }
+      if (footerConfig) {
+        await saveFooterConfig(footerConfig);
+      }
       setSavedSuccess(true);
-      toast.success('Storefront Sections, Navigation Appearance & Theme Tokens Published Successfully!');
+      toast.success('Storefront Sections, Navigation, Footer & Theme Published Successfully!');
       setTimeout(() => setSavedSuccess(false), 3000);
     } catch (err) {
       toast.error('Failed to publish storefront changes');
@@ -173,6 +295,17 @@ export function VisualBuilderStudio({
       saveSiteDesignTokens(preset.tokens).catch(console.error);
     }, 500);
     toast.success(`Applied "${preset.name}" Theme Preset!`);
+  };
+
+  const footerSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const handleFooterConfigChange = (updated: FooterConfig) => {
+    setFooterConfig(updated);
+    if (footerSaveTimeoutRef.current) {
+      clearTimeout(footerSaveTimeoutRef.current);
+    }
+    footerSaveTimeoutRef.current = setTimeout(() => {
+      saveFooterConfig(updated).catch(console.error);
+    }, 600);
   };
 
   const handleAddRegistrySection = (entry: RegistryEntry) => {
@@ -340,12 +473,12 @@ export function VisualBuilderStudio({
           </button>
         </div>
 
-        {/* Mobile View Mode Switcher (Preview vs Editor) */}
+        {/* Mobile View Mode Switcher (Preview vs Split vs Editor) */}
         <div className="flex md:hidden items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200">
           <button
             type="button"
             onClick={() => setMobileTab('canvas')}
-            className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase flex items-center gap-1 transition cursor-pointer ${
+            className={`px-2 py-1 rounded-lg text-[10px] font-extrabold uppercase flex items-center gap-1 transition cursor-pointer ${
               mobileTab === 'canvas'
                 ? 'bg-slate-950 text-white shadow-2xs'
                 : 'text-slate-600 hover:text-slate-950'
@@ -356,8 +489,25 @@ export function VisualBuilderStudio({
           </button>
           <button
             type="button"
+            onClick={() => {
+              setMobileTab('split');
+              if (typeof window !== 'undefined') {
+                setSidebarWidth(Math.round(window.innerWidth * 0.52));
+              }
+            }}
+            className={`px-2 py-1 rounded-lg text-[10px] font-extrabold uppercase flex items-center gap-1 transition cursor-pointer ${
+              mobileTab === 'split'
+                ? 'bg-slate-950 text-white shadow-2xs'
+                : 'text-slate-600 hover:text-slate-950'
+            }`}
+          >
+            <Split className="w-3 h-3" />
+            <span>Split</span>
+          </button>
+          <button
+            type="button"
             onClick={() => setMobileTab('editor')}
-            className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase flex items-center gap-1 transition cursor-pointer ${
+            className={`px-2 py-1 rounded-lg text-[10px] font-extrabold uppercase flex items-center gap-1 transition cursor-pointer ${
               mobileTab === 'editor'
                 ? 'bg-slate-950 text-white shadow-2xs'
                 : 'text-slate-600 hover:text-slate-950'
@@ -370,6 +520,41 @@ export function VisualBuilderStudio({
 
         {/* Desktop View Mode & Viewport Device Controls */}
         <div className="hidden md:flex items-center gap-2">
+          {/* Panel Size Quick Presets (VS Code Inspired) */}
+          {viewMode === 'split' && (
+            <div className="hidden lg:flex items-center gap-0.5 bg-slate-100 p-1 rounded-xl border border-slate-200 text-[10px] font-bold">
+              <span className="text-slate-400 px-1 font-mono uppercase text-[9px]">Panel:</span>
+              {[
+                { label: 'Compact', width: 340 },
+                { label: 'Standard', width: 440 },
+                { label: 'Spacious', width: 620 },
+                { label: 'Wide', width: 800 },
+              ].map((preset) => {
+                const isCurrent = Math.abs(sidebarWidth - preset.width) < 30;
+                return (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => {
+                      setSidebarWidth(preset.width);
+                      if (typeof window !== 'undefined') {
+                        localStorage.setItem('builder_sidebar_width', String(preset.width));
+                      }
+                    }}
+                    className={`px-2 py-1 rounded-lg transition cursor-pointer ${
+                      isCurrent
+                        ? 'bg-white text-slate-950 font-extrabold shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-950 hover:bg-white/60'
+                    }`}
+                    title={`Set editor panel to ${preset.width}px (or drag the border handle)`}
+                  >
+                    {preset.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           {/* View Mode: Split / Canvas / Inspector */}
           <div className="flex items-center gap-0.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
             <button
@@ -515,26 +700,52 @@ export function VisualBuilderStudio({
         </div>
       </header>
 
-      {/* Main Studio Body: Inspector Sidebar + Preview Canvas */}
-      <div className="flex-1 flex overflow-hidden relative">
+      {/* Main Studio Body: Inspector Sidebar + Resizable Gutter + Preview Canvas */}
+      <div
+        ref={splitContainerRef}
+        className={`flex-1 flex overflow-hidden relative ${
+          isResizing ? 'cursor-col-resize select-none' : ''
+        }`}
+      >
         {/* Left Inspector Control Sidebar */}
         <div
+          style={{
+            width:
+              viewMode === 'inspector'
+                ? undefined
+                : isMobileScreen
+                ? mobileTab === 'editor'
+                  ? '100%'
+                  : mobileTab === 'canvas'
+                  ? '0px'
+                  : `${sidebarWidth}px`
+                : viewMode === 'canvas'
+                ? '0px'
+                : `${sidebarWidth}px`,
+            maxWidth: isMobileScreen && mobileTab === 'split' ? '85vw' : undefined,
+          }}
           className={`${
-            mobileTab === 'editor' ? 'flex' : 'hidden'
-          } md:${
-            viewMode === 'canvas' ? 'hidden' : 'flex'
+            isMobileScreen
+              ? mobileTab === 'canvas'
+                ? 'hidden'
+                : 'flex'
+              : viewMode === 'canvas'
+              ? 'hidden'
+              : 'flex'
           } ${
             viewMode === 'inspector'
               ? 'w-full md:max-w-4xl md:mx-auto md:border-x'
-              : 'w-full md:w-[380px] lg:w-[400px] xl:w-[420px] md:shrink-0 md:border-r'
-          } bg-white border-slate-200 flex-col z-20 overflow-hidden shadow-xs transition-all duration-200 h-full`}
+              : 'shrink-0'
+          } bg-white border-slate-200 flex-col z-20 overflow-hidden shadow-xs h-full ${
+            isResizing ? 'transition-none select-none' : 'transition-[width] duration-150 ease-out'
+          }`}
         >
           {/* Studio Inspector Tab Selector */}
-          <div className="flex border-b border-slate-200 bg-slate-100 p-1.5 sm:p-2 gap-1 sm:gap-1.5">
+          <div className="flex border-b border-slate-200 bg-slate-100 p-1.5 sm:p-2 gap-1 sm:gap-1.5 overflow-x-auto scrollbar-none shrink-0">
             <button
               type="button"
               onClick={() => setActiveTab('sections')}
-              className={`flex-1 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
+              className={`flex-1 min-w-max px-2.5 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer shrink-0 ${
                 activeTab === 'sections'
                   ? 'bg-slate-950 text-white shadow-xs'
                   : 'bg-white text-slate-700 hover:text-slate-950 hover:bg-slate-50 border border-slate-200'
@@ -546,7 +757,7 @@ export function VisualBuilderStudio({
             <button
               type="button"
               onClick={() => setActiveTab('nav')}
-              className={`flex-1 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
+              className={`flex-1 min-w-max px-2.5 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer shrink-0 ${
                 activeTab === 'nav'
                   ? 'bg-slate-950 text-white shadow-xs'
                   : 'bg-white text-slate-700 hover:text-slate-950 hover:bg-slate-50 border border-slate-200'
@@ -557,8 +768,20 @@ export function VisualBuilderStudio({
             </button>
             <button
               type="button"
+              onClick={() => setActiveTab('footer')}
+              className={`flex-1 min-w-max px-2.5 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer shrink-0 ${
+                activeTab === 'footer'
+                  ? 'bg-slate-950 text-white shadow-xs'
+                  : 'bg-white text-slate-700 hover:text-slate-950 hover:bg-slate-50 border border-slate-200'
+              }`}
+            >
+              <LayoutGrid className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+              <span>FOOTER</span>
+            </button>
+            <button
+              type="button"
               onClick={() => setActiveTab('products')}
-              className={`flex-1 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
+              className={`flex-1 min-w-max px-2.5 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer shrink-0 ${
                 activeTab === 'products'
                   ? 'bg-slate-950 text-white shadow-xs'
                   : 'bg-white text-slate-700 hover:text-slate-950 hover:bg-slate-50 border border-slate-200'
@@ -570,7 +793,7 @@ export function VisualBuilderStudio({
             <button
               type="button"
               onClick={() => setActiveTab('theme')}
-              className={`flex-1 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
+              className={`flex-1 min-w-max px-2.5 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer shrink-0 ${
                 activeTab === 'theme'
                   ? 'bg-slate-950 text-white shadow-xs'
                   : 'bg-white text-slate-700 hover:text-slate-950 hover:bg-slate-50 border border-slate-200'
@@ -815,6 +1038,16 @@ export function VisualBuilderStudio({
             />
           )}
 
+          {/* Tab: Footer Studio */}
+          {activeTab === 'footer' && (
+            <div className="flex-1 overflow-y-auto p-4 bg-slate-50/50">
+              <FooterEditorPanel
+                config={footerConfig}
+                onChange={handleFooterConfigChange}
+              />
+            </div>
+          )}
+
           {/* Tab 3: Theme Presets & Color Token Inspector */}
           {activeTab === 'theme' && (
             <div className="flex-1 overflow-y-auto bg-slate-50/50">
@@ -827,13 +1060,58 @@ export function VisualBuilderStudio({
           )}
         </div>
 
+        {/* VS Code-style Resizable Splitter Gutter */}
+        {((!isMobileScreen && viewMode === 'split') || (isMobileScreen && mobileTab === 'split')) && (
+          <div
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Resize editor panel"
+            aria-valuenow={Math.round(sidebarWidth)}
+            aria-valuemin={280}
+            aria-valuemax={1000}
+            tabIndex={0}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+            onDoubleClick={handleDoubleClick}
+            onKeyDown={handleKeyDown}
+            className={`group relative flex items-center justify-center select-none z-30 shrink-0 touch-none cursor-col-resize transition-all ${
+              isResizing
+                ? 'w-2 bg-indigo-600 ring-4 ring-indigo-400/30'
+                : 'w-1 sm:w-1.5 hover:w-2 bg-slate-200 hover:bg-indigo-500 active:bg-indigo-600'
+            }`}
+          >
+            {/* Generous touch/mouse target: 32px on touch mobile, 20px on desktop */}
+            <div className="absolute inset-y-0 -left-3 -right-3 z-10 cursor-col-resize touch-none" />
+
+            {/* Center Grip Handle Pill (VS Code / Figma style) */}
+            <div
+              className={`relative z-20 w-4 h-9 sm:w-3.5 sm:h-8 rounded-full border flex items-center justify-center transition-all shadow-xs pointer-events-none ${
+                isResizing
+                  ? 'bg-indigo-600 border-indigo-400 text-white scale-110 shadow-md ring-2 ring-indigo-300'
+                  : 'bg-white border-slate-300 text-slate-400 group-hover:text-indigo-600 group-hover:border-indigo-400 group-hover:scale-110'
+              }`}
+              title="Drag to resize panel • Double-click to toggle width"
+            >
+              <GripVertical className="w-2.5 h-2.5" />
+            </div>
+          </div>
+        )}
+
         {/* Right Interactive Preview Canvas */}
         <div
           className={`${
-            mobileTab === 'canvas' ? 'flex' : 'hidden'
-          } md:${
-            viewMode === 'inspector' ? 'hidden' : 'flex'
-          } flex-1 min-w-0 h-full overflow-hidden bg-slate-900/95 flex-col relative`}
+            isMobileScreen
+              ? mobileTab === 'editor'
+                ? 'hidden'
+                : 'flex'
+              : viewMode === 'inspector'
+              ? 'hidden'
+              : 'flex'
+          } flex-1 min-w-0 h-full overflow-hidden bg-slate-900/95 flex-col relative ${
+            isResizing ? 'pointer-events-none select-none' : ''
+          }`}
         >
           {/* Quick Floating Re-open Editor Button when in Canvas Only mode on Desktop */}
           {viewMode === 'canvas' && (
@@ -855,6 +1133,7 @@ export function VisualBuilderStudio({
             device={device}
             themeTokens={themeTokens}
             navConfig={navConfig}
+            footerConfig={footerConfig}
             previewActiveCategory={previewMegamenuCategory}
             onPreviewCategoryChange={setPreviewMegamenuCategory}
             selectedSectionId={selectedSectionId}
@@ -864,6 +1143,13 @@ export function VisualBuilderStudio({
               }
               setActiveTab('sections');
               setSelectedSectionId(id);
+              setMobileTab('editor');
+            }}
+            onSelectFooter={() => {
+              if (viewMode === 'canvas') {
+                setViewMode('split');
+              }
+              setActiveTab('footer');
               setMobileTab('editor');
             }}
           />

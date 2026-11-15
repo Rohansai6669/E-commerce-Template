@@ -40,6 +40,7 @@ export function ProductCard({ product: rawProduct, className, children, ...props
   return (
     <ProductCardContext.Provider value={{ product }}>
       <div
+        suppressHydrationWarning
         className={cn(
           'group relative rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-card text-card-foreground overflow-hidden shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full',
           className

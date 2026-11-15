@@ -103,6 +103,7 @@ export function ConfigurableProductCard({
   return (
     <>
       <div
+        suppressHydrationWarning
         className={`group relative rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-card text-card-foreground overflow-hidden shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full ${className}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -152,6 +153,8 @@ export function ConfigurableProductCard({
           {/* Wishlist Button */}
           {config.showWishlist && (
             <button
+              type="button"
+              suppressHydrationWarning
               onClick={handleWishlistToggle}
               disabled={isTogglingWishlist}
               className="absolute top-3 right-3 h-9 w-9 rounded-none bg-white border border-neutral-200 flex items-center justify-center text-neutral-800 hover:text-black hover:bg-neutral-100 transition-all duration-200 z-20 cursor-pointer shadow-xs"
@@ -165,6 +168,8 @@ export function ConfigurableProductCard({
           <div className="absolute inset-x-3 bottom-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-3 group-hover:translate-y-0 z-20">
             {config.quickViewEnabled && (
               <button
+                type="button"
+                suppressHydrationWarning
                 onClick={handleQuickView}
                 className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-none bg-white text-black border border-neutral-200 py-2.5 px-3 text-xs font-bold uppercase tracking-wider hover:bg-neutral-100 shadow-md transition-all cursor-pointer"
               >
@@ -174,6 +179,8 @@ export function ConfigurableProductCard({
             )}
             {config.showQuickAdd && (
               <button
+                type="button"
+                suppressHydrationWarning
                 onClick={handleQuickAdd}
                 disabled={isAddingToCart || !product.inStock}
                 className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-none bg-black hover:bg-neutral-800 text-white py-2.5 px-3 text-xs font-bold uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"

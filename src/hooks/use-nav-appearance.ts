@@ -4,9 +4,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { NavAppearanceConfig, defaultNavAppearanceConfig } from '@/types/navigation-appearance';
 import { getNavAppearanceConfig, saveNavAppearanceConfig } from '@/lib/cms/service';
 
-export function useNavAppearance(overrideConfig?: NavAppearanceConfig) {
+export function useNavAppearance(
+  overrideConfig?: NavAppearanceConfig,
+  initialConfig?: NavAppearanceConfig
+) {
   const [config, setConfig] = useState<NavAppearanceConfig>(
-    overrideConfig || defaultNavAppearanceConfig
+    overrideConfig || initialConfig || defaultNavAppearanceConfig
   );
 
   useEffect(() => {

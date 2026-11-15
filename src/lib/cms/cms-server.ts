@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import { PageConfig, SiteDesignTokens, NavAppearanceConfig } from '@/types/cms';
-import { defaultHomepageConfig, defaultSiteDesignTokens, defaultNavAppearanceConfig } from '@/lib/cms/defaults';
+import bundledCmsStorage from './cms-storage.json';
+import { PageConfig, SiteDesignTokens, NavAppearanceConfig, FooterConfig } from '@/types/cms';
+import { defaultHomepageConfig, defaultSiteDesignTokens, defaultNavAppearanceConfig, defaultFooterConfig } from '@/lib/cms/defaults';
 import { db } from '@/lib/db';
 import { cmsSiteSettings } from '@/lib/db/schema/cms';
 import { eq } from 'drizzle-orm';
@@ -63,6 +64,9 @@ export async function getCmsPageConfigServer(slug: string = '/'): Promise<PageCo
     } catch (err) {
       console.error('getCmsPageConfigServer storage error:', err);
     }
+    if (!result && (bundledCmsStorage as Record<string, any>)[slug]) {
+      result = (bundledCmsStorage as Record<string, any>)[slug] as PageConfig;
+    }
   }
 
   const finalConfig = result || defaultHomepageConfig;
@@ -110,6 +114,9 @@ export async function getSiteDesignTokensServer(): Promise<SiteDesignTokens> {
       }
     } catch (err) {
       console.error('getSiteDesignTokensServer storage error:', err);
+    }
+    if (!result && (bundledCmsStorage as any).site_design_tokens) {
+      result = (bundledCmsStorage as any).site_design_tokens as SiteDesignTokens;
     }
   }
 
@@ -163,10 +170,68 @@ export async function getNavAppearanceConfigServer(): Promise<NavAppearanceConfi
     } catch (err) {
       console.error('getNavAppearanceConfigServer storage error:', err);
     }
+    if (!result && (bundledCmsStorage as any).nav_appearance) {
+      result = (bundledCmsStorage as any).nav_appearance as Partial<NavAppearanceConfig>;
+    }
   }
 
   const finalConfig: NavAppearanceConfig = {
     ...defaultNavAppearanceConfig,
+    ...(result || {}),
+  };
+
+  cmsMemoryCache.set(cacheKey, { value: finalConfig, expiresAt: Date.now() + CMS_CACHE_TTL });
+  return finalConfig;
+}
+
+/**
+ * Direct server-side read of Storefront Footer Configuration with DB sync.
+ */
+export async function getFooterConfigServer(): Promise<FooterConfig> {
+  const cacheKey = 'footer_config';
+  const now = Date.now();
+  const cached = cmsMemoryCache.get(cacheKey);
+  if (cached && cached.expiresAt > now) {
+    return cached.value as FooterConfig;
+  }
+
+  let result: Partial<FooterConfig> | null = null;
+
+  try {
+    if (db) {
+      const [res] = await db
+        .select()
+        .from(cmsSiteSettings)
+        .where(eq(cmsSiteSettings.key, cacheKey))
+        .limit(1);
+
+      if (res && res.value) {
+        result = res.value as Partial<FooterConfig>;
+      }
+    }
+  } catch (err) {
+    console.warn('getFooterConfigServer DB fetch error:', err);
+  }
+
+  if (!result) {
+    try {
+      if (fs.existsSync(CMS_STORAGE_PATH)) {
+        const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
+        const data = JSON.parse(raw);
+        if (data.footer_config) {
+          result = data.footer_config;
+        }
+      }
+    } catch (err) {
+      console.error('getFooterConfigServer storage error:', err);
+    }
+    if (!result && (bundledCmsStorage as any).footer_config) {
+      result = (bundledCmsStorage as any).footer_config as Partial<FooterConfig>;
+    }
+  }
+
+  const finalConfig: FooterConfig = {
+    ...defaultFooterConfig,
     ...(result || {}),
   };
 

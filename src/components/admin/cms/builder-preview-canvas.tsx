@@ -3,11 +3,13 @@
 import React from 'react';
 import { PageRenderer } from '@/components/cms/page-renderer';
 import { Header } from '@/components/navigation/Header/header';
+import { Footer } from '@/components/navigation/Footer/footer';
 import { type AnySectionConfig } from '@/types/cms';
 import { type ProductData } from '@/components/commerce/configurable-product-card';
 import { type SeasonalSaleCampaignProps } from '@/components/cms/sections/cms-seasonal-sale-grid';
 import { type SiteDesignTokens } from '@/types/cms';
 import { type NavAppearanceConfig } from '@/types/navigation-appearance';
+import { type FooterConfig } from '@/types/footer-config';
 
 export type DeviceViewport = 'desktop' | 'tablet' | 'mobile';
 
@@ -18,10 +20,12 @@ interface BuilderPreviewCanvasProps {
   device: DeviceViewport;
   themeTokens: SiteDesignTokens;
   navConfig?: NavAppearanceConfig;
+  footerConfig?: FooterConfig;
   previewActiveCategory?: string | null;
   onPreviewCategoryChange?: (category: string | null) => void;
   selectedSectionId?: string | null;
   onSelectSection?: (id: string) => void;
+  onSelectFooter?: () => void;
 }
 
 export function BuilderPreviewCanvas({
@@ -35,6 +39,8 @@ export function BuilderPreviewCanvas({
   onPreviewCategoryChange,
   selectedSectionId,
   onSelectSection,
+  footerConfig,
+  onSelectFooter,
 }: BuilderPreviewCanvasProps) {
   const radiusMap: Record<string, string> = {
     none: '0px',
@@ -132,6 +138,15 @@ export function BuilderPreviewCanvas({
             onSelectSection={onSelectSection}
           />
         </main>
+
+        {/* Live Storefront Footer in Builder Canvas */}
+        <div
+          className="cursor-pointer transition-all hover:ring-2 hover:ring-indigo-500/50"
+          onClick={onSelectFooter}
+          title="Click to edit footer in builder"
+        >
+          <Footer previewConfig={footerConfig} />
+        </div>
       </div>
     );
   }
@@ -188,6 +203,15 @@ export function BuilderPreviewCanvas({
               onSelectSection={onSelectSection}
             />
           </main>
+
+          {/* Live Storefront Footer in Mobile/Tablet Canvas */}
+          <div
+            className="cursor-pointer transition-all hover:ring-2 hover:ring-indigo-500/50"
+            onClick={onSelectFooter}
+            title="Click to edit footer in builder"
+          >
+            <Footer previewConfig={footerConfig} />
+          </div>
         </div>
       </div>
     </div>

@@ -46,15 +46,18 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-[75vh] flex items-center justify-center px-4 py-12 bg-slate-950/20">
-      <Card className="w-full max-w-md border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-2xl">
+    <div className="min-h-[75vh] flex items-center justify-center px-4 py-12 bg-neutral-50/50 dark:bg-neutral-950/20">
+      <Card className="w-full max-w-md border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 shadow-xl rounded-none">
         <CardHeader className="text-center pb-2">
-          <Heading level={2} className="text-2xl font-extrabold text-slate-100 tracking-tight">
+          <span className="text-[10px] font-bold tracking-[0.25em] text-neutral-400 uppercase font-mono block mb-1">
+            LEXIDO • ACCOUNT
+          </span>
+          <h1 className="text-2xl font-black font-heading uppercase text-neutral-950 dark:text-white tracking-tight">
             Create Account
-          </Heading>
-          <Text className="text-sm text-slate-400 mt-1">
+          </h1>
+          <p className="text-xs text-neutral-500 mt-1">
             Sign up to track purchases, save products, and configure addresses.
-          </Text>
+          </p>
         </CardHeader>
         <CardContent className="pt-4">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -65,7 +68,7 @@ export default function RegisterPage() {
                 type="text"
                 placeholder="John Doe"
                 required
-                className="bg-slate-950/40 border-slate-800 text-slate-200 focus:border-primary"
+                className="bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:border-neutral-950 rounded-none"
                 disabled={isPending}
               />
             </FormField>
@@ -77,7 +80,7 @@ export default function RegisterPage() {
                 type="email"
                 placeholder="name@example.com"
                 required
-                className="bg-slate-950/40 border-slate-800 text-slate-200 focus:border-primary"
+                className="bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:border-neutral-950 rounded-none"
                 disabled={isPending}
               />
             </FormField>
@@ -89,7 +92,7 @@ export default function RegisterPage() {
                 type="password"
                 placeholder="Minimum 8 characters"
                 required
-                className="bg-slate-950/40 border-slate-800 text-slate-200 focus:border-primary"
+                className="bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:border-neutral-950 rounded-none"
                 disabled={isPending}
               />
             </FormField>
@@ -101,32 +104,32 @@ export default function RegisterPage() {
                 type="password"
                 placeholder="Repeat password"
                 required
-                className="bg-slate-950/40 border-slate-800 text-slate-200 focus:border-primary"
+                className="bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:border-neutral-950 rounded-none"
                 disabled={isPending}
               />
             </FormField>
 
             {error && (
-              <div className="p-3 text-xs bg-rose-500/10 border border-rose-500/20 text-rose-450 rounded-lg">
+              <div className="p-3 text-xs bg-rose-50 border border-rose-200 text-rose-600 rounded-none">
                 {error}
               </div>
             )}
 
-            <Button type="submit" className="w-full mt-2 font-semibold cursor-pointer" disabled={isPending}>
+            <Button type="submit" className="w-full mt-2 font-bold uppercase tracking-widest text-xs py-3 rounded-none bg-black hover:bg-neutral-800 text-white cursor-pointer" disabled={isPending}>
               {isPending ? 'Registering...' : 'Register'}
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="flex flex-col gap-3 text-center border-t border-slate-800/60 pt-4">
-          <Text className="text-xs text-slate-450">
+        <CardFooter className="flex flex-col gap-3 text-center border-t border-neutral-100 dark:border-neutral-800 pt-4">
+          <p className="text-xs text-neutral-500">
             Already have an account?{' '}
             <Link
               href="/login"
-              className="text-primary hover:text-primary-hover font-semibold transition-colors"
+              className="text-black dark:text-white hover:underline font-bold transition-colors uppercase tracking-wider"
             >
               Sign In
             </Link>
-          </Text>
+          </p>
         </CardFooter>
       </Card>
     </div>

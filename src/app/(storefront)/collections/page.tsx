@@ -28,21 +28,21 @@ export default async function CollectionsPage() {
   ];
 
   return (
-    <Container className="py-10 max-w-7xl">
+    <Container className="py-10">
       <Stack gap="8">
         <Breadcrumb items={breadcrumbs} />
 
         {/* Page Header */}
         <div className="border-b border-border pb-8">
-          <p className="text-[11px] font-bold tracking-[0.25em] text-primary uppercase mb-2">
-            Curated Drops & Capsules
+          <p className="text-[11px] font-bold tracking-[0.25em] text-neutral-500 uppercase mb-2 font-mono">
+            LEXIDO • CURATED DROPS & CAPSULES
           </p>
-          <Heading level={1} className="text-4xl sm:text-5xl font-extrabold tracking-tight font-heading uppercase">
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black font-heading tracking-tighter uppercase text-neutral-950 dark:text-white leading-[0.9] mt-1 mb-2">
             Collections
-          </Heading>
-          <Text className="text-muted-foreground mt-2 max-w-2xl text-sm sm:text-base">
+          </h1>
+          <p className="text-muted-foreground mt-2 max-w-2xl text-sm sm:text-base">
             Engineered silhouettes and seasonal curation. Explore thematic drops crafted for modern luxury.
-          </Text>
+          </p>
         </div>
 
         {collectionsList.length === 0 ? (
@@ -54,7 +54,7 @@ export default async function CollectionsPage() {
             actionHref="/products"
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 sm:gap-8">
             {collectionsList.map((col) => {
               const defaultImage =
                 col.imageUrl ||

@@ -5,6 +5,7 @@ import {
   SiteDesignTokens,
   InstagramSettingsConfig,
   NavAppearanceConfig,
+  FooterConfig,
 } from '@/types/cms';
 import {
   defaultHomepageConfig,
@@ -13,12 +14,15 @@ import {
   defaultSiteDesignTokens,
   defaultInstagramSettings,
   defaultNavAppearanceConfig,
+  defaultFooterConfig,
 } from './defaults';
 import {
   saveCmsPageConfigAction,
   saveSiteDesignTokensAction,
   saveNavAppearanceConfigAction,
   getNavAppearanceConfigServer,
+  saveFooterConfigAction,
+  getFooterConfigServer,
 } from '@/app/actions/cms-actions';
 
 // In-memory / client storage state keys
@@ -28,6 +32,7 @@ const STORAGE_KEY_ANNOUNCEMENT = 'cms_announcement_bar';
 const STORAGE_KEY_DESIGN_TOKENS = 'cms_design_tokens';
 const STORAGE_KEY_INSTAGRAM = 'cms_instagram_settings';
 const STORAGE_KEY_NAV_APPEARANCE = 'cms_nav_appearance';
+const STORAGE_KEY_FOOTER = 'cms_footer_config';
 
 export async function getCmsPageConfig(slug: string = '/'): Promise<PageConfig> {
   if (typeof window !== 'undefined') {
@@ -176,6 +181,21 @@ export async function getNavAppearanceConfig(): Promise<NavAppearanceConfig> {
       console.warn('Failed to read nav appearance config from storage:', e);
     }
   }
+
+  try {
+    const serverConfig = await getNavAppearanceConfigServer();
+    if (serverConfig) {
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(STORAGE_KEY_NAV_APPEARANCE, JSON.stringify(serverConfig));
+        } catch (_) {}
+      }
+      return serverConfig;
+    }
+  } catch (err) {
+    console.warn('Failed to fetch nav appearance from server action:', err);
+  }
+
   return defaultNavAppearanceConfig;
 }
 
@@ -189,4 +209,48 @@ export async function saveNavAppearanceConfig(config: NavAppearanceConfig): Prom
     }
   }
   return await saveNavAppearanceConfigAction(config);
+}
+
+export async function getFooterConfig(): Promise<FooterConfig> {
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY_FOOTER);
+      if (stored) {
+        return {
+          ...defaultFooterConfig,
+          ...JSON.parse(stored),
+        };
+      }
+    } catch (e) {
+      console.warn('Failed to read footer config from storage:', e);
+    }
+  }
+
+  try {
+    const serverConfig = await getFooterConfigServer();
+    if (serverConfig) {
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(STORAGE_KEY_FOOTER, JSON.stringify(serverConfig));
+        } catch (_) {}
+      }
+      return serverConfig;
+    }
+  } catch (err) {
+    console.warn('Failed to fetch footer config from server action:', err);
+  }
+
+  return defaultFooterConfig;
+}
+
+export async function saveFooterConfig(config: FooterConfig): Promise<boolean> {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(STORAGE_KEY_FOOTER, JSON.stringify(config));
+      window.dispatchEvent(new Event('cms-footer-updated'));
+    } catch (e) {
+      console.error('Failed to save footer config to localStorage:', e);
+    }
+  }
+  return await saveFooterConfigAction(config);
 }

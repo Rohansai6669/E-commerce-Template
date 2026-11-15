@@ -18,6 +18,7 @@ import {
 import { useNavAppearance } from '@/hooks/use-nav-appearance';
 
 export interface HeaderProps {
+  initialConfig?: NavAppearanceConfig;
   previewConfig?: NavAppearanceConfig;
   previewActiveCategory?: string | null;
   onPreviewCategoryChange?: (category: string | null) => void;
@@ -75,6 +76,7 @@ const TRACKING_MAP: Record<string, string> = {
  * and live editing from Visual Studio & Admin CMS.
  */
 export function Header({
+  initialConfig,
   previewConfig,
   previewActiveCategory,
   onPreviewCategoryChange,
@@ -83,8 +85,8 @@ export function Header({
   const pathname = usePathname();
   const isHomepage = pathname === '/';
 
-  const { navConfig: liveConfig } = useNavAppearance(previewConfig);
-  const config = previewConfig || liveConfig || defaultNavAppearanceConfig;
+  const { navConfig: liveConfig } = useNavAppearance(previewConfig, initialConfig);
+  const config = previewConfig || liveConfig || initialConfig || defaultNavAppearanceConfig;
 
   const [internalActiveCategory, setInternalActiveCategory] = React.useState<string | null>(null);
   const [isScrolled, setIsScrolled] = React.useState(false);

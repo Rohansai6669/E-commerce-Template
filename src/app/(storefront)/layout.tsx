@@ -3,6 +3,7 @@ import { Header } from '@/components/navigation/Header/header';
 import { Footer } from '@/components/navigation/Footer/footer';
 import { WebVitalsReporter } from '@/components/monitoring/web-vitals';
 import { getOrganizationSchema, getWebsiteSchema } from '@/core/seo/jsonld';
+import { getNavAppearanceConfigServer, getFooterConfigServer } from '@/lib/cms/cms-server';
 
 export interface StorefrontLayoutProps {
   children: React.ReactNode;
@@ -11,9 +12,14 @@ export interface StorefrontLayoutProps {
 /**
  * Public storefront route group layout.
  */
-export default function StorefrontLayout({ children }: StorefrontLayoutProps) {
+export default async function StorefrontLayout({ children }: StorefrontLayoutProps) {
   const orgJsonLd = getOrganizationSchema();
   const websiteJsonLd = getWebsiteSchema();
+
+  const [navConfig, footerConfig] = await Promise.all([
+    getNavAppearanceConfigServer(),
+    getFooterConfigServer(),
+  ]);
 
   return (
     <>
@@ -31,13 +37,13 @@ export default function StorefrontLayout({ children }: StorefrontLayoutProps) {
       />
 
       <div className="min-h-screen flex flex-col w-full bg-background">
-        <Header />
+        <Header initialConfig={navConfig} />
         <main className="flex-1 w-full flex flex-col bg-background">
           <React.Suspense fallback={null}>
             {children}
           </React.Suspense>
         </main>
-        <Footer />
+        <Footer initialConfig={footerConfig} />
       </div>
     </>
   );

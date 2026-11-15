@@ -50,24 +50,27 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-[65vh] flex items-center justify-center px-4 py-12 bg-slate-950/20">
-      <Card className="w-full max-w-md border-slate-800 bg-slate-900/60 backdrop-blur-xl shadow-2xl">
+    <div className="min-h-[65vh] flex items-center justify-center px-4 py-12 bg-neutral-50/50 dark:bg-neutral-950/20">
+      <Card className="w-full max-w-md border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 shadow-xl rounded-none">
         <CardHeader className="text-center pb-2">
-          <Heading level={2} className="text-2xl font-extrabold text-slate-100 tracking-tight">
+          <span className="text-[10px] font-bold tracking-[0.25em] text-neutral-400 uppercase font-mono block mb-1">
+            LEXIDO • RECOVERY
+          </span>
+          <h1 className="text-2xl font-black font-heading uppercase text-neutral-950 dark:text-white tracking-tight">
             Define New Password
-          </Heading>
-          <Text className="text-sm text-slate-400 mt-1">
+          </h1>
+          <p className="text-xs text-neutral-500 mt-1">
             Choose a new secure password for your store account.
-          </Text>
+          </p>
         </CardHeader>
         <CardContent className="pt-4">
           {success ? (
-            <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-450 rounded-lg text-center flex flex-col gap-3">
-              <Text className="text-sm font-semibold">Password Reset Successful</Text>
-              <Text className="text-xs text-slate-400 font-medium">
+            <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-none text-center flex flex-col gap-2">
+              <span className="text-sm font-bold uppercase tracking-wider">Password Reset Successful</span>
+              <p className="text-xs text-emerald-600 font-medium">
                 Your password has been updated. You will be redirected to the login screen shortly...
-              </Text>
-              <Link href="/login" className="text-xs text-primary font-bold hover:underline mt-2">
+              </p>
+              <Link href="/login" className="text-xs text-black dark:text-white font-bold uppercase tracking-wider hover:underline mt-2">
                 Click here to sign in immediately
               </Link>
             </div>
@@ -80,7 +83,7 @@ export default function ResetPasswordPage() {
                   type="password"
                   placeholder="Minimum 8 characters"
                   required
-                  className="bg-slate-950/40 border-slate-800 text-slate-200 focus:border-primary"
+                  className="bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:border-neutral-950 rounded-none"
                   disabled={isPending}
                 />
               </FormField>
@@ -92,27 +95,27 @@ export default function ResetPasswordPage() {
                   type="password"
                   placeholder="Repeat new password"
                   required
-                  className="bg-slate-950/40 border-slate-800 text-slate-200 focus:border-primary"
+                  className="bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:border-neutral-950 rounded-none"
                   disabled={isPending}
                 />
               </FormField>
 
               {error && (
-                <div className="p-3 text-xs bg-rose-500/10 border border-rose-500/20 text-rose-450 rounded-lg">
+                <div className="p-3 text-xs bg-rose-50 border border-rose-200 text-rose-600 rounded-none">
                   {error}
                 </div>
               )}
 
-              <Button type="submit" className="w-full mt-2 font-semibold cursor-pointer" disabled={isPending}>
+              <Button type="submit" className="w-full mt-2 font-bold uppercase tracking-widest text-xs py-3 rounded-none bg-black hover:bg-neutral-800 text-white cursor-pointer" disabled={isPending}>
                 {isPending ? 'Updating Password...' : 'Save Password'}
               </Button>
             </form>
           )}
         </CardContent>
-        <CardFooter className="flex justify-center border-t border-slate-800/60 pt-4">
+        <CardFooter className="flex justify-center border-t border-neutral-100 dark:border-neutral-800 pt-4">
           <Link
             href="/login"
-            className="text-xs text-slate-450 hover:text-slate-200 transition-colors font-medium"
+            className="text-xs text-neutral-500 hover:text-neutral-950 dark:hover:text-white transition-colors font-medium"
           >
             Cancel and Sign In
           </Link>

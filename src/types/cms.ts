@@ -502,3 +502,11 @@ export type {
   NavAppearancePreset,
 } from './navigation-appearance';
 
+export type {
+  FooterConfig,
+  FooterColumn,
+  FooterLinkItem,
+  FooterSocialLink,
+} from './footer-config';
+export { defaultFooterConfig, FOOTER_PRESETS } from './footer-config';
+

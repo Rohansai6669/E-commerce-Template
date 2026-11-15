@@ -13,7 +13,7 @@
             "id": "slide-2",
             "eyebrow": "SUSTAINABLE TAILORING",
             "heading": "Lexido",
-            "mediaUrl": "",
+            "mediaUrl": "https://pub-ae8fd88d076743ec82d6335a981e38e3.r2.dev/products/1794757864142-photo-1612029938221-a01e8c947edb.jfif",
             "subTitle": "Precision tailored outerwear designed to last a lifetime.",
             "mediaType": "image",
             "description": "Zero-emission production ateliers in Milan & Florence.",
@@ -21,18 +21,6 @@
             "overlayOpacity": 0.4,
             "primaryCtaText": "SHOP OUTERWEAR",
             "contentPosition": "center-left"
-          },
-          {
-            "id": "slide-1794754843428",
-            "eyebrow": "NEW COLLECTION",
-            "heading": "MODERN MINIMALISM",
-            "mediaUrl": "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop",
-            "subTitle": "Precision tailored luxury outerwear.",
-            "mediaType": "image",
-            "primaryCtaUrl": "/products",
-            "overlayOpacity": 0.35,
-            "primaryCtaText": "SHOP NOW",
-            "contentPosition": "center"
           }
         ],
         "enabled": true,
@@ -50,12 +38,11 @@
         "showNavigationArrows": true
       },
       {
-        "id": "seasonal-sale-1",
-        "name": "Seasonal Sale Campaigns",
-        "type": "SEASONAL_SALE_GRID",
+        "id": "sec-1794760233878",
+        "name": "Marquee Scrolling Ticker",
+        "type": "MARQUEE_TICKER",
         "enabled": true,
-        "eyebrow": "FESTIVE OFFERS",
-        "heading": "SEASONAL SALES & DEALS",
+        "tickerText": "FREE EXPRESS SHIPPING ON ORDERS OVER ₹4,999 • BUILT IN INDIA — DESIGNED FOR THE WORLD • 100% CERTIFIED ORGANIC COTTON & SILK • COMPLIMENTARY 30-DAY EASY RETURNS",
         "displayOrder": 2,
         "mobileVisible": true,
         "tabletVisible": true,
@@ -69,7 +56,7 @@
           {
             "id": "cat-1",
             "link": "/products?category=women",
-            "image": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=800&auto=format&fit=crop",
+            "image": "https://pub-ae8fd88d076743ec82d6335a981e38e3.r2.dev/categories/1794760430922-photo-1628102160424-5f4ab3404829.jfif",
             "title": "WOMEN",
             "enabled": true,
             "subtitle": "Tailored Silhouettes & Essentials",
@@ -80,23 +67,12 @@
           {
             "id": "cat-2",
             "link": "/products?category=men",
-            "image": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=800&auto=format&fit=crop",
+            "image": "https://pub-ae8fd88d076743ec82d6335a981e38e3.r2.dev/categories/1794760421056-photo-1774304325550-b9707e50b4e9.jfif",
             "title": "MEN",
             "enabled": true,
             "subtitle": "Contemporary Outerwear & Denim",
             "categorySlug": "men",
             "displayOrder": 2,
-            "overlayOpacity": 0.25
-          },
-          {
-            "id": "cat-3",
-            "link": "/products?category=accessories",
-            "image": "https://images.unsplash.com/photo-1523293182086-7651a899d37f?q=80&w=800&auto=format&fit=crop",
-            "title": "ACCESSORIES",
-            "enabled": true,
-            "subtitle": "Leather Goods & Jewelry",
-            "categorySlug": "accessories",
-            "displayOrder": 3,
             "overlayOpacity": 0.25
           }
         ],
@@ -109,7 +85,7 @@
         "columnsTablet": 3,
         "mobileVisible": true,
         "tabletVisible": true,
-        "columnsDesktop": 3,
+        "columnsDesktop": 2,
         "desktopVisible": true,
         "headingAlignment": "center"
       },
@@ -150,25 +126,70 @@
         "columnsDesktop": 4,
         "desktopVisible": true,
         "productsPerPage": 8,
-        "headingAlignment": "center"
+        "headingAlignment": "left",
+        "contentAlignment": "left",
+        "contentPosition": "center-left",
+        "containerWidth": "full"
       },
       {
         "id": "editorial-1",
         "name": "Editorial Campaign",
         "type": "EDITORIAL_BANNER",
         "image": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200&auto=format&fit=crop",
-        "layout": "image-left",
+        "layout": "ritual-checklist",
         "enabled": true,
         "eyebrow": "THE SUSTAINABILITY STORY",
         "heading": "CRAFTED WITH INTENTION & PURPOSE",
+        "paddingX": "none",
         "badgeText": "EDITORIAL FOCUS",
+        "marginTop": "none",
+        "marginLeft": "none",
         "description": "Every garment is ethically sourced from organic cotton farms and crafted in zero-emission ateliers across Italy and Portugal.",
+        "marginRight": "none",
+        "marginTopPx": 0,
+        "paddingLeft": "none",
         "displayOrder": 5,
+        "marginBottom": "none",
+        "marginLeftPx": 0,
+        "paddingRight": "none",
+        "paddingTopPx": 0,
+        "marginRightPx": 0,
         "mobileVisible": true,
+        "paddingLeftPx": 0,
         "primaryCtaUrl": "/about",
         "tabletVisible": true,
+        "containerWidth": "full",
         "desktopVisible": true,
-        "primaryCtaText": "READ OUR MANIFESTO"
+        "marginBottomPx": 0,
+        "paddingRightPx": 0,
+        "primaryCtaText": "READ OUR MANIFESTO",
+        "paddingBottomPx": 0
+      },
+      {
+        "id": "sec-1794760664255",
+        "name": "Editorial Campaign (Copy)",
+        "type": "EDITORIAL_BANNER",
+        "image": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200&auto=format&fit=crop",
+        "layout": "manifesto-card",
+        "enabled": true,
+        "eyebrow": "THE SUSTAINABILITY STORY",
+        "heading": "CRAFTED WITH INTENTION & PURPOSE",
+        "paddingX": "none",
+        "badgeText": "EDITORIAL FOCUS",
+        "description": "Every garment is ethically sourced from organic cotton farms and crafted in zero-emission ateliers across Italy and Portugal.",
+        "paddingLeft": "none",
+        "displayOrder": 6,
+        "paddingRight": "none",
+        "paddingTopPx": 0,
+        "mobileVisible": true,
+        "paddingLeftPx": 0,
+        "primaryCtaUrl": "/about",
+        "tabletVisible": true,
+        "containerWidth": "full",
+        "desktopVisible": true,
+        "paddingRightPx": 0,
+        "primaryCtaText": "READ OUR MANIFESTO",
+        "paddingBottomPx": 0
       }
     ],
     "seoTitle": "Ecommerce Storefront | Minimalist Luxury Apparel",
@@ -303,5 +324,176 @@
     "animationSpeed": "smooth",
     "ambientMotion": "subtle-pulse",
     "globalCardHover": "lift"
+  },
+  "footer_config": {
+    "brandName": "LEXIDO",
+    "brandTagline": "PREMIUM STREETWEAR",
+    "brandDescription": "Crafted for those who move different. Premium streetwear made in India, designed for the world.",
+    "logoType": "text",
+    "logoImageUrl": "",
+    "logoText": "LEXIDO",
+    "columns": [
+      {
+        "id": "col-shop",
+        "title": "SHOP",
+        "links": [
+          {
+            "id": "lnk-1",
+            "label": "Men",
+            "url": "/products?category=men"
+          },
+          {
+            "id": "lnk-2",
+            "label": "Women",
+            "url": "/products?category=women"
+          },
+          {
+            "id": "lnk-3",
+            "label": "Denim",
+            "url": "/products?category=denim"
+          },
+          {
+            "id": "lnk-4",
+            "label": "Hoodies",
+            "url": "/products?category=hoodies"
+          }
+        ]
+      },
+      {
+        "id": "col-explore",
+        "title": "EXPLORE",
+        "links": [
+          {
+            "id": "lnk-5",
+            "label": "Collections",
+            "url": "/collections"
+          },
+          {
+            "id": "lnk-6",
+            "label": "Accessories",
+            "url": "/products?category=accessories"
+          },
+          {
+            "id": "lnk-7",
+            "label": "Help",
+            "url": "/help"
+          },
+          {
+            "id": "lnk-8",
+            "label": "About",
+            "url": "/about"
+          }
+        ]
+      },
+      {
+        "id": "col-help",
+        "title": "HELP",
+        "links": [
+          {
+            "id": "lnk-9",
+            "label": "Help Center",
+            "url": "/help"
+          },
+          {
+            "id": "lnk-10",
+            "label": "Track Order",
+            "url": "/track-order"
+          },
+          {
+            "id": "lnk-11",
+            "label": "FAQs",
+            "url": "/faq"
+          },
+          {
+            "id": "lnk-12",
+            "label": "Raise Ticket",
+            "url": "/support"
+          },
+          {
+            "id": "lnk-13",
+            "label": "Shipping",
+            "url": "/shipping"
+          },
+          {
+            "id": "lnk-14",
+            "label": "Returns",
+            "url": "/returns"
+          },
+          {
+            "id": "lnk-15",
+            "label": "Privacy",
+            "url": "/privacy"
+          }
+        ]
+      }
+    ],
+    "contactTitle": "REACH US",
+    "contactEmail": "hello@lexido.in",
+    "contactHours": "Mon–Sat, 10am–7pm IST",
+    "contactPhone": "",
+    "showNewsletter": true,
+    "newsletterHeading": "BECOME PART OF LEXIDO",
+    "newsletterDescription": "Subscribe to receive private drop alerts, runway invites, and exclusive editorial releases.",
+    "newsletterPlaceholder": "your@email.com",
+    "newsletterButtonText": "SUBSCRIBE",
+    "newsletterSuccessMessage": "✓ THANK YOU FOR SUBSCRIBING TO THE LEXIDO INNER CIRCLE.",
+    "showSocialLinks": true,
+    "socialHeading": "FOLLOW",
+    "socialLinks": [
+      {
+        "id": "soc-ig",
+        "platform": "instagram",
+        "label": "Instagram",
+        "url": "https://instagram.com/lexido",
+        "enabled": true
+      },
+      {
+        "id": "soc-fb",
+        "platform": "facebook",
+        "label": "Facebook",
+        "url": "https://facebook.com",
+        "enabled": true
+      },
+      {
+        "id": "soc-x",
+        "platform": "x",
+        "label": "X (Twitter)",
+        "url": "https://x.com",
+        "enabled": true
+      },
+      {
+        "id": "soc-pin",
+        "platform": "pinterest",
+        "label": "Pinterest",
+        "url": "https://pinterest.com",
+        "enabled": true
+      },
+      {
+        "id": "soc-tt",
+        "platform": "tiktok",
+        "label": "TikTok",
+        "url": "https://tiktok.com",
+        "enabled": true
+      },
+      {
+        "id": "soc-yt",
+        "platform": "youtube",
+        "label": "YouTube",
+        "url": "https://youtube.com",
+        "enabled": true
+      }
+    ],
+    "copyrightText": "© 2026 LEXIDO. All rights reserved. Made in India.",
+    "taglineText": "TAG",
+    "taglineHighlight": "@LEXIDO — FEATURED IN OUR NEXT DROP",
+    "showPaymentBadges": true,
+    "backgroundColor": "#000000",
+    "textColor": "#ffffff",
+    "mutedTextColor": "#a3a3a3",
+    "borderColor": "#171717",
+    "borderTopWidth": "thin",
+    "borderStyle": "solid",
+    "containerWidth": "boxed",
+    "fontScale": "normal"
   }
 }
