@@ -1,1 +1,2 @@
-export { default, revalidate } from '../returns/page';
+export { default } from '../returns/page';
+export const revalidate = 60;

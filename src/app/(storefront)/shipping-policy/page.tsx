@@ -1,1 +1,2 @@
-export { default, revalidate } from '../shipping/page';
+export { default } from '../shipping/page';
+export const revalidate = 60;
