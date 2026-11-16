@@ -31,6 +31,25 @@ export function AddProductForm({ categories, brands, redirectOnSuccess }: AddPro
   const [categoriesList, setCategoriesList] = React.useState(categories);
   const [brandsList, setBrandsList] = React.useState(brands);
 
+  const formattedCategoryOptions = React.useMemo(() => {
+    const catMap = new Map<string, { id: string; name: string; parentId?: string | null }>();
+    categoriesList.forEach((c) => catMap.set(c.id, c));
+
+    return categoriesList.map((c) => {
+      if (!c.parentId) {
+        return { id: c.id, label: `📁 ${c.name} (Category)`, tier: 1 };
+      }
+      const parent = catMap.get(c.parentId);
+      if (!parent || !parent.parentId) {
+        const pName = parent ? parent.name : '';
+        return { id: c.id, label: `  ↳ ${pName ? pName + ' > ' : ''}${c.name} (Subcategory)`, tier: 2 };
+      }
+      const grandParent = catMap.get(parent.parentId);
+      const gpName = grandParent ? grandParent.name : '';
+      return { id: c.id, label: `    ↳ ↳ ${gpName ? gpName + ' > ' : ''}${parent.name} > ${c.name} (Child)`, tier: 3 };
+    });
+  }, [categoriesList]);
+
   React.useEffect(() => {
     setCategoriesList(categories);
   }, [categories]);
@@ -520,10 +539,10 @@ export function AddProductForm({ categories, brands, redirectOnSuccess }: AddPro
               disabled={isPending}
               className="w-full bg-slate-50 border border-slate-200 rounded px-3 py-2 text-sm text-slate-900 focus:border-slate-950 outline-none cursor-pointer h-10 font-semibold"
             >
-              <option value="">Select Category / Subcategory...</option>
-              {categoriesList.map((cat: any) => (
+              <option value="">Select Category / Subcategory / Child...</option>
+              {formattedCategoryOptions.map((cat) => (
                 <option key={cat.id} value={cat.id}>
-                  {cat.parentId ? `  ↳ ${cat.name} (Subcategory)` : `📁 ${cat.name}`}
+                  {cat.label}
                 </option>
               ))}
               <option value="__add_new__" className="font-bold text-indigo-600">

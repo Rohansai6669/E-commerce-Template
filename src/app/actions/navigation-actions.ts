@@ -131,16 +131,17 @@ export async function getStorefrontNavigationAction(categoryOrSlug: string = 'ME
               id: parent.id,
               name: parent.label,
               href: parent.url || `/${cleanPattern}/${parent.label.toLowerCase().replace(/\s+/g, '-')}`,
-              subitems: children.map((c) => ({
+              subitems: children.map((c, idx) => ({
                 label: c.label,
                 href: c.url || `/${cleanPattern}/${parent.label.toLowerCase().replace(/\s+/g, '-')}/${c.label.toLowerCase().replace(/\s+/g, '-')}`,
-                columnNumber: c.columnNumber || undefined,
+                columnNumber: c.columnNumber || (idx % 2) + 1,
               })),
               featured: categoryFeatured,
             });
           }
 
-          if (result.length > 0) return result;
+          const hasPopulatedSubitems = result.some((r) => r.subitems.length > 0);
+          if (result.length > 0 && hasPopulatedSubitems) return result;
         }
       }
     }
@@ -163,7 +164,7 @@ export async function getStorefrontNavigationAction(categoryOrSlug: string = 'ME
           const audiencePrefix = audienceParent ? `/${audienceParent.slug}` : `/${cleanPattern}`;
           const catHref = `${audiencePrefix}/${cat.slug}`;
 
-          const categoryImage = resolveCuratedCategoryImage(cat.name, cat.imageUrl);
+          const categoryImage = cat.imageUrl || resolveCuratedCategoryImage(cat.name, cat.imageUrl);
 
           return {
             id: cat.id,

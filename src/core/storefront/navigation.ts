@@ -26,13 +26,14 @@ export interface NavigationSection {
 export const navigationConfig: NavigationSection[] = [
   {
     label: 'MEN',
-    href: '/audience/men',
+    href: '/men',
     groups: [
       {
         title: 'STYLES & COLLECTIONS',
         items: [
-          { label: 'Streetwear', href: '/collections/streetwear' },
           { label: 'Gym Wear', href: '/men/gymwear' },
+          { label: 'Signature Gym Set', href: '/men/gymwear/signature-gym-set' },
+          { label: 'Streetwear', href: '/men/streetwear' },
           { label: 'Old Money', href: '/collections/old-money' },
           { label: 'Casual & Daily', href: '/men/casual' },
           { label: 'Formal', href: '/men/formal' },
@@ -61,7 +62,7 @@ export const navigationConfig: NavigationSection[] = [
   },
   {
     label: 'WOMEN',
-    href: '/audience/women',
+    href: '/women',
     groups: [
       {
         title: 'STYLES & COLLECTIONS',
@@ -90,13 +91,13 @@ export const navigationConfig: NavigationSection[] = [
       title: 'MINIMALIST SILHOUETTES',
       description: 'Tailored oversized coats, organic silk & signature cropped cuts.',
       imageUrl: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=800&auto=format&fit=crop',
-      href: '/audience/women',
+      href: '/women',
       actionLabel: 'SHOP WOMEN',
     },
   },
   {
     label: 'KIDS',
-    href: '/audience/kids',
+    href: '/kids',
     groups: [
       {
         title: 'AUDIENCE TAXONOMY',
@@ -123,7 +124,7 @@ export const navigationConfig: NavigationSection[] = [
       title: 'JUNIOR ESSENTIALS',
       description: 'Durable organic cotton apparel & newborn nursery gifts.',
       imageUrl: 'https://images.unsplash.com/photo-1503944583220-79d8926ad5e2?q=80&w=800&auto=format&fit=crop',
-      href: '/audience/kids',
+      href: '/kids',
       actionLabel: 'EXPLORE KIDS',
     },
   },

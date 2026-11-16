@@ -8,9 +8,18 @@ import { Stack } from '@/components/layout/stack';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { type PaymentMethod, type CheckoutTotals } from '@/core/checkout/checkout.types';
 import { PAYMENT_TYPES } from '@/core/checkout/checkout.constants';
-import { ShieldCheck, Lock, Sparkles, CheckCircle2, Zap, AlertCircle, Copy, Check, Tag } from 'lucide-react';
+import { ShieldCheck, Lock, CheckCircle2, Landmark, Wallet } from 'lucide-react';
 import { type Coupon, type CartItem } from '@/core/cart/cart.types';
-import { CheckoutCoupon } from './checkout-coupon';
+import {
+  RazorpayIcon,
+  UpiLogo,
+  GooglePayLogo,
+  PhonePeLogo,
+  PaytmLogo,
+  VisaLogo,
+  MastercardLogo,
+  RuPayLogo,
+} from './payment-logos';
 
 export interface PaymentMethodFormProps {
   defaultValue?: PaymentMethod | null;
@@ -26,14 +35,11 @@ export interface PaymentMethodFormProps {
 
 /**
  * Modern Payment Method selection form supporting Razorpay Payment Gateway & COD.
+ * Displays official payment brand logos (UPI, GPay, PhonePe, Paytm, Visa, Mastercard, RuPay).
  */
 export function PaymentMethodForm({
   defaultValue,
   totals,
-  coupon,
-  items,
-  onApplyCoupon,
-  onRemoveCoupon,
   onSubmit,
   onBack,
   isProcessing = false,
@@ -41,15 +47,6 @@ export function PaymentMethodForm({
   const [paymentType, setPaymentType] = React.useState<'razorpay' | 'cod' | 'card'>(
     (defaultValue?.type as any) ?? 'razorpay'
   );
-  const [copiedKey, setCopiedKey] = React.useState<string | null>(null);
-
-  const isTestMode = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID?.startsWith('rzp_test_');
-
-  const copyToClipboard = (text: string, id: string) => {
-    navigator.clipboard?.writeText(text);
-    setCopiedKey(id);
-    setTimeout(() => setCopiedKey(null), 2000);
-  };
 
   const options = PAYMENT_TYPES.map((pt) => ({
     value: pt.type,
@@ -76,7 +73,7 @@ export function PaymentMethodForm({
             Select Payment Method
           </Heading>
           <Text className="text-xs text-muted-foreground mt-0.5">
-            Choose your preferred secure payment method.
+            All transactions are secure and 256-bit SSL encrypted.
           </Text>
         </div>
         {totals && (
@@ -93,23 +90,6 @@ export function PaymentMethodForm({
 
       <CardContent className="p-5">
         <Stack gap="5">
-          {/* Optional Promo Code at Payment Step */}
-          {onApplyCoupon && onRemoveCoupon && items && (
-            <div className="p-3.5 rounded-lg border border-border/80 bg-muted/20">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-foreground mb-2">
-                <Tag className="w-3.5 h-3.5 text-primary" />
-                <span>Have a Promo Code or Gift Voucher?</span>
-              </div>
-              <CheckoutCoupon
-                coupon={coupon ?? null}
-                items={items}
-                onApplyCoupon={onApplyCoupon}
-                onRemoveCoupon={onRemoveCoupon}
-                compact
-              />
-            </div>
-          )}
-
           <RadioCard
             name="payment-type"
             options={options}
@@ -119,15 +99,16 @@ export function PaymentMethodForm({
 
           {/* RAZORPAY PAYMENT DETAILS CARD */}
           {(paymentType === 'razorpay' || paymentType === 'card') && (
-            <Card className="border-indigo-100 dark:border-indigo-900/40 bg-gradient-to-br from-indigo-50/40 via-white to-slate-50 dark:from-indigo-950/20 dark:via-background dark:to-background overflow-hidden shadow-2xs">
+            <Card className="border-border bg-muted/10 overflow-hidden shadow-2xs">
               <CardContent className="p-4 space-y-3.5">
+                {/* Razorpay Brand Header */}
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-xs">
-                      <Zap className="w-4 h-4 fill-current" />
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-sm bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 flex items-center justify-center shrink-0 shadow-2xs">
+                      <RazorpayIcon className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold text-foreground">
+                      <h4 className="text-xs sm:text-sm font-extrabold text-foreground font-heading">
                         Razorpay Secure Checkout
                       </h4>
                       <p className="text-[11px] text-muted-foreground">
@@ -136,109 +117,104 @@ export function PaymentMethodForm({
                     </div>
                   </div>
 
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
                     <ShieldCheck className="w-3 h-3" /> 256-Bit SSL
                   </span>
                 </div>
 
-                {/* Supported Payment Channels Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-border/50 text-[11px]">
-                  <div className="p-2 rounded-lg bg-background/80 border border-border/60 text-center">
-                    <span className="font-extrabold text-foreground block">UPI / QR</span>
-                    <span className="text-[10px] text-muted-foreground">GPay, PhonePe, Paytm</span>
+                {/* Accepted Payment Methods Logos Container */}
+                <div className="p-3.5 bg-background border border-border/80 rounded-none space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">
+                      Accepted Payment Methods
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-medium">
+                      Zero convenience fee
+                    </span>
                   </div>
-                  <div className="p-2 rounded-lg bg-background/80 border border-border/60 text-center">
-                    <span className="font-extrabold text-foreground block">Cards</span>
-                    <span className="text-[10px] text-muted-foreground">Visa, Master, RuPay</span>
+
+                  {/* Logos Group Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {/* UPI & Instant Apps */}
+                    <div className="p-2.5 rounded-none border border-border bg-card/60 flex flex-col justify-between gap-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        UPI Apps (Instant 0% Fee)
+                      </span>
+                      <div className="flex items-center flex-wrap gap-1.5 pt-0.5">
+                        <div
+                          className="h-7 px-2 bg-white dark:bg-muted/80 rounded border border-border/80 flex items-center shadow-2xs"
+                          title="UPI"
+                        >
+                          <UpiLogo className="h-3.5 w-auto" />
+                        </div>
+                        <div
+                          className="h-7 px-2 bg-white dark:bg-muted/80 rounded border border-border/80 flex items-center shadow-2xs"
+                          title="Google Pay"
+                        >
+                          <GooglePayLogo className="h-3.5 w-auto" />
+                        </div>
+                        <div
+                          className="h-7 px-2 bg-white dark:bg-muted/80 rounded border border-border/80 flex items-center shadow-2xs"
+                          title="PhonePe"
+                        >
+                          <PhonePeLogo className="h-3.5 w-auto" />
+                        </div>
+                        <div
+                          className="h-7 px-2 bg-white dark:bg-muted/80 rounded border border-border/80 flex items-center shadow-2xs"
+                          title="Paytm"
+                        >
+                          <PaytmLogo className="h-3.5 w-auto" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Cards */}
+                    <div className="p-2.5 rounded-none border border-border bg-card/60 flex flex-col justify-between gap-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        Credit &amp; Debit Cards
+                      </span>
+                      <div className="flex items-center flex-wrap gap-1.5 pt-0.5">
+                        <div
+                          className="h-7 px-2.5 bg-white dark:bg-muted/80 rounded border border-border/80 flex items-center shadow-2xs"
+                          title="Visa"
+                        >
+                          <VisaLogo className="h-3 w-auto" />
+                        </div>
+                        <div
+                          className="h-7 px-2.5 bg-white dark:bg-muted/80 rounded border border-border/80 flex items-center shadow-2xs"
+                          title="Mastercard"
+                        >
+                          <MastercardLogo className="h-4 w-auto" />
+                        </div>
+                        <div
+                          className="h-7 px-2.5 bg-white dark:bg-muted/80 rounded border border-border/80 flex items-center shadow-2xs"
+                          title="RuPay"
+                        >
+                          <RuPayLogo className="h-3 w-auto" />
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="p-2 rounded-lg bg-background/80 border border-border/60 text-center">
-                    <span className="font-extrabold text-foreground block">Netbanking</span>
-                    <span className="text-[10px] text-muted-foreground">50+ Indian Banks</span>
-                  </div>
-                  <div className="p-2 rounded-lg bg-background/80 border border-border/60 text-center">
-                    <span className="font-extrabold text-foreground block">Wallets & PayLater</span>
-                    <span className="text-[10px] text-muted-foreground">Multiple providers</span>
+
+                  {/* NetBanking & Wallets row */}
+                  <div className="flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-border/50 text-[11px] text-muted-foreground">
+                    <div className="flex items-center gap-1.5">
+                      <Landmark className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <span>
+                        NetBanking via <strong>50+ Indian Banks</strong>
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Wallet className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <span>Paytm, Mobikwik &amp; Wallets</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Test Mode Helper Banner */}
-                {isTestMode && (
-                  <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/25 text-amber-900 dark:text-amber-200 text-xs space-y-2">
-                    <div className="flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wide text-amber-700 dark:text-amber-300">
-                      <AlertCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-                      <span>Razorpay Sandbox Test Mode</span>
-                    </div>
-                    <p className="text-[11px] leading-relaxed text-muted-foreground dark:text-amber-200/80">
-                      Indian Razorpay accounts block foreign/international BIN cards with <span className="font-semibold text-rose-600 dark:text-rose-400">&ldquo;International cards are not supported&rdquo;</span>. Use these verified Indian Domestic sandbox instruments:
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] pt-1">
-                      <div className="p-2 rounded bg-background/90 border border-border flex items-center justify-between">
-                        <div>
-                          <span className="font-semibold block text-foreground">RuPay Domestic</span>
-                          <span className="font-mono text-[10px] text-muted-foreground">6527 6589 0000 1005</span>
-                          <span className="text-[9px] text-muted-foreground block">Exp: Any | CVV: 123</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => copyToClipboard('6527658900001005', 'rupay')}
-                          className="p-1 rounded hover:bg-muted text-muted-foreground transition"
-                          title="Copy RuPay number"
-                        >
-                          {copiedKey === 'rupay' ? (
-                            <Check className="w-3.5 h-3.5 text-emerald-600" />
-                          ) : (
-                            <Copy className="w-3.5 h-3.5" />
-                          )}
-                        </button>
-                      </div>
-
-                      <div className="p-2 rounded bg-background/90 border border-border flex items-center justify-between">
-                        <div>
-                          <span className="font-semibold block text-foreground">Visa Domestic</span>
-                          <span className="font-mono text-[10px] text-muted-foreground">4100 2800 0000 1007</span>
-                          <span className="text-[9px] text-muted-foreground block">Exp: Any | CVV: 123</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => copyToClipboard('4100280000001007', 'visa')}
-                          className="p-1 rounded hover:bg-muted text-muted-foreground transition"
-                          title="Copy Visa number"
-                        >
-                          {copiedKey === 'visa' ? (
-                            <Check className="w-3.5 h-3.5 text-emerald-600" />
-                          ) : (
-                            <Copy className="w-3.5 h-3.5" />
-                          )}
-                        </button>
-                      </div>
-
-                      <div className="p-2 rounded bg-background/90 border border-border flex items-center justify-between">
-                        <div>
-                          <span className="font-semibold block text-foreground">UPI (Instant)</span>
-                          <span className="font-mono text-[10px] text-muted-foreground">success@razorpay</span>
-                          <span className="text-[9px] text-muted-foreground block">Simulated OTP: any 4+ digits</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => copyToClipboard('success@razorpay', 'upi')}
-                          className="p-1 rounded hover:bg-muted text-muted-foreground transition"
-                          title="Copy UPI ID"
-                        >
-                          {copiedKey === 'upi' ? (
-                            <Check className="w-3.5 h-3.5 text-emerald-600" />
-                          ) : (
-                            <Copy className="w-3.5 h-3.5" />
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-2 text-[11px] text-muted-foreground bg-muted/40 p-2.5 rounded-lg">
-                  <Lock className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 p-2.5 border border-border/50">
+                  <Lock className="w-3.5 h-3.5 text-primary shrink-0" />
                   <span>
-                    Clicking &ldquo;Pay with Razorpay&rdquo; opens the secure checkout popup window to complete your payment.
+                    After clicking &ldquo;Pay with Razorpay&rdquo;, a secure payment window will open to complete your transaction safely.
                   </span>
                 </div>
               </CardContent>
@@ -288,7 +264,7 @@ export function PaymentMethodForm({
               ) : paymentType === 'razorpay' || paymentType === 'card' ? (
                 <>
                   <span>Pay with Razorpay {formattedTotal ? `(${formattedTotal})` : ''}</span>
-                  <Zap className="w-3.5 h-3.5 fill-current" />
+                  <RazorpayIcon className="w-3.5 h-3.5 fill-white" />
                 </>
               ) : (
                 <>

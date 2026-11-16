@@ -9,6 +9,14 @@ import { ThemeButton } from '../primitives/button';
 import { Star, ShieldCheck, Truck, RefreshCw, Headset, ChevronDown, Camera, CheckCircle, ArrowRight } from 'lucide-react';
 import { getNineAlignmentClasses } from '@/components/ui/nine-alignment-matrix';
 
+function InstagramIcon({ className = 'w-4 h-4' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+    </svg>
+  );
+}
+
 export function TestimonialsSection({ config }: { config: BaseSectionConfig & any }) {
   const radiusMap: Record<string, string> = {
     none: 'rounded-none',
@@ -217,21 +225,26 @@ export function InstagramFeedSection({ config }: { config: BaseSectionConfig & a
   }, []);
 
   const handle = config?.handle || liveSettings?.handle || '@LEXIDO';
+  const eyebrow = config?.eyebrow || 'COMMUNITY & LOOKBOOK';
   const followUrl = config?.followUrl || liveSettings?.followUrl || 'https://instagram.com/lexido';
   const posts = (config?.posts && config.posts.length > 0)
     ? config.posts
     : (liveSettings?.posts && liveSettings.posts.length > 0)
     ? liveSettings.posts
     : [
-        { id: 'ig-1', imageUrl: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=800&auto=format&fit=crop', postUrl: 'https://instagram.com/p/1', caption: 'Lookbook Editorial 2026' },
-        { id: 'ig-2', imageUrl: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=800&auto=format&fit=crop', postUrl: 'https://instagram.com/p/2', caption: 'Minimalist Tailoring Essentials' },
-        { id: 'ig-3', imageUrl: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=800&auto=format&fit=crop', postUrl: 'https://instagram.com/p/3', caption: 'Real Organic Cotton & Cashmere' },
-        { id: 'ig-4', imageUrl: 'https://images.unsplash.com/photo-1523293182086-7651a899d37f?q=80&w=800&auto=format&fit=crop', postUrl: 'https://instagram.com/p/4', caption: 'Handcrafted Italian Leather Goods' },
-        { id: 'ig-5', imageUrl: 'https://images.unsplash.com/photo-1544441893-675973e31985?q=80&w=800&auto=format&fit=crop', postUrl: 'https://instagram.com/p/5', caption: 'Autumn / Winter Outerwear' },
-        { id: 'ig-6', imageUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=800&auto=format&fit=crop', postUrl: 'https://instagram.com/p/6', caption: 'Zero-Emission Ateliers' },
+        { id: 'ig-1', imageUrl: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=800&auto=format&fit=crop', postUrl: followUrl, caption: 'Atelier Lookbook Editorial 2026' },
+        { id: 'ig-2', imageUrl: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=800&auto=format&fit=crop', postUrl: followUrl, caption: 'Minimalist Sartorial Essentials' },
+        { id: 'ig-3', imageUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800&auto=format&fit=crop', postUrl: followUrl, caption: 'Contemporary Streetwear Capsule' },
+        { id: 'ig-4', imageUrl: 'https://images.unsplash.com/photo-1523293182086-7651a899d37f?q=80&w=800&auto=format&fit=crop', postUrl: followUrl, caption: 'Handcrafted Atelier Leather Goods' },
+        { id: 'ig-5', imageUrl: 'https://images.unsplash.com/photo-1544441893-675973e31985?q=80&w=800&auto=format&fit=crop', postUrl: followUrl, caption: 'Winter Outerwear & Wool Trench' },
+        { id: 'ig-6', imageUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=800&auto=format&fit=crop', postUrl: followUrl, caption: 'Zero-Emission Sustainable Craft' },
       ];
 
-  if (liveSettings?.enabled === false && !config?.overrideEnabled) {
+  if (config?.enabled === false) {
+    return null;
+  }
+
+  if (liveSettings?.enabled === false && config?.enabled === undefined && !config?.overrideEnabled) {
     return null;
   }
 
@@ -249,22 +262,29 @@ export function InstagramFeedSection({ config }: { config: BaseSectionConfig & a
   return (
     <SectionShell config={config} className="py-12 sm:py-16">
       <div className="w-full">
-        {/* Screenshot Matching Header Layout */}
-        <div className="flex items-center justify-between mb-8 sm:mb-12">
-          <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight font-heading text-[var(--foreground,#0f172a)] uppercase">
-            {handle}
-          </h2>
+        {/* Header Layout adhering to dynamic Theme typography & palette */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 sm:mb-12">
+          <div>
+            <span className="text-[11px] font-mono font-bold tracking-[0.25em] uppercase text-[var(--muted-foreground,#64748b)] mb-1 block">
+              {eyebrow}
+            </span>
+            <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight font-heading text-[var(--foreground,#0f172a)] uppercase">
+              {handle}
+            </h2>
+          </div>
           <a
             href={followUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs sm:text-sm font-extrabold uppercase tracking-widest text-[var(--muted-foreground,#64748b)] hover:text-[var(--foreground,#0f172a)] transition-colors flex items-center gap-1 group border-b border-transparent hover:border-[var(--foreground,#0f172a)] pb-0.5"
+            className="text-xs sm:text-sm font-extrabold uppercase tracking-widest text-[var(--muted-foreground,#64748b)] hover:text-[var(--foreground,#0f172a)] transition-colors flex items-center gap-1.5 group border-b border-transparent hover:border-[var(--foreground,#0f172a)] pb-0.5 self-start sm:self-auto shrink-0"
           >
-            FOLLOW US <span className="group-hover:translate-x-1 transition-transform">—</span>
+            <InstagramIcon className="w-4 h-4 text-[var(--primary,#4f46e5)]" />
+            <span>FOLLOW US</span>
+            <span className="group-hover:translate-x-1 transition-transform">→</span>
           </a>
         </div>
 
-        {/* 6-Column High Contrast Post Grid */}
+        {/* 6-Column High Contrast Post Grid adhering to theme borders, surfaces & radius */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
           {posts.map((post: any, i: number) => (
             <a
@@ -272,7 +292,7 @@ export function InstagramFeedSection({ config }: { config: BaseSectionConfig & a
               href={post.postUrl || followUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={`group relative aspect-square ${igRadiusClass} overflow-hidden bg-slate-100 block border border-slate-200/50 shadow-xs hover:shadow-md transition-all`}
+              className={`group relative aspect-square ${igRadiusClass} overflow-hidden bg-[var(--surface,#f8fafc)] dark:bg-[var(--card,#09090b)] block border border-[var(--border,#e2e8f0)] shadow-xs hover:shadow-lg transition-all`}
               style={igRadiusStyle}
             >
               <img
@@ -280,13 +300,16 @@ export function InstagramFeedSection({ config }: { config: BaseSectionConfig & a
                 alt={post.caption || `Instagram post ${i + 1}`}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center text-white p-3 text-center">
-                <Camera className="w-6 h-6 mb-2 drop-shadow-md" />
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center text-white p-3 text-center backdrop-blur-[2px]">
+                <InstagramIcon className="w-6 h-6 mb-2 drop-shadow-md text-white" />
                 {post.caption && (
                   <span className="text-xs font-semibold line-clamp-2 leading-tight tracking-tight drop-shadow-md">
                     {post.caption}
                   </span>
                 )}
+                <span className="text-[10px] font-bold uppercase tracking-wider text-white/90 mt-2 flex items-center gap-1 font-mono">
+                  VIEW POST ↗
+                </span>
               </div>
             </a>
           ))}

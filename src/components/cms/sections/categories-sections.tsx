@@ -8,10 +8,10 @@ import { SectionHeading } from '../primitives/heading';
 import { ThemeButton } from '../primitives/button';
 import { ShoppingBag, ArrowRight, MapPin } from 'lucide-react';
 
-const mockCategories = [
-  { id: '1', title: 'WOMEN', subtitle: 'Tailored Silhouettes & Silk Essentials', image: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=800&auto=format&fit=crop', link: '/products?category=women' },
-  { id: '2', title: 'MEN', subtitle: 'Contemporary Outerwear & Denim', image: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=800&auto=format&fit=crop', link: '/products?category=men' },
-  { id: '3', title: 'ACCESSORIES', subtitle: 'Italian Leather Goods & Jewelry', image: 'https://images.unsplash.com/photo-1523293182086-7651a899d37f?q=80&w=800&auto=format&fit=crop', link: '/products?category=accessories' },
+const defaultCategoryItems = [
+  { id: '1', title: 'WOMEN', subtitle: 'Tailored Silhouettes & Silk Essentials', image: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=800&auto=format&fit=crop', link: '/women' },
+  { id: '2', title: 'MEN', subtitle: 'Contemporary Outerwear & Denim', image: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=800&auto=format&fit=crop', link: '/men' },
+  { id: '3', title: 'STREETWEAR', subtitle: 'Oversized Tees & Heavyweight Hoodies', image: 'https://images.unsplash.com/photo-1523293182086-7651a899d37f?q=80&w=800&auto=format&fit=crop', link: '/men/streetwear' },
 ];
 
 function getCategoryCardFallbackImage(titleOrSlug: string = ''): string {
@@ -44,7 +44,7 @@ function getCategoryCardFallbackImage(titleOrSlug: string = ''): string {
 }
 
 export function CategoryGridSection({ config }: { config: CategoryGridConfig & any }) {
-  const rawItems = config.items && config.items.length > 0 ? config.items : mockCategories;
+  const rawItems = config.items && config.items.length > 0 ? config.items : defaultCategoryItems;
   const items = rawItems
     .filter((item: any) => item.enabled !== false)
     .sort((a: any, b: any) => (a.displayOrder || 0) - (b.displayOrder || 0));
@@ -141,7 +141,7 @@ export function CategoryGridSection({ config }: { config: CategoryGridConfig & a
           return (
             <Link
               key={cat.id}
-              href={cat.link || `/products?category=${cat.categorySlug || 'all'}`}
+              href={cat.link || (cat.categorySlug && cat.categorySlug !== 'all' ? `/${cat.categorySlug}` : '/products')}
               className={`group relative overflow-hidden ${radiusClass} ${shadowClass} ${aspectClass} block transition-all duration-500 ${
                 config.cardHoverEffect === 'lift' || config.animationHoverEffect === 'lift' ? 'hover:-translate-y-1.5' : ''
               } ${
@@ -300,7 +300,7 @@ export function CollectionShowcaseSection({ config }: { config: BaseSectionConfi
         ))}
       </div>
       <div className={`grid grid-cols-1 ${colClass} gap-6`}>
-        {mockCategories.map((c) => (
+        {defaultCategoryItems.map((c) => (
           <div
             key={c.id}
             className={`p-4 bg-white border border-border/80 shadow-sm ${cardRadiusClass}`}

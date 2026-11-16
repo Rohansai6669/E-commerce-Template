@@ -14,12 +14,8 @@ const cmsMemoryCache = new Map<string, { value: unknown; expiresAt: number }>();
 const CMS_CACHE_TTL = 60 * 1000; // 60 seconds
 
 export function invalidateCmsCache(key?: string) {
-  if (key) {
-    cmsMemoryCache.delete(key);
-    cmsMemoryCache.delete(`page_config_${key}`);
-  } else {
-    cmsMemoryCache.clear();
-  }
+  // Clear the in-memory cache completely to guarantee fresh state across all components
+  cmsMemoryCache.clear();
 }
 
 /**

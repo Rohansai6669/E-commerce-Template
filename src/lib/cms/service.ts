@@ -18,7 +18,9 @@ import {
 } from './defaults';
 import {
   saveCmsPageConfigAction,
+  getCmsPageConfigServer,
   saveSiteDesignTokensAction,
+  getSiteDesignTokensServer,
   saveNavAppearanceConfigAction,
   getNavAppearanceConfigServer,
   saveFooterConfigAction,
@@ -35,6 +37,22 @@ const STORAGE_KEY_NAV_APPEARANCE = 'cms_nav_appearance';
 const STORAGE_KEY_FOOTER = 'cms_footer_config';
 
 export async function getCmsPageConfig(slug: string = '/'): Promise<PageConfig> {
+  // Always prioritize authoritative server-side configuration so deployed updates reflect immediately
+  try {
+    const serverConfig = await getCmsPageConfigServer(slug);
+    if (serverConfig) {
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(`${STORAGE_KEY_PAGE_PREFIX}${slug}`, JSON.stringify(serverConfig));
+        } catch (_) {}
+      }
+      return serverConfig;
+    }
+  } catch (err) {
+    console.warn('Failed to fetch CMS page config from server action, falling back to cached state:', err);
+  }
+
+  // Fallback to client storage if server action is offline or unreachable
   if (typeof window !== 'undefined') {
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY_PAGE_PREFIX}${slug}`);
@@ -115,6 +133,22 @@ export async function saveAnnouncementBar(config: AnnouncementBarConfig): Promis
 }
 
 export async function getSiteDesignTokens(): Promise<SiteDesignTokens> {
+  // Always prioritize authoritative server-side configuration
+  try {
+    const serverTokens = await getSiteDesignTokensServer();
+    if (serverTokens) {
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(STORAGE_KEY_DESIGN_TOKENS, JSON.stringify(serverTokens));
+        } catch (_) {}
+      }
+      return serverTokens;
+    }
+  } catch (err) {
+    console.warn('Failed to fetch design tokens from server action, falling back to cached state:', err);
+  }
+
+  // Fallback to client storage if server action is offline
   if (typeof window !== 'undefined') {
     try {
       const stored = localStorage.getItem(STORAGE_KEY_DESIGN_TOKENS);
@@ -168,6 +202,22 @@ export async function saveInstagramSettings(config: InstagramSettingsConfig): Pr
 }
 
 export async function getNavAppearanceConfig(): Promise<NavAppearanceConfig> {
+  // Always prioritize authoritative server-side configuration so deployed updates reflect immediately
+  try {
+    const serverConfig = await getNavAppearanceConfigServer();
+    if (serverConfig) {
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(STORAGE_KEY_NAV_APPEARANCE, JSON.stringify(serverConfig));
+        } catch (_) {}
+      }
+      return serverConfig;
+    }
+  } catch (err) {
+    console.warn('Failed to fetch nav appearance from server action, falling back to cached state:', err);
+  }
+
+  // Fallback to client storage if server action is offline or unreachable
   if (typeof window !== 'undefined') {
     try {
       const stored = localStorage.getItem(STORAGE_KEY_NAV_APPEARANCE);
@@ -180,20 +230,6 @@ export async function getNavAppearanceConfig(): Promise<NavAppearanceConfig> {
     } catch (e) {
       console.warn('Failed to read nav appearance config from storage:', e);
     }
-  }
-
-  try {
-    const serverConfig = await getNavAppearanceConfigServer();
-    if (serverConfig) {
-      if (typeof window !== 'undefined') {
-        try {
-          localStorage.setItem(STORAGE_KEY_NAV_APPEARANCE, JSON.stringify(serverConfig));
-        } catch (_) {}
-      }
-      return serverConfig;
-    }
-  } catch (err) {
-    console.warn('Failed to fetch nav appearance from server action:', err);
   }
 
   return defaultNavAppearanceConfig;
@@ -212,6 +248,22 @@ export async function saveNavAppearanceConfig(config: NavAppearanceConfig): Prom
 }
 
 export async function getFooterConfig(): Promise<FooterConfig> {
+  // Always prioritize authoritative server-side configuration
+  try {
+    const serverConfig = await getFooterConfigServer();
+    if (serverConfig) {
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(STORAGE_KEY_FOOTER, JSON.stringify(serverConfig));
+        } catch (_) {}
+      }
+      return serverConfig;
+    }
+  } catch (err) {
+    console.warn('Failed to fetch footer config from server action, falling back to cached state:', err);
+  }
+
+  // Fallback to client storage if server action is offline
   if (typeof window !== 'undefined') {
     try {
       const stored = localStorage.getItem(STORAGE_KEY_FOOTER);
@@ -224,20 +276,6 @@ export async function getFooterConfig(): Promise<FooterConfig> {
     } catch (e) {
       console.warn('Failed to read footer config from storage:', e);
     }
-  }
-
-  try {
-    const serverConfig = await getFooterConfigServer();
-    if (serverConfig) {
-      if (typeof window !== 'undefined') {
-        try {
-          localStorage.setItem(STORAGE_KEY_FOOTER, JSON.stringify(serverConfig));
-        } catch (_) {}
-      }
-      return serverConfig;
-    }
-  } catch (err) {
-    console.warn('Failed to fetch footer config from server action:', err);
   }
 
   return defaultFooterConfig;

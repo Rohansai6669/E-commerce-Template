@@ -87,7 +87,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       />
 
       {/* Main Luxury Catalog Container */}
-      <Container className="pt-8 sm:pt-14 pb-16">
+      <Container className="pt-8 sm:pt-14 pb-16 max-w-[1600px] mx-auto">
         {/* Top Eyebrow, Title & Subtitle - Exact match to Lexido Editorial */}
         <div className="flex flex-col gap-1.5 sm:gap-2">
           <span className="text-[11px] font-bold tracking-[0.25em] text-neutral-500 uppercase font-mono">

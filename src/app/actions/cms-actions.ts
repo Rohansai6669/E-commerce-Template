@@ -57,20 +57,24 @@ export async function getCmsPageConfigServer(slug: string = '/'): Promise<PageCo
  */
 export async function saveCmsPageConfigAction(slug: string, config: PageConfig): Promise<boolean> {
   try {
-    // Save to Disk Storage
-    let existingData: Record<string, PageConfig> = {};
-    if (fs.existsSync(CMS_STORAGE_PATH)) {
-      try {
-        const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
-        existingData = JSON.parse(raw);
-      } catch (e) {
-        existingData = {};
+    // 1. Try Saving to Disk Storage safely (works in local dev, gracefully skips on read-only serverless/Vercel)
+    try {
+      let existingData: Record<string, PageConfig> = {};
+      if (fs.existsSync(CMS_STORAGE_PATH)) {
+        try {
+          const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
+          existingData = JSON.parse(raw);
+        } catch (e) {
+          existingData = {};
+        }
       }
+      existingData[slug] = config;
+      fs.writeFileSync(CMS_STORAGE_PATH, JSON.stringify(existingData, null, 2), 'utf-8');
+    } catch (fsErr) {
+      console.warn('saveCmsPageConfigAction disk write skipped (read-only filesystem):', fsErr);
     }
-    existingData[slug] = config;
-    fs.writeFileSync(CMS_STORAGE_PATH, JSON.stringify(existingData, null, 2), 'utf-8');
 
-    // Sync to Database
+    // 2. Authoritative Sync to PostgreSQL Database
     try {
       if (db) {
         const dbKey = `page_config_${slug}`;
@@ -92,8 +96,10 @@ export async function saveCmsPageConfigAction(slug: string, config: PageConfig):
       console.warn('saveCmsPageConfigAction DB sync write warning:', dbErr);
     }
 
+    // 3. Flush in-memory cache and revalidate storefront route
     invalidateCmsCache(slug);
     revalidatePath('/');
+    revalidatePath('/', 'layout');
     return true;
   } catch (err) {
     console.error('saveCmsPageConfigAction error:', err);
@@ -106,36 +112,47 @@ export async function saveCmsPageConfigAction(slug: string, config: PageConfig):
  */
 export async function saveSiteDesignTokensAction(tokens: SiteDesignTokens): Promise<boolean> {
   try {
-    // Save to Disk Storage
-    let existingData: Record<string, any> = {};
-    if (fs.existsSync(CMS_STORAGE_PATH)) {
+    // 1. Safe Disk Storage
+    try {
+      let existingData: Record<string, any> = {};
+      if (fs.existsSync(CMS_STORAGE_PATH)) {
+        try {
+          const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
+          existingData = JSON.parse(raw);
+        } catch (e) {
+          existingData = {};
+        }
+      }
+      existingData.site_design_tokens = tokens;
+      fs.writeFileSync(CMS_STORAGE_PATH, JSON.stringify(existingData, null, 2), 'utf-8');
+    } catch (fsErr) {
+      console.warn('saveSiteDesignTokensAction disk write skipped (read-only filesystem):', fsErr);
+    }
+
+    // 2. Authoritative Sync to Database
+    if (db) {
       try {
-        const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
-        existingData = JSON.parse(raw);
-      } catch (e) {
-        existingData = {};
+        await db
+          .insert(cmsSiteSettings)
+          .values({
+            key: 'design_tokens',
+            value: tokens as any,
+          })
+          .onConflictDoUpdate({
+            target: cmsSiteSettings.key,
+            set: {
+              value: tokens as any,
+              updatedAt: new Date(),
+            },
+          });
+      } catch (dbErr) {
+        console.warn('saveSiteDesignTokensAction DB sync warning:', dbErr);
       }
     }
-    existingData.site_design_tokens = tokens;
-    fs.writeFileSync(CMS_STORAGE_PATH, JSON.stringify(existingData, null, 2), 'utf-8');
 
-    if (db) {
-      await db
-        .insert(cmsSiteSettings)
-        .values({
-          key: 'design_tokens',
-          value: tokens as any,
-        })
-        .onConflictDoUpdate({
-          target: cmsSiteSettings.key,
-          set: {
-            value: tokens as any,
-            updatedAt: new Date(),
-          },
-        });
-    }
     invalidateCmsCache('design_tokens');
     revalidatePath('/');
+    revalidatePath('/', 'layout');
     return true;
   } catch (err) {
     console.error('saveSiteDesignTokensAction error:', err);
@@ -148,20 +165,24 @@ export async function saveSiteDesignTokensAction(tokens: SiteDesignTokens): Prom
  */
 export async function saveNavAppearanceConfigAction(config: NavAppearanceConfig): Promise<boolean> {
   try {
-    // Save to Disk Storage
-    let existingData: Record<string, any> = {};
-    if (fs.existsSync(CMS_STORAGE_PATH)) {
-      try {
-        const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
-        existingData = JSON.parse(raw);
-      } catch (e) {
-        existingData = {};
+    // 1. Safe Disk Storage
+    try {
+      let existingData: Record<string, any> = {};
+      if (fs.existsSync(CMS_STORAGE_PATH)) {
+        try {
+          const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
+          existingData = JSON.parse(raw);
+        } catch (e) {
+          existingData = {};
+        }
       }
+      existingData.nav_appearance = config;
+      fs.writeFileSync(CMS_STORAGE_PATH, JSON.stringify(existingData, null, 2), 'utf-8');
+    } catch (fsErr) {
+      console.warn('saveNavAppearanceConfigAction disk write skipped (read-only filesystem):', fsErr);
     }
-    existingData.nav_appearance = config;
-    fs.writeFileSync(CMS_STORAGE_PATH, JSON.stringify(existingData, null, 2), 'utf-8');
 
-    // Sync to Database
+    // 2. Authoritative Sync to Database
     try {
       if (db) {
         await db
@@ -244,20 +265,24 @@ export async function getNavAppearanceConfigServer(): Promise<NavAppearanceConfi
  */
 export async function saveFooterConfigAction(config: FooterConfig): Promise<boolean> {
   try {
-    // Save to Disk Storage
-    let existingData: Record<string, any> = {};
-    if (fs.existsSync(CMS_STORAGE_PATH)) {
-      try {
-        const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
-        existingData = JSON.parse(raw);
-      } catch (e) {
-        existingData = {};
+    // 1. Safe Disk Storage
+    try {
+      let existingData: Record<string, any> = {};
+      if (fs.existsSync(CMS_STORAGE_PATH)) {
+        try {
+          const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
+          existingData = JSON.parse(raw);
+        } catch (e) {
+          existingData = {};
+        }
       }
+      existingData.footer_config = config;
+      fs.writeFileSync(CMS_STORAGE_PATH, JSON.stringify(existingData, null, 2), 'utf-8');
+    } catch (fsErr) {
+      console.warn('saveFooterConfigAction disk write skipped (read-only filesystem):', fsErr);
     }
-    existingData.footer_config = config;
-    fs.writeFileSync(CMS_STORAGE_PATH, JSON.stringify(existingData, null, 2), 'utf-8');
 
-    // Sync to Database
+    // 2. Authoritative Sync to Database
     try {
       if (db) {
         await db

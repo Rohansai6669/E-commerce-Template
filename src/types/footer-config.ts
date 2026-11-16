@@ -80,8 +80,8 @@ export const defaultFooterConfig: FooterConfig = {
       id: 'col-shop',
       title: 'SHOP',
       links: [
-        { id: 'lnk-1', label: 'Men', url: '/products?category=men' },
-        { id: 'lnk-2', label: 'Women', url: '/products?category=women' },
+        { id: 'lnk-1', label: 'Men', url: '/men' },
+        { id: 'lnk-2', label: 'Women', url: '/women' },
         { id: 'lnk-3', label: 'Denim', url: '/products?category=denim' },
         { id: 'lnk-4', label: 'Hoodies', url: '/products?category=hoodies' },
       ],

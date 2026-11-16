@@ -60,8 +60,13 @@ export default async function AdminCategoriesPage() {
     'categories'
   );
 
-  // Available parent options (categories that are top-level or existing categories)
-  const availableParents = list.filter((c) => !c.parentId);
+  // Available parent options (Tier 1 categories and Tier 2 subcategories)
+  const availableParents = list.map((c) => ({
+    id: c.id,
+    name: c.name,
+    parentName: c.parentName || null,
+    parentId: c.parentId || null,
+  }));
 
   return (
     <div className="flex flex-col gap-6">

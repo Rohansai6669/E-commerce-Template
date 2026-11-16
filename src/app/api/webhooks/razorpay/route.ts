@@ -3,7 +3,7 @@ import { razorpayAdapter } from '@/core/payment/razorpay.adapter';
 import { db } from '@/lib/db';
 import { orders } from '@/lib/db/schema/order';
 import { payments } from '@/lib/db/schema/payment';
-import { eq } from 'drizzle-orm';
+import { eq, or, sql } from 'drizzle-orm';
 import { logger } from '@/core/logger';
 
 export async function POST(req: NextRequest) {
@@ -31,18 +31,28 @@ export async function POST(req: NextRequest) {
         const razorpayOrderId = paymentEntity?.order_id || event.payload?.order?.entity?.id;
         const razorpayPaymentId = paymentEntity?.id;
 
-        if (razorpayPaymentId) {
-          // Update matching payment record
+        if (razorpayPaymentId || razorpayOrderId) {
+          // Reconcile matching payment record by paymentId or orderId
+          const matchConditions = [];
+          if (razorpayPaymentId) {
+            matchConditions.push(eq(payments.transactionId, razorpayPaymentId));
+          }
+          if (razorpayOrderId) {
+            matchConditions.push(eq(payments.transactionId, razorpayOrderId));
+            matchConditions.push(sql`${payments.providerPayload}->>'razorpayOrderId' = ${razorpayOrderId}`);
+          }
+
           const existingPayment = await db
             .select()
             .from(payments)
-            .where(eq(payments.transactionId, razorpayPaymentId))
+            .where(or(...matchConditions))
             .limit(1);
 
           if (existingPayment.length > 0) {
             await db
               .update(payments)
               .set({
+                transactionId: razorpayPaymentId || existingPayment[0].transactionId,
                 status: 'succeeded',
                 capturedAt: new Date(),
                 providerResponse: paymentEntity,
@@ -55,6 +65,10 @@ export async function POST(req: NextRequest) {
               .update(orders)
               .set({ status: 'processing', updatedAt: new Date() })
               .where(eq(orders.id, existingPayment[0].orderId));
+
+            logger.info(
+              `[RAZORPAY WEBHOOK] Successfully reconciled payment ${razorpayPaymentId} for order ${existingPayment[0].orderId}.`
+            );
           }
         }
         break;
@@ -63,8 +77,13 @@ export async function POST(req: NextRequest) {
       case 'payment.failed': {
         const paymentEntity = event.payload?.payment?.entity;
         const razorpayPaymentId = paymentEntity?.id;
+        const razorpayOrderId = paymentEntity?.order_id;
 
-        if (razorpayPaymentId) {
+        if (razorpayPaymentId || razorpayOrderId) {
+          const matchConditions = [];
+          if (razorpayPaymentId) matchConditions.push(eq(payments.transactionId, razorpayPaymentId));
+          if (razorpayOrderId) matchConditions.push(eq(payments.transactionId, razorpayOrderId));
+
           await db
             .update(payments)
             .set({
@@ -72,7 +91,7 @@ export async function POST(req: NextRequest) {
               providerResponse: paymentEntity,
               updatedAt: new Date(),
             })
-            .where(eq(payments.transactionId, razorpayPaymentId));
+            .where(or(...matchConditions));
         }
         break;
       }
@@ -87,4 +106,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 });
   }
 }
-

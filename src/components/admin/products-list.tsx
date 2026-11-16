@@ -71,7 +71,7 @@ interface ProductsListProps {
   activeSuppliers: SuppliersItem[];
   mappedLinks: SuppliersMappedItem[];
   allVariants?: VariantItem[];
-  categories: { id: string; name: string }[];
+  categories: { id: string; name: string; parentId?: string | null; slug?: string; imageUrl?: string | null }[];
   brands: { id: string; name: string }[];
 }
 
@@ -235,6 +235,25 @@ function BulkCategoryModal({
   const [selectedCatId, setSelectedCatId] = React.useState('');
   const [isPending, startTransition] = React.useTransition();
 
+  const formattedCategoryOptions = React.useMemo(() => {
+    const catMap = new Map<string, { id: string; name: string; parentId?: string | null }>();
+    categories.forEach((c) => catMap.set(c.id, c));
+
+    return categories.map((c) => {
+      if (!c.parentId) {
+        return { id: c.id, label: `📁 ${c.name} (Category)`, tier: 1 };
+      }
+      const parent = catMap.get(c.parentId);
+      if (!parent || !parent.parentId) {
+        const pName = parent ? parent.name : '';
+        return { id: c.id, label: `  ↳ ${pName ? pName + ' > ' : ''}${c.name} (Subcategory)`, tier: 2 };
+      }
+      const grandParent = catMap.get(parent.parentId);
+      const gpName = grandParent ? grandParent.name : '';
+      return { id: c.id, label: `    ↳ ↳ ${gpName ? gpName + ' > ' : ''}${parent.name} > ${c.name} (Child)`, tier: 3 };
+    });
+  }, [categories]);
+
   const handleApply = () => {
     if (!selectedCatId) return;
 
@@ -289,10 +308,10 @@ function BulkCategoryModal({
               onChange={(e) => setSelectedCatId(e.target.value)}
               className="w-full h-10 border border-slate-200 rounded px-3 text-sm bg-slate-50 font-semibold text-slate-900 focus:border-slate-950 outline-none"
             >
-              <option value="">Select Category / Subcategory...</option>
-              {categories.map((c: any) => (
+              <option value="">Select Category / Subcategory / Child...</option>
+              {formattedCategoryOptions.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.parentId ? `  ↳ ${c.name} (Subcategory)` : `📁 ${c.name}`}
+                  {c.label}
                 </option>
               ))}
               <option value="__clear__" className="text-rose-600 font-bold">

@@ -1109,7 +1109,7 @@ export function VisualBuilderStudio({
               : viewMode === 'inspector'
               ? 'hidden'
               : 'flex'
-          } flex-1 min-w-0 h-full overflow-hidden bg-slate-900/95 flex-col relative ${
+          } flex-1 min-w-0 h-full overflow-hidden bg-slate-900/95 flex-col relative isolate z-0 ${
             isResizing ? 'pointer-events-none select-none' : ''
           }`}
         >

@@ -517,10 +517,9 @@ export function Header({
                 suppressHydrationWarning
                 onClick={() => handleCategoryChange(null)}
                 style={{
-                  borderColor: currentBorderColor,
                   color: currentTextColor,
                 }}
-                className="hidden lg:flex items-center justify-center h-9 w-9 rounded-full border transition-colors cursor-pointer ml-1 hover:opacity-80"
+                className="hidden lg:flex items-center justify-center h-9 w-9 rounded-full transition-colors cursor-pointer ml-1 hover:bg-black/5 dark:hover:bg-white/10"
                 aria-label="Close megamenu"
               >
                 <X className="h-5 w-5" />
@@ -535,6 +534,7 @@ export function Header({
             category={activeCategory || 'MEN'}
             onClose={() => handleCategoryChange(null)}
             appearance={config}
+            headerHeight={headerHeight + (config.showAnnouncementBar ? 36 : 0)}
           />
         )}
       </header>

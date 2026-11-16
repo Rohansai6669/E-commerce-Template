@@ -73,6 +73,7 @@ export class ProductMapper {
       id: string;
       name: string;
       slug: string;
+      sku?: string | null;
       description: string | null;
       price: string;
       compareAtPrice?: string | null;
@@ -173,6 +174,7 @@ export class ProductMapper {
       id: product.id,
       name: product.name,
       slug: product.slug,
+      sku: product.sku || null,
       description: product.description,
       price: parseFloat(product.price),
       compareAtPrice: product.compareAtPrice ? parseFloat(product.compareAtPrice) : null,

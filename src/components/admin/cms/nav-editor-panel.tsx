@@ -155,114 +155,117 @@ export function NavEditorPanel({
   ];
 
   return (
-    <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden bg-slate-100 text-slate-900 font-sans select-none pb-20">
-      {/* 1. Header with Presets Dropdown & Reset */}
-      <div className="p-4 bg-white border-b border-slate-200 space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-extrabold text-sm text-slate-950 uppercase tracking-tight font-heading flex items-center gap-1.5">
-              <Layout className="w-4 h-4 text-slate-900" /> Navigation Studio
-            </h3>
-            <p className="text-xs text-slate-600 mt-0.5">Customize storefront header & mega menu</p>
-          </div>
-          <button
-            type="button"
-            onClick={handleResetDefaults}
-            title="Reset to default luxury styling"
-            className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-800 text-[11px] font-bold uppercase flex items-center gap-1 cursor-pointer transition shadow-2xs"
-          >
-            <RotateCcw className="w-3.5 h-3.5 text-slate-600" /> Reset
-          </button>
-        </div>
-
-        {/* Presets Dropdown */}
-        <div className="relative" ref={dropdownRef}>
-          <button
-            type="button"
-            onClick={() => setIsPresetDropdownOpen(!isPresetDropdownOpen)}
-            className="w-full p-2.5 bg-white border-2 border-slate-900 hover:border-black rounded-xl shadow-xs cursor-pointer transition-all flex items-center justify-between text-left"
-          >
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Theme Preset</span>
-                <span className="font-black text-xs text-slate-950 uppercase tracking-tight">
-                  Choose Styling Preset...
-                </span>
-              </div>
+    <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden bg-slate-100 text-slate-900 font-sans select-none">
+      {/* 1. Dedicated Fixed Header: Presets & Sub-Tab Navigation Bar (NEVER squished or overlapped) */}
+      <div className="shrink-0 bg-white border-b border-slate-200 z-20 flex flex-col shadow-2xs">
+        {/* Top Preset & Reset Bar */}
+        <div className="p-4 border-b border-slate-100 space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-extrabold text-sm text-slate-950 uppercase tracking-tight font-heading flex items-center gap-1.5">
+                <Layout className="w-4 h-4 text-slate-900" /> Navigation Studio
+              </h3>
+              <p className="text-xs text-slate-600 mt-0.5">Customize storefront header & mega menu</p>
             </div>
+            <button
+              type="button"
+              onClick={handleResetDefaults}
+              title="Reset to default luxury styling"
+              className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-800 text-[11px] font-bold uppercase flex items-center gap-1 cursor-pointer transition shadow-2xs"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-slate-600" /> Reset
+            </button>
+          </div>
 
-            <ChevronDown
-              className={`w-4 h-4 text-slate-950 transition-transform duration-200 ${
-                isPresetDropdownOpen ? 'rotate-180' : ''
-              }`}
-            />
-          </button>
+          {/* Presets Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={() => setIsPresetDropdownOpen(!isPresetDropdownOpen)}
+              className="w-full p-2.5 bg-white border-2 border-slate-900 hover:border-black rounded-xl shadow-xs cursor-pointer transition-all flex items-center justify-between text-left"
+            >
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Theme Preset</span>
+                  <span className="font-black text-xs text-slate-950 uppercase tracking-tight">
+                    Choose Styling Preset...
+                  </span>
+                </div>
+              </div>
 
-          {isPresetDropdownOpen && (
-            <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white border-2 border-slate-950 rounded-xl shadow-xl max-h-72 overflow-y-auto space-y-1 p-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
-              {NAV_APPEARANCE_PRESETS.map((p) => (
-                <div
-                  key={p.id}
-                  onClick={() => applyPreset(p.id)}
-                  className="p-2.5 rounded-lg cursor-pointer transition-all flex items-center justify-between hover:bg-slate-100 group"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-md border border-slate-200">
-                      <div
-                        className="w-3.5 h-3.5 rounded-full border border-slate-300 shadow-2xs"
-                        style={{ backgroundColor: p.previewBg }}
-                      />
-                      <div
-                        className="w-3.5 h-3.5 rounded-full shadow-2xs"
-                        style={{ backgroundColor: p.previewAccent }}
-                      />
-                    </div>
-                    <div>
-                      <p className="font-extrabold text-xs text-slate-950 group-hover:text-indigo-600">
-                        {p.name}
-                      </p>
-                      <p className="text-[10px] text-slate-500 line-clamp-1">{p.description}</p>
+              <ChevronDown
+                className={`w-4 h-4 text-slate-950 transition-transform duration-200 ${
+                  isPresetDropdownOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            {isPresetDropdownOpen && (
+              <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white border-2 border-slate-950 rounded-xl shadow-xl max-h-72 overflow-y-auto space-y-1 p-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
+                {NAV_APPEARANCE_PRESETS.map((p) => (
+                  <div
+                    key={p.id}
+                    onClick={() => applyPreset(p.id)}
+                    className="p-2.5 rounded-lg cursor-pointer transition-all flex items-center justify-between hover:bg-slate-100 group"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-md border border-slate-200">
+                        <div
+                          className="w-3.5 h-3.5 rounded-full border border-slate-300 shadow-2xs"
+                          style={{ backgroundColor: p.previewBg }}
+                        />
+                        <div
+                          className="w-3.5 h-3.5 rounded-full shadow-2xs"
+                          style={{ backgroundColor: p.previewAccent }}
+                        />
+                      </div>
+                      <div>
+                        <p className="font-extrabold text-xs text-slate-950 group-hover:text-indigo-600">
+                          {p.name}
+                        </p>
+                        <p className="text-[10px] text-slate-500 line-clamp-1">{p.description}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* High-Contrast Sub-Tab Navigation Bar */}
+        <div className="flex bg-white px-2 pt-1.5 gap-1 overflow-x-auto scrollbar-none shrink-0 min-h-[46px]">
+          {[
+            { id: 'header', label: 'Header', icon: Layout },
+            { id: 'logo', label: 'Logo', icon: Type },
+            { id: 'links', label: `Links (${config.links.length})`, icon: LinkIcon },
+            { id: 'megamenu', label: 'Mega Menu', icon: Layers },
+            { id: 'icons', label: 'Icons & Bar', icon: ShoppingBag },
+          ].map((tab) => {
+            const IconComp = tab.icon;
+            const isActive = activeSubTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveSubTab(tab.id as NavSubTab)}
+                className={`flex-1 min-w-[70px] whitespace-nowrap pb-2 pt-1.5 px-2 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider border-b-2 transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                  isActive
+                    ? 'border-slate-950 text-slate-950 font-black'
+                    : 'border-transparent text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <IconComp className="w-3.5 h-3.5 shrink-0" />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* 2. High-Contrast Sub-Tab Navigation Bar */}
-      <div className="flex border-b border-slate-200 bg-white px-2 pt-2 gap-1 sticky top-0 z-20 shadow-2xs overflow-x-auto scrollbar-none">
-        {[
-          { id: 'header', label: 'Header', icon: Layout },
-          { id: 'logo', label: 'Logo', icon: Type },
-          { id: 'links', label: `Links (${config.links.length})`, icon: LinkIcon },
-          { id: 'megamenu', label: 'Mega Menu', icon: Layers },
-          { id: 'icons', label: 'Icons & Bar', icon: ShoppingBag },
-        ].map((tab) => {
-          const IconComp = tab.icon;
-          const isActive = activeSubTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveSubTab(tab.id as NavSubTab)}
-              className={`flex-1 min-w-[70px] whitespace-nowrap pb-2.5 pt-1 px-2 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider border-b-2 transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
-                isActive
-                  ? 'border-slate-950 text-slate-950 font-black'
-                  : 'border-transparent text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              <IconComp className="w-3.5 h-3.5 shrink-0" />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* 3. Sub-Tab Body */}
-      <div className="p-4 space-y-4">
+      {/* 2. Scrollable Settings Content Body */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-28">
         {/* ===================== SUBTAB 1: HEADER LAYOUT, HEIGHT & COLORS ===================== */}
         {activeSubTab === 'header' && (
           <div className="space-y-4">
@@ -1491,6 +1494,29 @@ export function NavEditorPanel({
                 <label className="block text-xs font-bold text-slate-900 uppercase tracking-wide">
                   Mega Menu Height & Padding Controls
                 </label>
+              </div>
+
+              {/* Full Viewport Toggle (Matches Editorial Atelier Reference) */}
+              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-extrabold text-xs text-slate-950 uppercase tracking-tight">
+                      Cover Entire Viewport
+                    </span>
+                    <span className="bg-emerald-100 text-emerald-800 text-[9px] font-black px-1.5 py-0.5 rounded uppercase">
+                      Reference Match
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 mt-0.5">
+                    Expands megamenu down to the bottom of the viewport with full-bleed editorial card
+                  </p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={config.megaMenuFullViewport !== false}
+                  onChange={(e) => updateField('megaMenuFullViewport', e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-slate-950 focus:ring-slate-950 cursor-pointer"
+                />
               </div>
 
               {/* Min-Height Slider */}

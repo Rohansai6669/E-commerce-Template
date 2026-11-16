@@ -111,6 +111,7 @@ export interface NavAppearanceConfig {
   megaMenuActiveTabStyle: MegamenuTabStyleOption;
   megaMenuActiveTabColor: string;
   megaMenuMinHeightPx: number;
+  megaMenuFullViewport?: boolean;
   megaMenuPaddingY: SpacingScaleOption;
   categoryRowSpacing: SpacingScaleOption;
   categoryHoverEffect: CategoryHoverEffectOption;
@@ -156,8 +157,8 @@ export interface NavAppearanceConfig {
 }
 
 export const DEFAULT_NAV_LINKS: NavLinkItem[] = [
-  { id: 'nav-men', label: 'MEN', href: '/products?category=men', hasMega: true },
-  { id: 'nav-women', label: 'WOMEN', href: '/products?category=women', hasMega: true },
+  { id: 'nav-men', label: 'MEN', href: '/men', hasMega: true },
+  { id: 'nav-women', label: 'WOMEN', href: '/women', hasMega: true },
 ];
 
 export const defaultNavAppearanceConfig: NavAppearanceConfig = {
@@ -220,6 +221,7 @@ export const defaultNavAppearanceConfig: NavAppearanceConfig = {
   megaMenuActiveTabStyle: 'border-left',
   megaMenuActiveTabColor: '#020617',
   megaMenuMinHeightPx: 460,
+  megaMenuFullViewport: true,
   megaMenuPaddingY: 'standard',
   categoryRowSpacing: 'standard',
   categoryHoverEffect: 'slide-right',

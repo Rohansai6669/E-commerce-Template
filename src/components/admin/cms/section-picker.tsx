@@ -17,7 +17,7 @@ const CATEGORIES: { id: SectionCategory | 'all'; label: string }[] = [
   { id: 'products', label: 'Products & Bundles' },
   { id: 'categories', label: 'Categories' },
   { id: 'promotions', label: 'Promotions' },
-  { id: 'trust', label: 'Trust & Reviews' },
+  { id: 'trust', label: 'Trust, Social & Reviews' },
   { id: 'utility', label: 'Footers & Utilities' },
 ];
 
@@ -25,6 +25,24 @@ const CATEGORIES: { id: SectionCategory | 'all'; label: string }[] = [
  * Visual Miniature Component Wireframe Preview Renderer
  */
 function MiniComponentPreview({ category, type }: { category: SectionCategory; type: string }) {
+  if (type === 'INSTAGRAM_FEED') {
+    return (
+      <div className="w-full h-16 bg-slate-950 text-white rounded-lg p-2 flex flex-col justify-between border border-slate-800 mb-3 overflow-hidden select-none">
+        <div className="flex items-center justify-between">
+          <span className="text-[9px] font-mono font-bold tracking-wider text-pink-400">@LEXIDO</span>
+          <span className="text-[8px] text-slate-400 font-bold uppercase tracking-widest">FOLLOW →</span>
+        </div>
+        <div className="grid grid-cols-6 gap-1">
+          <div className="aspect-square bg-slate-800 rounded-xs" />
+          <div className="aspect-square bg-slate-700 rounded-xs" />
+          <div className="aspect-square bg-slate-800 rounded-xs" />
+          <div className="aspect-square bg-slate-700 rounded-xs" />
+          <div className="aspect-square bg-slate-800 rounded-xs" />
+          <div className="aspect-square bg-slate-700 rounded-xs" />
+        </div>
+      </div>
+    );
+  }
   if (category === 'headers') {
     return (
       <div className="w-full h-16 bg-slate-100 rounded-lg p-2 flex flex-col justify-between border border-slate-200/80 mb-3 overflow-hidden select-none">
@@ -133,14 +151,19 @@ export function SectionPicker({ onSelectSection, onClose }: SectionPickerProps) 
 
   const filteredEntries = entries.filter((entry) => {
     const matchesCategory = activeCategory === 'all' || entry.category === activeCategory;
+    const term = searchTerm.toLowerCase().trim();
+    if (!term) return matchesCategory;
+
     const matchesSearch =
-      entry.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      entry.description.toLowerCase().includes(searchTerm.toLowerCase());
+      entry.label.toLowerCase().includes(term) ||
+      entry.description.toLowerCase().includes(term) ||
+      entry.type.toLowerCase().includes(term) ||
+      (entry.type === 'INSTAGRAM_FEED' && (term.includes('post') || term.includes('insta') || term.includes('feed') || term.includes('social')));
     return matchesCategory && matchesSearch;
   });
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-2 sm:p-6 select-none">
+    <div className="fixed inset-0 z-[2000] bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-2 sm:p-6 select-none">
       <div className="bg-white w-full max-w-5xl h-[95vh] sm:max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-300">
         {/* Header Bar */}
         <div className="p-3.5 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-950 text-white shrink-0">

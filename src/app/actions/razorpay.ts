@@ -12,7 +12,7 @@ import { products } from '@/lib/db/schema/catalog/products';
 import { productVariants } from '@/lib/db/schema/catalog/variants';
 import { payments } from '@/lib/db/schema/payment';
 import { orders } from '@/lib/db/schema/order';
-import { inArray, eq } from 'drizzle-orm';
+import { inArray, eq, or, sql } from 'drizzle-orm';
 import { couponService } from '@/core/coupon/coupon.service';
 import { logger } from '@/core/logger';
 import { getCurrentUser } from '@/core/auth/session';
@@ -20,11 +20,14 @@ import { getCurrentUser } from '@/core/auth/session';
 /**
  * Creates a Razorpay checkout order with authoritative server totals.
  * Prepares the transaction so the client can launch the official Razorpay modal.
+ * Pre-persists a pending order record for automatic webhook reconciliation in case of sudden drops.
  */
 export async function createRazorpayOrderAction(params: {
   items: CartItem[];
   shippingMethod: ShippingMethod;
   coupon: Coupon | null;
+  address?: CheckoutAddress;
+  orderNotes?: string;
 }): Promise<{
   success: boolean;
   razorpayOrderId?: string;
@@ -124,6 +127,49 @@ export async function createRazorpayOrderAction(params: {
         shippingCarrier: params.shippingMethod.carrier,
       },
     });
+
+    // 5. Pre-persist pending order record for seamless webhook reconciliation in case of sudden drops
+    if (params.address) {
+      try {
+        const createParams: CreateOrderParams & { idempotencyKey: string } = {
+          items: verifiedItems,
+          address: params.address,
+          shippingMethod: params.shippingMethod,
+          paymentMethod: {
+            type: 'razorpay',
+            razorpayOrderId: rzpOrder.id,
+          },
+          couponCode: serverVerifiedCoupon?.code ?? null,
+          orderNotes: params.orderNotes || '',
+          subtotal: totals.subtotal,
+          discount: totals.discount,
+          shipping: totals.shipping,
+          tax: totals.tax,
+          total: totals.total,
+          guestEmail: params.address.email,
+          profileId: (await getCurrentUser())?.id ?? null,
+          idempotencyKey: rzpOrder.id,
+        };
+
+        const dbOrder = await orderRepository.create(createParams);
+
+        // Pre-insert pending payment record
+        await db.insert(payments).values({
+          orderId: dbOrder.id,
+          provider: 'razorpay',
+          transactionId: rzpOrder.id,
+          amount: totals.total.toFixed(2),
+          status: 'pending',
+          currency: 'INR',
+          providerPayload: {
+            razorpayOrderId: rzpOrder.id,
+          },
+          providerResponse: {},
+        });
+      } catch (preCreateErr) {
+        logger.warn('Failed to pre-create pending order record', { error: preCreateErr });
+      }
+    }
 
     return {
       success: true,
@@ -250,35 +296,88 @@ export async function verifyAndPlaceRazorpayOrderAction(params: {
   };
 
   try {
-    // 4. Persist order in database
-    const dbResult = await orderRepository.create(createParams);
-
-    // 5. Update order status to 'processing' (paid and confirmed)
-    await db
-      .update(orders)
-      .set({ status: 'processing', updatedAt: new Date() })
-      .where(eq(orders.id, dbResult.id));
-
-    // 6. Record payment in payments audit table
-    await db.insert(payments).values({
-      orderId: dbResult.id,
-      provider: 'razorpay',
-      transactionId: params.razorpayPaymentId,
-      amount: totals.total.toFixed(2),
-      status: 'succeeded',
-      currency: 'INR',
-      providerPayload: {
-        razorpayOrderId: params.razorpayOrderId,
-        razorpayPaymentId: params.razorpayPaymentId,
-      },
-      providerResponse: {
-        status: 'captured',
-        signatureVerified: true,
-      },
-      capturedAt: new Date(),
+    // 4. Check if order was already pre-created by idempotencyKey: params.razorpayOrderId
+    const existingOrder = await db.query.orders.findFirst({
+      where: eq(orders.idempotencyKey, params.razorpayOrderId),
     });
 
-    const placedOrder = OrderMapper.toPlacedOrder(createParams, dbResult);
+    let orderId: string;
+    let orderNumber: string;
+
+    if (existingOrder) {
+      orderId = existingOrder.id;
+      orderNumber = existingOrder.orderNumber!;
+      // Update existing pending order to 'processing'
+      await db
+        .update(orders)
+        .set({ status: 'processing', updatedAt: new Date() })
+        .where(eq(orders.id, orderId));
+    } else {
+      // 4b. Persist new order in database with idempotency protection
+      const dbResult = await orderRepository.create({
+        ...createParams,
+        idempotencyKey: params.razorpayOrderId,
+      });
+      orderId = dbResult.id;
+      orderNumber = dbResult.orderNumber;
+      await db
+        .update(orders)
+        .set({ status: 'processing', updatedAt: new Date() })
+        .where(eq(orders.id, orderId));
+    }
+
+    // 5. Update or insert payment in payments audit table
+    const existingPayment = await db
+      .select()
+      .from(payments)
+      .where(
+        or(
+          eq(payments.transactionId, params.razorpayPaymentId),
+          eq(payments.transactionId, params.razorpayOrderId),
+          sql`${payments.providerPayload}->>'razorpayOrderId' = ${params.razorpayOrderId}`
+        )
+      )
+      .limit(1);
+
+    if (existingPayment.length > 0) {
+      await db
+        .update(payments)
+        .set({
+          transactionId: params.razorpayPaymentId,
+          status: 'succeeded',
+          capturedAt: new Date(),
+          providerPayload: {
+            razorpayOrderId: params.razorpayOrderId,
+            razorpayPaymentId: params.razorpayPaymentId,
+          },
+          providerResponse: {
+            status: 'captured',
+            signatureVerified: true,
+          },
+          updatedAt: new Date(),
+        })
+        .where(eq(payments.id, existingPayment[0].id));
+    } else {
+      await db.insert(payments).values({
+        orderId,
+        provider: 'razorpay',
+        transactionId: params.razorpayPaymentId,
+        amount: totals.total.toFixed(2),
+        status: 'succeeded',
+        currency: 'INR',
+        providerPayload: {
+          razorpayOrderId: params.razorpayOrderId,
+          razorpayPaymentId: params.razorpayPaymentId,
+        },
+        providerResponse: {
+          status: 'captured',
+          signatureVerified: true,
+        },
+        capturedAt: new Date(),
+      });
+    }
+
+    const placedOrder = OrderMapper.toPlacedOrder(createParams, { id: orderId, orderNumber });
     placedOrder.status = 'processing';
 
     return { success: true, order: placedOrder };
@@ -290,4 +389,3 @@ export async function verifyAndPlaceRazorpayOrderAction(params: {
     };
   }
 }
-

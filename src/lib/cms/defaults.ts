@@ -320,6 +320,20 @@ export const defaultSeasonalSaleSection: AnySectionConfig = {
   heading: 'SEASONAL SALES & DEALS',
 };
 
+export const defaultInstagramFeedSection = {
+  id: 'instagram-feed-1',
+  name: 'Instagram Post Feed / Social Grid',
+  type: 'INSTAGRAM_FEED' as const,
+  enabled: true,
+  displayOrder: 7,
+  desktopVisible: true,
+  tabletVisible: true,
+  mobileVisible: true,
+  handle: '@LEXIDO',
+  eyebrow: 'COMMUNITY & LOOKBOOK',
+  followUrl: 'https://instagram.com/lexido',
+};
+
 export const defaultHomepageConfig: PageConfig = {
   slug: '/',
   title: 'Homepage',
@@ -333,6 +347,7 @@ export const defaultHomepageConfig: PageConfig = {
     { ...defaultProductGridSection, displayOrder: 4 },
     { ...defaultEditorialBannerSection, displayOrder: 5 },
     { ...defaultPromoBannerSection, displayOrder: 6 },
+    defaultInstagramFeedSection,
   ],
 };
 

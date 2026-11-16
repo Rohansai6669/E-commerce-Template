@@ -28,7 +28,20 @@ export function HeroSection({ config }: { config: HeroConfig }) {
     );
   }
 
-  const slide = slides[currentSlide];
+  const slide = slides[currentSlide] || slides[0] || {};
+  const eyebrowText = slide.eyebrow || config.eyebrow;
+  const headingText = slide.heading || config.heading || '';
+  const descriptionText = slide.description || slide.subTitle || config.description || config.subTitle;
+  const primaryCtaText = slide.primaryCtaText || config.primaryCtaText;
+  const primaryCtaUrl = slide.primaryCtaUrl || config.primaryCtaUrl || '/products';
+  const secondaryCtaText = slide.secondaryCtaText || config.secondaryCtaText;
+  const secondaryCtaUrl = slide.secondaryCtaUrl || config.secondaryCtaUrl || '/about';
+  const mediaUrl =
+    slide.mediaUrl ||
+    config.desktopImage ||
+    'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop';
+  const overlayOpacity = slide.overlayOpacity ?? config.overlayOpacity ?? 0.35;
+  const descriptionLayout = config.descriptionLayout || (slide as any).descriptionLayout || 'boxed-glass';
 
   const heightMap: Record<string, string> = {
     auto: 'h-auto py-20 sm:py-28 min-h-[400px]',
@@ -122,7 +135,7 @@ export function HeroSection({ config }: { config: HeroConfig }) {
       ? 'hover-glow'
       : '';
 
-  const animKey = `${config.id}-${currentSlide}-${animNorm}-${config.animationDuration || 'normal'}-${(config as any)._animReplayKey || 0}`;
+  const animKey = `${config.id}-${currentSlide}-${headingText}-${animNorm}-${config.animationDuration || 'normal'}-${(config as any)._animReplayKey || 0}`;
 
   return (
     <div
@@ -144,8 +157,8 @@ export function HeroSection({ config }: { config: HeroConfig }) {
       }}
     >
       <img
-        src={slide.mediaUrl}
-        alt={slide.heading || ''}
+        src={mediaUrl}
+        alt={headingText || ''}
         className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ${
           config.animationPreset === 'IMAGE_ZOOM' || config.animationHoverEffect === 'zoom-media'
             ? 'animate-ken-burns'
@@ -154,7 +167,7 @@ export function HeroSection({ config }: { config: HeroConfig }) {
       />
       <div
         className="absolute inset-0 bg-black"
-        style={{ opacity: slide.overlayOpacity ?? 0.35 }}
+        style={{ opacity: overlayOpacity }}
       />
       {/* Slide Content Box */}
       {normPosition === 'bottom-left' ? (
@@ -163,39 +176,55 @@ export function HeroSection({ config }: { config: HeroConfig }) {
           className={`relative z-10 w-full flex flex-col md:flex-row md:items-end md:justify-between gap-6 sm:gap-8 ${animPresetClass} ${animDurationClass} ${animDelayClass} ${animPresetClass ? 'anim-stagger' : ''}`}
         >
           <div className="flex flex-col items-start text-left max-w-3xl">
-            {slide.eyebrow && (
+            {eyebrowText && (
               <span className="text-[10px] sm:text-xs md:text-sm font-semibold tracking-[0.2em] sm:tracking-[0.25em] uppercase text-neutral-300 mb-1.5 sm:mb-3 block anim-child-1">
-                {slide.eyebrow}
+                {eyebrowText}
               </span>
             )}
-            {slide.heading && (
+            {headingText && (
               <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-extrabold sm:font-black tracking-tighter uppercase text-white font-heading leading-[0.95] sm:leading-[0.88] mb-2 sm:mb-4 anim-child-2">
-                {slide.heading}
+                {headingText}
               </h1>
             )}
-            {(slide.description || slide.subTitle) && (
-              <p className="text-xs sm:text-base md:text-xl text-neutral-200 max-w-xl font-normal leading-relaxed anim-child-3">
-                {slide.description || slide.subTitle}
+            {descriptionLayout === 'boxed-glass' && descriptionText ? (
+              <div className="rounded-xl border border-white/20 bg-black/40 backdrop-blur-md p-4 sm:p-5 max-w-xl shadow-2xl mb-4 sm:mb-6 anim-child-3">
+                <p className="text-xs sm:text-base text-slate-100 font-medium leading-relaxed">
+                  {descriptionText}
+                </p>
+              </div>
+            ) : descriptionLayout === 'badge-pill' && descriptionText ? (
+              <div className="inline-block rounded-full bg-white/20 backdrop-blur-md border border-white/30 px-5 py-2 text-xs sm:text-sm text-white font-medium mb-4 sm:mb-6 anim-child-3">
+                {descriptionText}
+              </div>
+            ) : descriptionLayout === 'quote' && descriptionText ? (
+              <div className="border-l-4 border-white pl-4 max-w-xl text-left py-1 mb-4 sm:mb-6 anim-child-3">
+                <p className="text-xs sm:text-base md:text-lg text-white font-serif italic">
+                  &ldquo;{descriptionText}&rdquo;
+                </p>
+              </div>
+            ) : descriptionText ? (
+              <p className="text-xs sm:text-base md:text-xl text-neutral-200 max-w-xl font-normal leading-relaxed mb-4 sm:mb-6 anim-child-3">
+                {descriptionText}
               </p>
-            )}
+            ) : null}
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 anim-child-4 flex-shrink-0">
-            {slide.primaryCtaText && (
+            {primaryCtaText && (
               <a
-                href={slide.primaryCtaUrl || '/products'}
+                href={primaryCtaUrl}
                 className="px-5 sm:px-7 md:px-9 py-2.5 sm:py-3 md:py-3.5 bg-white text-black text-xs sm:text-sm font-bold tracking-widest uppercase inline-flex items-center gap-2 rounded-none hover:bg-neutral-200 transition-all select-none shadow-md cursor-pointer"
               >
-                <span>{slide.primaryCtaText}</span>
+                <span>{primaryCtaText}</span>
                 <span className="text-base font-normal">→</span>
               </a>
             )}
-            {slide.secondaryCtaText && (
+            {secondaryCtaText && (
               <a
-                href={slide.secondaryCtaUrl || '/about'}
+                href={secondaryCtaUrl}
                 className="px-5 sm:px-7 md:px-9 py-2.5 sm:py-3 md:py-3.5 bg-transparent text-white border border-white text-xs sm:text-sm font-bold tracking-widest uppercase inline-flex items-center gap-2 rounded-none hover:bg-white/15 transition-all select-none backdrop-blur-xs cursor-pointer"
               >
-                <span>{slide.secondaryCtaText}</span>
+                <span>{secondaryCtaText}</span>
                 <span className="text-base font-normal">→</span>
               </a>
             )}
@@ -206,37 +235,53 @@ export function HeroSection({ config }: { config: HeroConfig }) {
           key={animKey}
           className={`relative z-10 max-w-3xl w-full flex flex-col ${align.horizontal} ${align.text} ${animPresetClass} ${animDurationClass} ${animDelayClass} ${animPresetClass ? 'anim-stagger' : ''}`}
         >
-          {slide.eyebrow && (
+          {eyebrowText && (
             <span className={`text-[10px] sm:text-xs md:text-sm font-bold tracking-[0.2em] sm:tracking-[0.25em] uppercase text-neutral-300 mb-2 sm:mb-3 block ${align.text} anim-child-1`}>
-              {slide.eyebrow}
+              {eyebrowText}
             </span>
           )}
-          {slide.heading && (
+          {headingText && (
             <h1 className={`text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-extrabold sm:font-black uppercase tracking-tighter mb-3 sm:mb-4 font-heading leading-tight ${align.text} anim-child-2`}>
-              {slide.heading}
+              {headingText}
             </h1>
           )}
-          {(slide.description || slide.subTitle) && (
+          {descriptionLayout === 'boxed-glass' && descriptionText ? (
+            <div className={`rounded-xl border border-white/20 bg-black/40 backdrop-blur-md p-4 sm:p-5 max-w-2xl shadow-2xl mb-6 sm:mb-8 anim-child-3 ${align.text}`}>
+              <p className="text-xs sm:text-base text-slate-100 font-medium leading-relaxed">
+                {descriptionText}
+              </p>
+            </div>
+          ) : descriptionLayout === 'badge-pill' && descriptionText ? (
+            <div className="inline-block rounded-full bg-white/20 backdrop-blur-md border border-white/30 px-5 py-2 text-xs sm:text-sm text-white font-medium mb-6 sm:mb-8 anim-child-3">
+              {descriptionText}
+            </div>
+          ) : descriptionLayout === 'quote' && descriptionText ? (
+            <div className="border-l-4 border-white pl-4 max-w-xl text-left py-1 mb-6 sm:mb-8 anim-child-3">
+              <p className="text-xs sm:text-base md:text-lg text-white font-serif italic">
+                &ldquo;{descriptionText}&rdquo;
+              </p>
+            </div>
+          ) : descriptionText ? (
             <p className={`text-xs sm:text-base md:text-lg text-slate-200 max-w-2xl mb-6 sm:mb-8 font-normal leading-relaxed ${align.text} anim-child-3`}>
-              {slide.description || slide.subTitle}
+              {descriptionText}
             </p>
-          )}
+          ) : null}
           <div className={`flex flex-wrap items-center gap-2.5 sm:gap-4 ${ctaJustify} anim-child-4`}>
-            {slide.primaryCtaText && (
+            {primaryCtaText && (
               <a
-                href={slide.primaryCtaUrl || '/products'}
+                href={primaryCtaUrl}
                 className="px-5 sm:px-7 md:px-9 py-2.5 sm:py-3 md:py-3.5 bg-white text-black text-xs sm:text-sm font-bold tracking-widest uppercase inline-flex items-center gap-2 rounded-none hover:bg-neutral-200 transition-all select-none shadow-md cursor-pointer"
               >
-                <span>{slide.primaryCtaText}</span>
+                <span>{primaryCtaText}</span>
                 <span className="text-base font-normal">→</span>
               </a>
             )}
-            {slide.secondaryCtaText && (
+            {secondaryCtaText && (
               <a
-                href={slide.secondaryCtaUrl || '/about'}
+                href={secondaryCtaUrl}
                 className="px-5 sm:px-7 md:px-9 py-2.5 sm:py-3 md:py-3.5 bg-transparent text-white border border-white text-xs sm:text-sm font-bold tracking-widest uppercase inline-flex items-center gap-2 rounded-none hover:bg-white/15 transition-all select-none backdrop-blur-xs cursor-pointer"
               >
-                <span>{slide.secondaryCtaText}</span>
+                <span>{secondaryCtaText}</span>
                 <span className="text-base font-normal">→</span>
               </a>
             )}

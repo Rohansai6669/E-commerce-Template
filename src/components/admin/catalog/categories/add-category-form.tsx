@@ -13,6 +13,8 @@ import { Plus, Loader2 } from 'lucide-react';
 interface ParentCategoryOption {
   id: string;
   name: string;
+  parentId?: string | null;
+  parentName?: string | null;
 }
 
 interface AddCategoryFormProps {
@@ -27,6 +29,16 @@ export function AddCategoryForm({ availableParents, onSuccess }: AddCategoryForm
   const [name, setName] = React.useState('');
   const [description, setDescription] = React.useState('');
   const [imageUrl, setImageUrl] = React.useState('');
+
+  const tier1Categories = React.useMemo(
+    () => availableParents.filter((p) => !p.parentId),
+    [availableParents]
+  );
+
+  const tier2Subcategories = React.useMemo(
+    () => availableParents.filter((p) => !!p.parentId),
+    [availableParents]
+  );
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -74,12 +86,21 @@ export function AddCategoryForm({ availableParents, onSuccess }: AddCategoryForm
             disabled={isPending}
             className="w-full bg-slate-50 border border-slate-200 rounded px-3 py-2 text-sm text-slate-900 focus:border-slate-950 outline-none cursor-pointer h-10 font-medium"
           >
-            <option value="none">📁 Top-Level Category (e.g. Men, Women, Kids, Accessories)</option>
-            {availableParents.length > 0 && (
-              <optgroup label="Or select Parent to create a Subcategory:">
-                {availableParents.map((parent) => (
+            <option value="none">📁 Top-Level Category (Tier 1: e.g. Men, Women, Kids, Accessories)</option>
+            {tier1Categories.length > 0 && (
+              <optgroup label="Select Category (to create a Tier 2 Subcategory):">
+                {tier1Categories.map((parent) => (
                   <option key={parent.id} value={parent.id}>
                     ↳ Subcategory under: {parent.name}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+            {tier2Subcategories.length > 0 && (
+              <optgroup label="Select Subcategory (to create a Tier 3 Child Category):">
+                {tier2Subcategories.map((sub) => (
+                  <option key={sub.id} value={sub.id}>
+                    ↳ ↳ Child category under: {sub.parentName ? `${sub.parentName} > ` : ''}{sub.name}
                   </option>
                 ))}
               </optgroup>

@@ -94,6 +94,7 @@ export interface ProductDetailModel {
   id: string;
   name: string;
   slug: string;
+  sku?: string | null;
   description: string | null;
   price: number;
   compareAtPrice: number | null;

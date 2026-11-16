@@ -9,69 +9,16 @@ import { ConfigurableProductCard, ProductData } from '@/components/commerce/conf
 import { filterCatalogProducts } from '@/lib/cms/product-filter';
 import { Star, Check, ShoppingBag, ShieldCheck, Zap, PackageSearch } from 'lucide-react';
 
-const mockProducts: ProductData[] = [
-  {
-    id: 'prod-1',
-    name: 'Italian Wool Cashmere Overcoat',
-    slug: 'italian-wool-cashmere-overcoat',
-    price: 349.00,
-    compareAtPrice: 420.00,
-    category: 'Outerwear',
-    rating: 4.9,
-    reviewCount: 48,
-    images: ['https://images.unsplash.com/photo-1544441893-675973e31985?q=80&w=800&auto=format&fit=crop'],
-    badges: ['BESTSELLER', '20% OFF'],
-    inStock: true,
-  },
-  {
-    id: 'prod-2',
-    name: 'Minimalist Organic Cotton Blazer',
-    slug: 'minimalist-organic-cotton-blazer',
-    price: 229.00,
-    category: 'Tailoring',
-    rating: 4.8,
-    reviewCount: 32,
-    images: ['https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=800&auto=format&fit=crop'],
-    badges: ['NEW'],
-    inStock: true,
-  },
-  {
-    id: 'prod-3',
-    name: 'Structured Leather Crossbody Tote',
-    slug: 'structured-leather-crossbody-tote',
-    price: 189.00,
-    compareAtPrice: 240.00,
-    category: 'Accessories',
-    rating: 5.0,
-    reviewCount: 94,
-    images: ['https://images.unsplash.com/photo-1523293182086-7651a899d37f?q=80&w=800&auto=format&fit=crop'],
-    badges: ['LIMITED'],
-    inStock: true,
-  },
-  {
-    id: 'prod-4',
-    name: 'Silk Blend Tailored Trouser',
-    slug: 'silk-blend-tailored-trouser',
-    price: 159.00,
-    category: 'Bottoms',
-    rating: 4.7,
-    reviewCount: 21,
-    images: ['https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=800&auto=format&fit=crop'],
-    badges: [],
-    inStock: true,
-  },
-];
-
 export function ProductGridSection({
   config,
-  products = mockProducts,
+  products = [],
 }: {
   config: ProductGridConfig & any;
   products?: ProductData[];
 }) {
-  const baseProducts = products.length > 0 ? products : mockProducts;
+  const baseProducts = products || [];
   const filtered = filterCatalogProducts(baseProducts, config);
-  const displayProducts = filtered.length > 0 ? filtered : (products.length === 0 ? mockProducts : []);
+  const displayProducts = filtered.length > 0 ? filtered : baseProducts;
   const cols = Number(config.columnsDesktop) || 4;
 
   const colClasses: Record<number, string> = {
@@ -117,14 +64,14 @@ export function ProductGridSection({
 
 export function ProductCarouselSection({
   config,
-  products = mockProducts,
+  products = [],
 }: {
   config: BaseSectionConfig & any;
   products?: ProductData[];
 }) {
-  const baseProducts = products.length > 0 ? products : mockProducts;
+  const baseProducts = products || [];
   const filtered = filterCatalogProducts(baseProducts, config);
-  const displayProducts = filtered.length > 0 ? filtered : (products.length === 0 ? mockProducts : []);
+  const displayProducts = filtered.length > 0 ? filtered : baseProducts;
 
   return (
     <SectionShell config={config}>
@@ -223,17 +170,19 @@ export function FeaturedProductSpotlightSection({ config }: { config: BaseSectio
 
 export function FlashSaleGridSection({
   config,
-  products = mockProducts,
+  products = [],
 }: {
   config: BaseSectionConfig & any;
   products?: ProductData[];
 }) {
-  const baseProducts = products.length > 0 ? products : mockProducts;
+  const baseProducts = products || [];
   const filtered = filterCatalogProducts(baseProducts, {
     ...config,
     productSource: config.productSource || 'offers',
   });
   const displayProducts = filtered.length > 0 ? filtered : baseProducts;
+
+  if (displayProducts.length === 0) return null;
 
   return (
     <SectionShell config={config} className="bg-[var(--surface,#f8fafc)]">
@@ -250,8 +199,8 @@ export function FlashSaleGridSection({
             <span className="text-xs font-bold text-[var(--accent,#6366f1)] uppercase">{item.category || item.categoryName}</span>
             <h3 className="font-bold text-base text-[var(--foreground,#0f172a)] mt-1 truncate">{item.name}</h3>
             <div className="flex items-baseline gap-2 my-2">
-              <span className="font-extrabold text-lg">${Number(item.price).toFixed(2)}</span>
-              {item.compareAtPrice && <span className="text-sm text-slate-400 line-through">${Number(item.compareAtPrice).toFixed(2)}</span>}
+              <span className="font-extrabold text-lg">₹{Number(item.price).toFixed(2)}</span>
+              {item.compareAtPrice && <span className="text-sm text-slate-400 line-through">₹{Number(item.compareAtPrice).toFixed(2)}</span>}
             </div>
             <div className="w-full bg-slate-100 rounded-full h-2 mb-2 overflow-hidden">
               <div className="bg-[var(--accent,#6366f1)] h-full w-3/4 rounded-full" />
@@ -266,17 +215,19 @@ export function FlashSaleGridSection({
 
 export function BestsellersShowcaseSection({
   config,
-  products = mockProducts,
+  products = [],
 }: {
   config: BaseSectionConfig & any;
   products?: ProductData[];
 }) {
-  const baseProducts = products.length > 0 ? products : mockProducts;
+  const baseProducts = products || [];
   const filtered = filterCatalogProducts(baseProducts, {
     ...config,
     productSource: config.productSource || 'bestsellers',
   });
   const displayProducts = filtered.length > 0 ? filtered : baseProducts;
+
+  if (displayProducts.length === 0) return null;
 
   return (
     <SectionShell config={config}>
@@ -326,7 +277,22 @@ export function ProductSpecificationSheetSection({ config }: { config: BaseSecti
   );
 }
 
-export function BundleSaveShowcaseSection({ config }: { config: BaseSectionConfig & any }) {
+export function BundleSaveShowcaseSection({
+  config,
+  products = [],
+}: {
+  config: BaseSectionConfig & any;
+  products?: ProductData[];
+}) {
+  const p1 = products[0];
+  const p2 = products[1] || products[0];
+  if (!p1) return null;
+
+  const p1Price = Number(p1.price) || 0;
+  const p2Price = Number(p2.price) || 0;
+  const bundleOriginal = p1Price + p2Price;
+  const bundleDiscounted = bundleOriginal * 0.75;
+
   return (
     <SectionShell config={config} className="bg-[var(--surface,#f8fafc)]">
       <SectionHeading
@@ -337,16 +303,16 @@ export function BundleSaveShowcaseSection({ config }: { config: BaseSectionConfi
       <div className="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-[var(--radius-xl,16px)] border border-[var(--border,#e2e8f0)] shadow-md">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <img src={mockProducts[0].images[0]} alt="" className="w-20 h-24 object-cover rounded-md" />
+            <img src={p1.images?.[0] || p1.imageUrl || ''} alt={p1.name} className="w-20 h-24 object-cover rounded-md" />
             <span className="font-bold text-xl text-slate-400">+</span>
-            <img src={mockProducts[2].images[0]} alt="" className="w-20 h-24 object-cover rounded-md" />
+            <img src={p2.images?.[0] || p2.imageUrl || ''} alt={p2.name} className="w-20 h-24 object-cover rounded-md" />
           </div>
           <div className="text-center sm:text-left">
-            <h4 className="font-bold text-lg text-[var(--foreground,#0f172a)]">Overcoat + Leather Tote Bundle</h4>
+            <h4 className="font-bold text-lg text-[var(--foreground,#0f172a)]">{p1.name} + {p2.name}</h4>
             <p className="text-sm text-[var(--muted-foreground,#64748b)]">Get 25% off when bought together.</p>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-2xl font-extrabold text-[var(--primary,#0f172a)]">$399.00</span>
-              <span className="text-base text-slate-400 line-through">$538.00</span>
+              <span className="text-2xl font-extrabold text-[var(--primary,#0f172a)]">₹{bundleDiscounted.toFixed(2)}</span>
+              <span className="text-base text-slate-400 line-through">₹{bundleOriginal.toFixed(2)}</span>
             </div>
           </div>
           <ThemeButton variant="accent" size="lg">
@@ -358,14 +324,23 @@ export function BundleSaveShowcaseSection({ config }: { config: BaseSectionConfi
   );
 }
 
-export function StickyAddToCartBarSection({ config }: { config: BaseSectionConfig & any }) {
+export function StickyAddToCartBarSection({
+  config,
+  products = [],
+}: {
+  config: BaseSectionConfig & any;
+  products?: ProductData[];
+}) {
+  const p = products[0];
+  if (!p) return null;
+
   return (
     <div className="w-full bg-[var(--background,#ffffff)] border-t border-[var(--border,#e2e8f0)] p-4 shadow-xl fixed bottom-0 left-0 z-30 flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <img src={mockProducts[0].images[0]} alt="" className="w-10 h-10 object-cover rounded" />
+        <img src={p.images?.[0] || p.imageUrl || ''} alt={p.name} className="w-10 h-10 object-cover rounded" />
         <div>
-          <span className="font-bold text-sm text-[var(--foreground,#0f172a)] block truncate">{mockProducts[0].name}</span>
-          <span className="text-xs text-[var(--muted-foreground,#64748b)] font-semibold">$349.00</span>
+          <span className="font-bold text-sm text-[var(--foreground,#0f172a)] block truncate">{p.name}</span>
+          <span className="text-xs text-[var(--muted-foreground,#64748b)] font-semibold">₹{Number(p.price).toFixed(2)}</span>
         </div>
       </div>
       <ThemeButton size="sm" variant="primary">

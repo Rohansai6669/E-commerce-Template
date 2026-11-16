@@ -36,7 +36,23 @@ export async function middleware(request: NextRequest) {
       }
     );
 
-    await withTimeout(supabase.auth.getUser(), 1000);
+    const userResult = await withTimeout(supabase.auth.getUser(), 1000);
+    const user = userResult?.data?.user;
+    const path = request.nextUrl.pathname;
+
+    // Edge Route Protection in Production
+    if (process.env.NODE_ENV === 'production') {
+      const isPrivilegedRoute =
+        path.startsWith('/builder') ||
+        path.startsWith('/admin') ||
+        path.startsWith('/supplier');
+
+      if (isPrivilegedRoute && !user) {
+        const loginUrl = new URL('/login', request.url);
+        loginUrl.searchParams.set('redirectTo', path);
+        return NextResponse.redirect(loginUrl);
+      }
+    }
   } catch {
     // Prevent unhandled errors from breaking routing
   }

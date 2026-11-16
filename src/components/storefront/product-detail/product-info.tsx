@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { QuantitySelector } from '@/components/commerce/quantity-selector';
 import { StockBadge } from '@/components/commerce/stock-badge';
 import { AddToCartButton } from '@/components/commerce/add-to-cart-button';
@@ -52,6 +53,16 @@ export function ProductInfo({ product, initialIsSaved = false }: ProductInfoProp
   const [isFavorited, setIsFavorited] = React.useState(initialIsSaved);
   const [isToggling, setIsToggling] = React.useState(false);
 
+  const activeVariant = findSelectedVariant(product.variants, selectedOptions);
+
+  const currentPrice =
+    activeVariant?.price !== null && activeVariant?.price !== undefined
+      ? activeVariant.price
+      : product.price;
+
+  const stockLimit = activeVariant !== null ? activeVariant.quantity : product.quantity;
+  const isOutOfStock = product.status === 'out_of_stock' || stockLimit <= 0;
+
   // Delivery Estimator State
   const [pincode, setPincode] = React.useState('');
   const [deliveryResult, setDeliveryResult] = React.useState<{
@@ -60,6 +71,29 @@ export function ProductInfo({ product, initialIsSaved = false }: ProductInfoProp
     isFreeShipping: boolean;
   } | null>(null);
   const [isCheckingPincode, setIsCheckingPincode] = React.useState(false);
+
+  // Auto-restore saved customer pincode from local storage
+  React.useEffect(() => {
+    try {
+      const savedPin = typeof window !== 'undefined' ? localStorage.getItem('lexido_user_pincode') : null;
+      if (savedPin && /^\d{6}$/.test(savedPin)) {
+        setPincode(savedPin);
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + 3);
+        setDeliveryResult({
+          dateStr: targetDate.toLocaleDateString('en-IN', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+          }),
+          isCodAvailable: true,
+          isFreeShipping: currentPrice >= 1999,
+        });
+      }
+    } catch {
+      // Ignore client storage exceptions
+    }
+  }, [currentPrice]);
 
   // Accordion open states (multiple or single)
   const [openAccordions, setOpenAccordions] = React.useState<Record<string, boolean>>({
@@ -74,16 +108,6 @@ export function ProductInfo({ product, initialIsSaved = false }: ProductInfoProp
       [key]: !prev[key],
     }));
   };
-
-  const activeVariant = findSelectedVariant(product.variants, selectedOptions);
-
-  const currentPrice =
-    activeVariant?.price !== null && activeVariant?.price !== undefined
-      ? activeVariant.price
-      : product.price;
-
-  const stockLimit = activeVariant !== null ? activeVariant.quantity : product.quantity;
-  const isOutOfStock = product.status === 'out_of_stock' || stockLimit <= 0;
 
   const handleOptionChange = (optionName: string, value: string) => {
     setSelectedOptions((prev) => ({
@@ -138,6 +162,14 @@ export function ProductInfo({ product, initialIsSaved = false }: ProductInfoProp
     if (!/^\d{6}$/.test(cleanPin)) {
       toast.error('Please enter a valid 6-digit postal pincode.');
       return;
+    }
+
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('lexido_user_pincode', cleanPin);
+      }
+    } catch {
+      // Ignore write errors
     }
 
     setIsCheckingPincode(true);
@@ -256,39 +288,51 @@ export function ProductInfo({ product, initialIsSaved = false }: ProductInfoProp
         </div>
       </Stack>
 
-      {/* 4. Luxury Value Perks Grid */}
+      {/* 4. Luxury Value Perks Grid with Direct Policy Links */}
       <div className="grid grid-cols-2 gap-3 pt-2">
-        <div className="flex items-start gap-2.5 p-3 rounded-lg border border-border/80 bg-muted/20 hover:bg-muted/40 transition-colors">
-          <Truck className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+        <Link
+          href="/shipping-policy"
+          className="flex items-start gap-2.5 p-3 rounded-lg border border-border/80 bg-muted/20 hover:bg-muted/40 transition-colors group cursor-pointer"
+        >
+          <Truck className="w-4 h-4 text-primary shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
           <div className="min-w-0">
-            <p className="text-xs font-bold text-foreground">Free Shipping</p>
+            <p className="text-xs font-bold text-foreground flex items-center gap-1">
+              Free Shipping
+              <span className="text-[10px] text-primary underline underline-offset-2">Info</span>
+            </p>
             <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">
               Complimentary on orders over ₹1,999
             </p>
           </div>
-        </div>
+        </Link>
 
-        <div className="flex items-start gap-2.5 p-3 rounded-lg border border-border/80 bg-muted/20 hover:bg-muted/40 transition-colors">
-          <RotateCcw className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+        <Link
+          href="/refund-policy"
+          className="flex items-start gap-2.5 p-3 rounded-lg border border-border/80 bg-muted/20 hover:bg-muted/40 transition-colors group cursor-pointer"
+        >
+          <RotateCcw className="w-4 h-4 text-primary shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
           <div className="min-w-0">
-            <p className="text-xs font-bold text-foreground">7-Day Returns</p>
+            <p className="text-xs font-bold text-foreground flex items-center gap-1">
+              7-Day Returns
+              <span className="text-[10px] text-primary underline underline-offset-2">Policy</span>
+            </p>
             <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">
               Hassle-free doorstep exchanges & refund
             </p>
           </div>
-        </div>
+        </Link>
 
-        <div className="flex items-start gap-2.5 p-3 rounded-lg border border-border/80 bg-muted/20 hover:bg-muted/40 transition-colors">
-          <ShieldCheck className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+        <div className="flex items-start gap-2.5 p-3 rounded-lg border border-border/80 bg-muted/20">
+          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
           <div className="min-w-0">
             <p className="text-xs font-bold text-foreground">100% Authentic</p>
             <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">
-              Verified original Lexido atelier craft
+              Verified original {product.brandName || 'Lexido'} atelier craft
             </p>
           </div>
         </div>
 
-        <div className="flex items-start gap-2.5 p-3 rounded-lg border border-border/80 bg-muted/20 hover:bg-muted/40 transition-colors">
+        <div className="flex items-start gap-2.5 p-3 rounded-lg border border-border/80 bg-muted/20">
           <Banknote className="w-4 h-4 text-primary shrink-0 mt-0.5" />
           <div className="min-w-0">
             <p className="text-xs font-bold text-foreground">Cash on Delivery</p>
@@ -349,7 +393,7 @@ export function ProductInfo({ product, initialIsSaved = false }: ProductInfoProp
         )}
       </div>
 
-      {/* 6. Collapsible Information Accordions */}
+      {/* 6. Collapsible Information Accordions (Amazon / Flipkart Style) */}
       <div className="border border-border rounded-lg divide-y divide-border bg-card overflow-hidden">
         {/* Accordion 1: Description & Silhouette */}
         <div>
@@ -366,9 +410,39 @@ export function ProductInfo({ product, initialIsSaved = false }: ProductInfoProp
             />
           </button>
           {openAccordions.overview && (
-            <div className="px-4 pb-3.5 pt-1 text-xs text-muted-foreground leading-relaxed whitespace-pre-line font-sans border-t border-border/40 bg-muted/5">
-              {product.description ||
-                'Engineered with premium craftsmanship and attention to silhouette detail. Designed for comfort, durability, and contemporary streetwear expression.'}
+            <div className="px-4 pb-3.5 pt-2 text-xs text-muted-foreground leading-relaxed font-sans border-t border-border/40 bg-muted/5 space-y-3">
+              <p className="whitespace-pre-line text-foreground/90">
+                {product.description ||
+                  `Signature ${product.name} crafted by ${product.brandName || 'Lexido'}. Designed with precision tailoring, breathable comfort, and durable finish.`}
+              </p>
+
+              {/* Key Bullet Highlights */}
+              <div className="pt-2 border-t border-border/50 space-y-1.5 text-[11px]">
+                {product.fit && (
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-foreground">Fit:</span>
+                    <span>{product.fit}</span>
+                  </div>
+                )}
+                {product.pattern && (
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-foreground">Pattern:</span>
+                    <span>{product.pattern}</span>
+                  </div>
+                )}
+                {product.occasion && (
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-foreground">Occasion:</span>
+                    <span>{product.occasion}</span>
+                  </div>
+                )}
+                {product.sku && (
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-foreground">Style Code:</span>
+                    <span className="font-mono">{product.sku}</span>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -388,15 +462,19 @@ export function ProductInfo({ product, initialIsSaved = false }: ProductInfoProp
             />
           </button>
           {openAccordions.care && (
-            <div className="px-4 pb-3.5 pt-1 text-xs text-muted-foreground leading-relaxed font-sans border-t border-border/40 bg-muted/5 space-y-1.5">
+            <div className="px-4 pb-3.5 pt-2 text-xs text-muted-foreground leading-relaxed font-sans border-t border-border/40 bg-muted/5 space-y-2">
               <p>
-                <strong>Composition:</strong>{' '}
-                {product.material || '100% Premium Heavyweight Cotton / Rich Blend'}
+                <strong className="text-foreground">Fabric Composition:</strong>{' '}
+                {product.material || '100% Premium Heavyweight Cotton / Rich Textile Blend'}
               </p>
               <p>
-                <strong>Care Instructions:</strong> Machine wash cold (30°C) with like colors.
-                Turn inside out before washing. Do not bleach or tumble dry high. Cool iron on
-                reverse if necessary.
+                <strong className="text-foreground">Care Instructions:</strong>{' '}
+                {product.careInstructions ||
+                  'Machine wash cold (30°C) with like colors. Turn inside out before laundering. Do not bleach or tumble dry high. Cool iron on reverse.'}
+              </p>
+              <p>
+                <strong className="text-foreground">Country of Origin:</strong>{' '}
+                {product.countryOfOrigin || 'India'}
               </p>
             </div>
           )}
@@ -417,15 +495,30 @@ export function ProductInfo({ product, initialIsSaved = false }: ProductInfoProp
             />
           </button>
           {openAccordions.shipping && (
-            <div className="px-4 pb-3.5 pt-1 text-xs text-muted-foreground leading-relaxed font-sans border-t border-border/40 bg-muted/5 space-y-1.5">
+            <div className="px-4 pb-3.5 pt-2 text-xs text-muted-foreground leading-relaxed font-sans border-t border-border/40 bg-muted/5 space-y-2">
               <p>
-                <strong>Dispatch:</strong> Orders are verified and dispatched within 24–48
-                hours from our fulfillment center.
+                <strong className="text-foreground">Dispatch & Handling:</strong> Orders are verified and dispatched within 24–48 hours from our fulfillment hub.
               </p>
               <p>
-                <strong>Returns & Exchanges:</strong> Eligible for free doorstep return or size
-                exchange within 7 days of delivery in original unworn condition with tags.
+                <strong className="text-foreground">Delivery Window:</strong> 3–5 business days to all serviceable pin codes across India.
               </p>
+              <p>
+                <strong className="text-foreground">Returns & Exchanges:</strong> Eligible for free doorstep return or size exchange within 7 days of delivery in original condition with tags intact.
+              </p>
+              <div className="flex items-center gap-4 pt-1.5">
+                <Link
+                  href="/shipping-policy"
+                  className="text-primary hover:underline font-bold text-[11px] inline-flex items-center gap-1 cursor-pointer"
+                >
+                  Shipping Policy &rarr;
+                </Link>
+                <Link
+                  href="/refund-policy"
+                  className="text-primary hover:underline font-bold text-[11px] inline-flex items-center gap-1 cursor-pointer"
+                >
+                  Return Policy &rarr;
+                </Link>
+              </div>
             </div>
           )}
         </div>

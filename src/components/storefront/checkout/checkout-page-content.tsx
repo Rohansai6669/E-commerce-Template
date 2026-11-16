@@ -1,9 +1,9 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { useCart } from '@/components/commerce/cart-context';
 import { Container } from '@/components/layout/container';
-import { Stack } from '@/components/layout/stack';
 import { Heading, Text } from '@/components/ui/typography';
 import { EmptyState } from '@/components/feedback/empty-state';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { ShippingMethodSelector } from './shipping-method';
 import { ReviewOrder } from './review-order';
 import { PaymentMethodForm } from './payment-method';
 import { OrderConfirmation } from './order-confirmation';
+import { CheckoutOrderSummary } from './checkout-order-summary';
 import { type CheckoutState, type CheckoutAction, type CheckoutTotals } from '@/core/checkout/checkout.types';
 import { type CustomerAddress } from '@/core/address/address.types';
 import { checkoutService } from '@/core/checkout/checkout.service';
@@ -20,7 +21,8 @@ import { type PlacedOrder } from '@/core/order/order.types';
 import { placeOrderAction } from '@/app/actions/order';
 import { createRazorpayOrderAction, verifyAndPlaceRazorpayOrderAction } from '@/app/actions/razorpay';
 import { toast } from 'sonner';
-import Link from 'next/link';
+import { ShoppingBag, ChevronDown } from 'lucide-react';
+import { cn } from '@/core/utils/cn';
 
 /**
  * Dynamically loads the official Razorpay Checkout SDK script.
@@ -83,6 +85,8 @@ export interface CheckoutPageContentProps {
 
 /**
  * Multi-step checkout page coordinator.
+ * Features a full-width responsive 2-column layout on desktop with a sticky order summary,
+ * and a collapsible Shopify-style accordion on mobile devices.
  */
 export function CheckoutPageContent({
   user,
@@ -94,6 +98,7 @@ export function CheckoutPageContent({
   const [savedAddresses, setSavedAddresses] = React.useState<CustomerAddress[]>(initialAddresses);
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [placedOrder, setPlacedOrder] = React.useState<PlacedOrder | null>(null);
+  const [isMobileSummaryOpen, setIsMobileSummaryOpen] = React.useState(false);
 
   // Pre-fill default saved address if present and no address selected yet
   React.useEffect(() => {
@@ -119,7 +124,14 @@ export function CheckoutPageContent({
     }
   }, [savedAddresses, user, state.address]);
 
-  // Compute totals independently when we have a shipping method
+  // Compute effective totals for the sticky sidebar even before a shipping method is confirmed
+  const activeShippingMethod = state.shippingMethod || checkoutService.getShippingMethods()[0];
+  const effectiveTotals: CheckoutTotals | null = React.useMemo(() => {
+    if (items.length === 0) return null;
+    return checkoutService.calculateOrderTotals(items, activeShippingMethod, coupon);
+  }, [items, activeShippingMethod, coupon]);
+
+  // Compute strict totals when user confirms their shipping method
   const totals: CheckoutTotals | null = React.useMemo(() => {
     if (!state.shippingMethod || items.length === 0) return null;
     return checkoutService.calculateOrderTotals(items, state.shippingMethod, coupon);
@@ -140,8 +152,10 @@ export function CheckoutPageContent({
 
       const rzpRes = await createRazorpayOrderAction({
         items,
+        address: state.address,
         shippingMethod: state.shippingMethod,
         coupon,
+        orderNotes: state.orderNotes,
       });
 
       if (!rzpRes.success || !rzpRes.razorpayOrderId) {
@@ -246,7 +260,7 @@ export function CheckoutPageContent({
   if (!isHydrated) {
     return (
       <Container className="py-16">
-        <div className="animate-pulse space-y-4">
+        <div className="animate-pulse space-y-4 max-w-4xl mx-auto">
           <div className="h-8 bg-muted rounded w-1/3" />
           <div className="h-64 bg-muted rounded" />
         </div>
@@ -254,10 +268,19 @@ export function CheckoutPageContent({
     );
   }
 
-  // Empty cart guard (unless on confirmation)
-  if (items.length === 0 && state.step !== 'confirmation') {
+  // Confirmation view
+  if (state.step === 'confirmation' && placedOrder) {
     return (
-      <Container className="py-16 max-w-xl text-center">
+      <Container className="py-12 max-w-3xl mx-auto">
+        <OrderConfirmation order={placedOrder} />
+      </Container>
+    );
+  }
+
+  // Empty cart guard
+  if (items.length === 0) {
+    return (
+      <Container className="py-16 max-w-xl mx-auto text-center">
         <EmptyState
           title="Your cart is empty"
           description="Add items to your cart before proceeding to checkout."
@@ -272,93 +295,145 @@ export function CheckoutPageContent({
   }
 
   return (
-    <Container className="py-8 max-w-3xl">
-      <Stack gap="8">
-        {/* Header */}
-        <div>
-          <Heading level={1} className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground font-heading">
-            Checkout
-          </Heading>
-          <Text className="text-xs sm:text-sm text-muted-foreground mt-1 font-sans">
-            Complete your purchase securely.
-          </Text>
+    <Container className="py-8 lg:py-12 w-full max-w-6xl mx-auto">
+      {/* Mobile-only Collapsible Order Summary Bar */}
+      <div className="lg:hidden mb-6 border border-border bg-card shadow-2xs overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setIsMobileSummaryOpen(!isMobileSummaryOpen)}
+          className="w-full flex items-center justify-between p-4 bg-muted/20 hover:bg-muted/40 transition cursor-pointer text-left"
+          aria-expanded={isMobileSummaryOpen}
+        >
+          <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+            <ShoppingBag className="w-4 h-4 text-primary shrink-0" />
+            <span>{isMobileSummaryOpen ? 'Hide order summary' : 'Show order summary'}</span>
+            <ChevronDown
+              className={cn(
+                'w-3.5 h-3.5 transition-transform duration-200 text-muted-foreground',
+                isMobileSummaryOpen && 'rotate-180'
+              )}
+            />
+          </div>
+          <span className="text-sm font-extrabold text-foreground font-mono">
+            {effectiveTotals ? effectiveTotals.formattedTotal : ''}
+          </span>
+        </button>
+
+        {isMobileSummaryOpen && (
+          <div className="p-4 border-t border-border bg-background">
+            <CheckoutOrderSummary
+              items={items}
+              totals={effectiveTotals}
+              coupon={coupon}
+              shippingMethod={state.shippingMethod}
+              onApplyCoupon={applyCoupon}
+              onRemoveCoupon={removeCoupon}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Main Responsive 2-Column Desktop Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start w-full">
+        {/* Left Column: Progress & Active Step Content */}
+        <div className="lg:col-span-7 w-full space-y-6">
+          {/* Header */}
+          <div>
+            <Heading level={1} className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground font-heading">
+              Checkout
+            </Heading>
+            <Text className="text-xs sm:text-sm text-muted-foreground mt-1 font-sans">
+              Complete your purchase securely.
+            </Text>
+          </div>
+
+          {/* Progress Tracker */}
+          <CheckoutProgress
+            currentStep={state.step}
+            onStepClick={(step) => {
+              dispatch({ type: 'GO_TO_STEP', step });
+            }}
+          />
+
+          {/* Step 1: Address */}
+          {state.step === 'address' && (
+            <AddressForm
+              defaultValues={state.address}
+              savedAddresses={savedAddresses}
+              user={user}
+              profile={initialProfile}
+              onSubmit={(address) => dispatch({ type: 'SET_ADDRESS', address })}
+              onAddressSaved={(newAddr) => {
+                setSavedAddresses((prev) => [newAddr, ...prev]);
+              }}
+            />
+          )}
+
+          {/* Step 2: Shipping Method */}
+          {state.step === 'shipping' && (
+            <ShippingMethodSelector
+              defaultValue={state.shippingMethod}
+              onSubmit={(method) => dispatch({ type: 'SET_SHIPPING_METHOD', method })}
+              onBack={() => dispatch({ type: 'GO_TO_STEP', step: 'address' })}
+            />
+          )}
+
+          {/* Step 3: Review Order */}
+          {state.step === 'review' && state.address && state.shippingMethod && totals && (
+            <ReviewOrder
+              items={items}
+              address={state.address}
+              shippingMethod={state.shippingMethod}
+              coupon={coupon}
+              totals={totals}
+              orderNotes={state.orderNotes}
+              onOrderNotesChange={(notes) => dispatch({ type: 'SET_ORDER_NOTES', notes })}
+              onSubmit={() => dispatch({ type: 'GO_TO_STEP', step: 'payment' })}
+              onBack={() => dispatch({ type: 'GO_TO_STEP', step: 'shipping' })}
+              onEditAddress={() => dispatch({ type: 'GO_TO_STEP', step: 'address' })}
+              onEditShipping={() => dispatch({ type: 'GO_TO_STEP', step: 'shipping' })}
+              onApplyCoupon={applyCoupon}
+              onRemoveCoupon={removeCoupon}
+            />
+          )}
+
+          {/* Step 4: Payment Method */}
+          {state.step === 'payment' && (
+            <PaymentMethodForm
+              defaultValue={state.paymentMethod}
+              totals={totals || effectiveTotals}
+              coupon={coupon}
+              items={items}
+              onApplyCoupon={applyCoupon}
+              onRemoveCoupon={removeCoupon}
+              onSubmit={(method) => {
+                dispatch({ type: 'SET_PAYMENT_METHOD', method });
+                if (method.type === 'razorpay' || method.type === 'card') {
+                  handleRazorpayCheckout();
+                } else {
+                  handleCodCheckout();
+                }
+              }}
+              onBack={() => dispatch({ type: 'GO_TO_STEP', step: 'review' })}
+              isProcessing={isProcessing}
+            />
+          )}
         </div>
 
-        {/* Progress */}
-        <CheckoutProgress
-          currentStep={state.step}
-          onStepClick={(step) => {
-            // Only allow navigating back to completed steps
-            dispatch({ type: 'GO_TO_STEP', step });
-          }}
-        />
-
-        {/* Step content */}
-        {state.step === 'address' && (
-          <AddressForm
-            defaultValues={state.address}
-            savedAddresses={savedAddresses}
-            user={user}
-            profile={initialProfile}
-            onSubmit={(address) => dispatch({ type: 'SET_ADDRESS', address })}
-            onAddressSaved={(newAddr) => {
-              setSavedAddresses((prev) => [newAddr, ...prev]);
-            }}
-          />
-        )}
-
-        {state.step === 'shipping' && (
-          <ShippingMethodSelector
-            defaultValue={state.shippingMethod}
-            onSubmit={(method) => dispatch({ type: 'SET_SHIPPING_METHOD', method })}
-            onBack={() => dispatch({ type: 'GO_TO_STEP', step: 'address' })}
-          />
-        )}
-
-        {state.step === 'review' && state.address && state.shippingMethod && totals && (
-          <ReviewOrder
+        {/* Right Column: Sticky Order Summary (Visible on Desktop lg: 1024px+) */}
+        <div className="hidden lg:block lg:col-span-5 w-full lg:sticky lg:top-24">
+          <CheckoutOrderSummary
             items={items}
-            address={state.address}
+            totals={effectiveTotals}
+            coupon={coupon}
             shippingMethod={state.shippingMethod}
-            coupon={coupon}
-            totals={totals}
-            orderNotes={state.orderNotes}
-            onOrderNotesChange={(notes) => dispatch({ type: 'SET_ORDER_NOTES', notes })}
-            onSubmit={() => dispatch({ type: 'GO_TO_STEP', step: 'payment' })}
-            onBack={() => dispatch({ type: 'GO_TO_STEP', step: 'shipping' })}
-            onEditAddress={() => dispatch({ type: 'GO_TO_STEP', step: 'address' })}
-            onEditShipping={() => dispatch({ type: 'GO_TO_STEP', step: 'shipping' })}
             onApplyCoupon={applyCoupon}
             onRemoveCoupon={removeCoupon}
           />
-        )}
-
-        {state.step === 'payment' && (
-          <PaymentMethodForm
-            defaultValue={state.paymentMethod}
-            totals={totals}
-            coupon={coupon}
-            items={items}
-            onApplyCoupon={applyCoupon}
-            onRemoveCoupon={removeCoupon}
-            onSubmit={(method) => {
-              dispatch({ type: 'SET_PAYMENT_METHOD', method });
-              if (method.type === 'razorpay' || method.type === 'card') {
-                handleRazorpayCheckout();
-              } else {
-                handleCodCheckout();
-              }
-            }}
-            onBack={() => dispatch({ type: 'GO_TO_STEP', step: 'review' })}
-            isProcessing={isProcessing}
-          />
-        )}
-
-        {state.step === 'confirmation' && placedOrder && (
-          <OrderConfirmation order={placedOrder} />
-        )}
-      </Stack>
+        </div>
+      </div>
     </Container>
   );
 }
+
 export default CheckoutPageContent;

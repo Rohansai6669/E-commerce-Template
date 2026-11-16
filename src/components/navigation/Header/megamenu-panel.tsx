@@ -29,165 +29,270 @@ export interface MegamenuCollection {
 }
 
 export const FALLBACK_MEGAMENU_DATA: Record<string, MegamenuCollection[]> = {
-  MEN: [
+  WOMEN: [
     {
       id: 'streetwear',
       name: 'STREETWEAR',
-      href: '/products?category=streetwear',
+      href: '/women/streetwear',
       subitems: [
-        { label: 'Oversized T-Shirts', href: '/products?category=streetwear', columnNumber: 1 },
-        { label: 'Graphic T-Shirts', href: '/products?category=streetwear', columnNumber: 1 },
-        { label: 'Oversized Hoodies', href: '/products?category=streetwear', columnNumber: 1 },
-        { label: 'Zip Hoodies', href: '/products?category=streetwear', columnNumber: 1 },
-        { label: 'Wide-Leg Jeans', href: '/products?category=streetwear', columnNumber: 1 },
-        { label: 'Utility Pants', href: '/products?category=streetwear', columnNumber: 1 },
-        { label: 'Denim Jackets', href: '/products?category=streetwear', columnNumber: 1 },
-        { label: 'Varsity Jackets', href: '/products?category=streetwear', columnNumber: 1 },
-        { label: 'Shorts', href: '/products?category=streetwear', columnNumber: 1 },
-        { label: 'Heavyweight T-Shirts', href: '/products?category=streetwear', columnNumber: 2 },
-        { label: 'Long Sleeve T-Shirts', href: '/products?category=streetwear', columnNumber: 2 },
-        { label: 'Sweatshirts', href: '/products?category=streetwear', columnNumber: 2 },
-        { label: 'Baggy Jeans', href: '/products?category=streetwear', columnNumber: 2 },
-        { label: 'Cargo Pants', href: '/products?category=streetwear', columnNumber: 2 },
-        { label: 'Joggers', href: '/products?category=streetwear', columnNumber: 2 },
-        { label: 'Bomber Jackets', href: '/products?category=streetwear', columnNumber: 2 },
-        { label: 'Overshirts', href: '/products?category=streetwear', columnNumber: 2 },
+        { label: 'Oversized T-Shirts', href: '/women/streetwear', columnNumber: 1 },
+        { label: 'Cropped Tees', href: '/women/streetwear', columnNumber: 2 },
+        { label: 'Baggy Jeans', href: '/women/streetwear', columnNumber: 1 },
+        { label: 'Cargo Pants', href: '/women/streetwear', columnNumber: 2 },
+        { label: 'Oversized Hoodies', href: '/women/streetwear', columnNumber: 1 },
+        { label: 'Sweatshirts', href: '/women/streetwear', columnNumber: 2 },
+        { label: 'Bomber Jackets', href: '/women/streetwear', columnNumber: 1 },
+        { label: 'Denim Jackets', href: '/women/streetwear', columnNumber: 2 },
+        { label: 'Shorts', href: '/women/streetwear', columnNumber: 1 },
       ],
       featured: {
         title: 'STREETWEAR',
-        imageUrl: 'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=1000&auto=format&fit=crop',
-        href: '/products?category=streetwear',
+        imageUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1200&auto=format&fit=crop',
+        href: '/women/streetwear',
         actionLabel: 'SHOP THE EDIT',
       },
     },
     {
       id: 'gymwear',
       name: 'GYM WEAR',
-      href: '/products?category=gymwear',
+      href: '/women/gymwear',
       subitems: [
-        { label: 'Signature Gym Set', href: '/products?category=gymwear', columnNumber: 1 },
-        { label: 'Surge Training Joggers', href: '/products?category=gymwear', columnNumber: 1 },
-        { label: 'Iron Stringer Tank', href: '/products?category=gymwear', columnNumber: 1 },
-        { label: 'Apex Dry-Fit Tee', href: '/products?category=gymwear', columnNumber: 1 },
-        { label: 'Drop Armhole Tanks', href: '/products?category=gymwear', columnNumber: 1 },
-        { label: 'Velocity Compression Top', href: '/products?category=gymwear', columnNumber: 2 },
-        { label: 'Heavyweight Fleece Shorts', href: '/products?category=gymwear', columnNumber: 2 },
-        { label: 'Seamless Base Layers', href: '/products?category=gymwear', columnNumber: 2 },
-        { label: 'Lifting Straps & Wraps', href: '/products?category=gymwear', columnNumber: 2 },
-        { label: 'Performance Zip Jackets', href: '/products?category=gymwear', columnNumber: 2 },
+        { label: 'Biker Shorts', href: '/women/gymwear', columnNumber: 1 },
+        { label: 'Pilates Sets', href: '/women/gymwear', columnNumber: 2 },
+        { label: 'Running Jackets', href: '/women/gymwear', columnNumber: 1 },
+        { label: 'Seamless Leggings', href: '/women/gymwear', columnNumber: 2 },
+        { label: 'Sports Bras', href: '/women/gymwear', columnNumber: 1 },
+        { label: 'Training Tanks', href: '/women/gymwear', columnNumber: 2 },
       ],
       featured: {
         title: 'GYM WEAR',
-        imageUrl: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1000&auto=format&fit=crop',
-        href: '/products?category=gymwear',
-        actionLabel: 'EXPLORE ATHLETICS',
+        imageUrl: 'https://pub-ae8fd88d076743ec82d6335a981e38e3.r2.dev/categories/activewear.jpg',
+        href: '/women/gymwear',
+        actionLabel: 'SHOP THE EDIT',
       },
     },
     {
-      id: 'oldmoney',
+      id: 'old-money',
       name: 'OLD MONEY',
-      href: '/products?category=old-money',
+      href: '/women/luxury',
       subitems: [
-        { label: 'Oxford Cotton Shirts', href: '/products?category=old-money', columnNumber: 1 },
-        { label: 'Cashmere Crewnecks', href: '/products?category=old-money', columnNumber: 1 },
-        { label: 'Cable Knit Sweaters', href: '/products?category=old-money', columnNumber: 1 },
-        { label: 'French Linen Trousers', href: '/products?category=old-money', columnNumber: 1 },
-        { label: 'Double-Breasted Blazers', href: '/products?category=old-money', columnNumber: 1 },
-        { label: 'Tailored Pleated Chinos', href: '/products?category=old-money', columnNumber: 2 },
-        { label: 'Italian Suede Loafers', href: '/products?category=old-money', columnNumber: 2 },
-        { label: 'Classic Trench Coats', href: '/products?category=old-money', columnNumber: 2 },
-        { label: 'Mulberry Silk Ties', href: '/products?category=old-money', columnNumber: 2 },
-        { label: 'Leather Driving Gloves', href: '/products?category=old-money', columnNumber: 2 },
+        { label: 'Cashmere Sweaters', href: '/women/luxury', columnNumber: 1 },
+        { label: 'Tailored Blazers', href: '/women/luxury', columnNumber: 2 },
+        { label: 'Silk Slip Dresses', href: '/women/luxury', columnNumber: 1 },
+        { label: 'Linen Shirts', href: '/women/luxury', columnNumber: 2 },
+        { label: 'Pleated Trousers', href: '/women/luxury', columnNumber: 1 },
+        { label: 'Tweed Jackets', href: '/women/luxury', columnNumber: 2 },
       ],
       featured: {
-        title: 'OLD MONEY',
-        imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1000&auto=format&fit=crop',
-        href: '/products?category=old-money',
-        actionLabel: 'DISCOVER SARTORIAL',
+        title: 'OLD MONEY LUXURY',
+        imageUrl: 'https://pub-ae8fd88d076743ec82d6335a981e38e3.r2.dev/categories/luxury.jpg',
+        href: '/women/luxury',
+        actionLabel: 'SHOP THE EDIT',
       },
     },
     {
       id: 'casual',
       name: 'CASUAL',
-      href: '/products?category=casual',
+      href: '/women/casual',
       subitems: [
-        { label: 'Everyday Crewneck Tees', href: '/products?category=casual', columnNumber: 1 },
-        { label: 'Pique Polo Shirts', href: '/products?category=casual', columnNumber: 1 },
-        { label: 'Washed Denim Overshirts', href: '/products?category=casual', columnNumber: 1 },
-        { label: 'Waffle Long Sleeve Tops', href: '/products?category=casual', columnNumber: 1 },
-        { label: 'Relaxed Fit Chinos', href: '/products?category=casual', columnNumber: 2 },
-        { label: 'Straight Leg Denim Jeans', href: '/products?category=casual', columnNumber: 2 },
-        { label: 'Casual Field Jackets', href: '/products?category=casual', columnNumber: 2 },
-        { label: 'Minimalist Canvas Sneakers', href: '/products?category=casual', columnNumber: 2 },
+        { label: 'Everyday Tees', href: '/women/casual', columnNumber: 1 },
+        { label: 'Cotton Sweats', href: '/women/casual', columnNumber: 2 },
+        { label: 'Relaxed Denim', href: '/women/casual', columnNumber: 1 },
+        { label: 'Canvas Jackets', href: '/women/casual', columnNumber: 2 },
+        { label: 'Knit Cardigans', href: '/women/casual', columnNumber: 1 },
+        { label: 'Lounge Sets', href: '/women/casual', columnNumber: 2 },
       ],
       featured: {
-        title: 'CASUAL',
-        imageUrl: 'https://images.unsplash.com/photo-1516257984-b1b4d707412e?q=80&w=1000&auto=format&fit=crop',
-        href: '/products?category=casual',
-        actionLabel: 'EXPLORE DAILY',
+        title: 'CASUAL ESSENTIALS',
+        imageUrl: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=1200&auto=format&fit=crop',
+        href: '/women/casual',
+        actionLabel: 'SHOP THE EDIT',
       },
     },
     {
       id: 'formal',
       name: 'FORMAL',
-      href: '/products?category=formal',
+      href: '/women/formal',
       subitems: [
-        { label: 'Structured Two-Piece Suits', href: '/products?category=formal', columnNumber: 1 },
-        { label: 'French Cuff Dress Shirts', href: '/products?category=formal', columnNumber: 1 },
-        { label: 'Sartorial Tuxedo Jackets', href: '/products?category=formal', columnNumber: 1 },
-        { label: 'Slim Fit Tuxedo Trousers', href: '/products?category=formal', columnNumber: 1 },
-        { label: 'Pure Wool Dress Trousers', href: '/products?category=formal', columnNumber: 2 },
-        { label: 'Handcrafted Oxford Shoes', href: '/products?category=formal', columnNumber: 2 },
-        { label: 'Silk Bow Ties & Cummerbunds', href: '/products?category=formal', columnNumber: 2 },
-        { label: 'Engraved Silver Cufflinks', href: '/products?category=formal', columnNumber: 2 },
+        { label: 'Evening Gowns', href: '/women/formal', columnNumber: 1 },
+        { label: 'Silk Blouses', href: '/women/formal', columnNumber: 2 },
+        { label: 'Cocktail Dresses', href: '/women/formal', columnNumber: 1 },
+        { label: 'Pencil Skirts', href: '/women/formal', columnNumber: 2 },
+        { label: 'Tuxedo Suits', href: '/women/formal', columnNumber: 1 },
+        { label: 'Structured Coats', href: '/women/formal', columnNumber: 2 },
       ],
       featured: {
-        title: 'FORMAL',
-        imageUrl: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?q=80&w=1000&auto=format&fit=crop',
-        href: '/products?category=formal',
-        actionLabel: 'SHOP TAILORING',
+        title: 'FORMAL EDIT',
+        imageUrl: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=1200&auto=format&fit=crop',
+        href: '/women/formal',
+        actionLabel: 'SHOP THE EDIT',
       },
     },
     {
       id: 'winter',
       name: 'WINTER COLLECTION',
-      href: '/products?category=winter',
+      href: '/women/winter',
       subitems: [
-        { label: 'Heavy Down Puffer Jackets', href: '/products?category=winter', columnNumber: 1 },
-        { label: 'Cashmere Wool Overcoats', href: '/products?category=winter', columnNumber: 1 },
-        { label: 'Thermal Merino Base Layers', href: '/products?category=winter', columnNumber: 1 },
-        { label: 'Sherpa-Lined Corduroy Jackets', href: '/products?category=winter', columnNumber: 1 },
-        { label: 'Fleece Lined Joggers', href: '/products?category=winter', columnNumber: 2 },
-        { label: 'Ribbed Cashmere Beanies', href: '/products?category=winter', columnNumber: 2 },
-        { label: 'Heavyweight Wool Scarves', href: '/products?category=winter', columnNumber: 2 },
-        { label: 'Insulated Arctic Parkas', href: '/products?category=winter', columnNumber: 2 },
+        { label: 'Down Parkas', href: '/women/winter', columnNumber: 1 },
+        { label: 'Thermal Knitwear', href: '/women/winter', columnNumber: 2 },
+        { label: 'Wool Trench Coats', href: '/women/winter', columnNumber: 1 },
+        { label: 'Cashmere Scarves', href: '/women/winter', columnNumber: 2 },
+        { label: 'Shearling Jackets', href: '/women/winter', columnNumber: 1 },
+        { label: 'Winter Boots', href: '/women/winter', columnNumber: 2 },
       ],
       featured: {
         title: 'WINTER COLLECTION',
-        imageUrl: 'https://images.unsplash.com/photo-1544923246-77307dd654cb?q=80&w=1000&auto=format&fit=crop',
-        href: '/products?category=winter',
-        actionLabel: 'EXPLORE WINTER',
+        imageUrl: 'https://images.unsplash.com/photo-1544923246-77307dd654cb?q=80&w=1200&auto=format&fit=crop',
+        href: '/women/winter',
+        actionLabel: 'SHOP THE EDIT',
+      },
+    },
+    {
+      id: 'accessories',
+      name: "WOMEN'S ACCESSORIES",
+      href: '/women/accessories',
+      subitems: [
+        { label: 'Leather Handbags', href: '/women/accessories', columnNumber: 1 },
+        { label: 'Silk Bandanas', href: '/women/accessories', columnNumber: 2 },
+        { label: 'Designer Sunglasses', href: '/women/accessories', columnNumber: 1 },
+        { label: 'Leather Belts', href: '/women/accessories', columnNumber: 2 },
+        { label: 'Minimalist Jewelry', href: '/women/accessories', columnNumber: 1 },
+        { label: 'Atelier Perfume', href: '/women/accessories', columnNumber: 2 },
+      ],
+      featured: {
+        title: "WOMEN'S ACCESSORIES",
+        imageUrl: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1200&auto=format&fit=crop',
+        href: '/women/accessories',
+        actionLabel: 'SHOP THE EDIT',
+      },
+    },
+  ],
+  MEN: [
+    {
+      id: 'streetwear',
+      name: 'STREETWEAR',
+      href: '/men/streetwear',
+      subitems: [
+        { label: 'Oversized T-Shirts', href: '/men/streetwear/oversized-t-shirts', columnNumber: 1 },
+        { label: 'Cargo Pants', href: '/men/streetwear/cargo-pants', columnNumber: 2 },
+        { label: 'Baggy Jeans', href: '/men/streetwear/baggy-jeans', columnNumber: 1 },
+        { label: 'Graphic Hoodies', href: '/men/streetwear/graphic-hoodies', columnNumber: 2 },
+        { label: 'Bomber Jackets', href: '/men/streetwear/bomber-jackets', columnNumber: 1 },
+        { label: 'Fleece Sweats', href: '/men/streetwear', columnNumber: 2 },
+      ],
+      featured: {
+        title: 'STREETWEAR',
+        imageUrl: 'https://pub-ae8fd88d076743ec82d6335a981e38e3.r2.dev/categories/streetwear.jpg',
+        href: '/men/streetwear',
+        actionLabel: 'SHOP THE EDIT',
+      },
+    },
+    {
+      id: 'gymwear',
+      name: 'GYM WEAR',
+      href: '/men/gymwear',
+      subitems: [
+        { label: 'Athletic Shorts', href: '/men/gymwear/athletic-shorts', columnNumber: 1 },
+        { label: 'Compression Tops', href: '/men/gymwear/compression-tops', columnNumber: 2 },
+        { label: 'Dry Fit Tees', href: '/men/gymwear/dry-fit-tees', columnNumber: 1 },
+        { label: 'Signature Gym Set', href: '/men/gymwear/signature-gym-set', columnNumber: 2 },
+        { label: 'Training Joggers', href: '/men/gymwear/training-joggers', columnNumber: 1 },
+      ],
+      featured: {
+        title: 'GYM WEAR',
+        imageUrl: 'https://pub-ae8fd88d076743ec82d6335a981e38e3.r2.dev/categories/gymwear.jpg',
+        href: '/men/gymwear',
+        actionLabel: 'SHOP THE EDIT',
+      },
+    },
+    {
+      id: 'luxury',
+      name: 'OLD MONEY',
+      href: '/men/luxury',
+      subitems: [
+        { label: 'Cashmere Sweaters', href: '/men/luxury/cashmere-sweaters', columnNumber: 1 },
+        { label: 'Linen Shirts', href: '/men/luxury/linen-shirts', columnNumber: 2 },
+        { label: 'Merino Knit Polos', href: '/men/luxury/merino-knit-polos', columnNumber: 1 },
+        { label: 'Overcoats', href: '/men/luxury/overcoats', columnNumber: 2 },
+        { label: 'Tailored Trousers', href: '/men/luxury/tailored-trousers', columnNumber: 1 },
+      ],
+      featured: {
+        title: 'OLD MONEY LUXURY',
+        imageUrl: 'https://pub-ae8fd88d076743ec82d6335a981e38e3.r2.dev/categories/luxury.jpg',
+        href: '/men/luxury',
+        actionLabel: 'SHOP THE EDIT',
+      },
+    },
+    {
+      id: 'casual',
+      name: 'CASUAL',
+      href: '/men/casual',
+      subitems: [
+        { label: 'Heavyweight Tees', href: '/men/casual', columnNumber: 1 },
+        { label: 'Classic Chinos', href: '/men/casual', columnNumber: 2 },
+        { label: 'Flannel Overshirts', href: '/men/casual', columnNumber: 1 },
+        { label: 'Denim Jackets', href: '/men/casual', columnNumber: 2 },
+        { label: 'Everyday Polos', href: '/men/casual', columnNumber: 1 },
+      ],
+      featured: {
+        title: 'CASUAL ESSENTIALS',
+        imageUrl: 'https://images.unsplash.com/photo-1516257984-b1b4d707412e?q=80&w=1200&auto=format&fit=crop',
+        href: '/men/casual',
+        actionLabel: 'SHOP THE EDIT',
+      },
+    },
+    {
+      id: 'formal',
+      name: 'FORMAL',
+      href: '/men/formal',
+      subitems: [
+        { label: 'Double-Breasted Suits', href: '/men/formal', columnNumber: 1 },
+        { label: 'French Cuff Shirts', href: '/men/formal', columnNumber: 2 },
+        { label: 'Silk Neckties', href: '/men/formal', columnNumber: 1 },
+        { label: 'Wool Blazers', href: '/men/formal', columnNumber: 2 },
+        { label: 'Handcrafted Oxfords', href: '/men/formal', columnNumber: 1 },
+      ],
+      featured: {
+        title: 'FORMAL ATELIER',
+        imageUrl: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=1200&auto=format&fit=crop',
+        href: '/men/formal',
+        actionLabel: 'SHOP THE EDIT',
+      },
+    },
+    {
+      id: 'winter',
+      name: 'WINTER COLLECTION',
+      href: '/men/winter',
+      subitems: [
+        { label: 'Puffer Jackets', href: '/men/winter', columnNumber: 1 },
+        { label: 'Wool Overcoats', href: '/men/winter', columnNumber: 2 },
+        { label: 'Thermal Layers', href: '/men/winter', columnNumber: 1 },
+        { label: 'Shearling Coats', href: '/men/winter', columnNumber: 2 },
+        { label: 'Cashmere Beanies', href: '/men/winter', columnNumber: 1 },
+      ],
+      featured: {
+        title: 'WINTER COLLECTION',
+        imageUrl: 'https://images.unsplash.com/photo-1544923246-77307dd654cb?q=80&w=1200&auto=format&fit=crop',
+        href: '/men/winter',
+        actionLabel: 'SHOP THE EDIT',
       },
     },
     {
       id: 'accessories',
       name: "MEN'S ACCESSORIES",
-      href: '/products?category=accessories',
+      href: '/men/accessories',
       subitems: [
-        { label: 'Full-Grain Leather Duffle Bags', href: '/products?category=accessories', columnNumber: 1 },
-        { label: 'Minimalist Automatic Watches', href: '/products?category=accessories', columnNumber: 1 },
-        { label: '925 Sterling Silver Chains', href: '/products?category=accessories', columnNumber: 1 },
-        { label: 'Polarized Aviator Sunglasses', href: '/products?category=accessories', columnNumber: 1 },
-        { label: 'Structured Wool Snapbacks', href: '/products?category=accessories', columnNumber: 2 },
-        { label: 'Full Grain Italian Belts', href: '/products?category=accessories', columnNumber: 2 },
-        { label: 'RFID Blocking Cardholders', href: '/products?category=accessories', columnNumber: 2 },
-        { label: 'Atelier Leather Wallets', href: '/products?category=accessories', columnNumber: 2 },
+        { label: 'Leather Wallets', href: '/men/accessories', columnNumber: 1 },
+        { label: 'Automatic Watches', href: '/men/accessories', columnNumber: 2 },
+        { label: 'Italian Leather Belts', href: '/men/accessories', columnNumber: 1 },
+        { label: 'Aviator Sunglasses', href: '/men/accessories', columnNumber: 2 },
+        { label: 'Weekend Duffle Bags', href: '/men/accessories', columnNumber: 1 },
       ],
       featured: {
         title: "MEN'S ACCESSORIES",
-        imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1000&auto=format&fit=crop',
-        href: '/products?category=accessories',
-        actionLabel: 'SHOP ACCESSORIES',
+        imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1200&auto=format&fit=crop',
+        href: '/men/accessories',
+        actionLabel: 'SHOP THE EDIT',
       },
     },
   ],
@@ -240,9 +345,10 @@ interface MegamenuPanelProps {
   category: string;
   onClose: () => void;
   appearance?: NavAppearanceConfig;
+  headerHeight?: number;
 }
 
-export function MegamenuPanel({ category, onClose, appearance }: MegamenuPanelProps) {
+export function MegamenuPanel({ category, onClose, appearance, headerHeight }: MegamenuPanelProps) {
   const { navConfig: liveConfig } = useNavAppearance(appearance);
   const config = appearance || liveConfig;
 
@@ -252,12 +358,23 @@ export function MegamenuPanel({ category, onClose, appearance }: MegamenuPanelPr
 
   useEffect(() => {
     let isMounted = true;
+    const currentFallback = FALLBACK_MEGAMENU_DATA[category.toUpperCase()] || FALLBACK_MEGAMENU_DATA.MEN;
+    setCollections(currentFallback);
+    setActiveCollectionId(currentFallback[0]?.id || '');
+
     async function loadDbNavigation() {
       try {
         const dbNav = await getStorefrontNavigationAction(category);
         if (isMounted && dbNav && dbNav.length > 0) {
-          setCollections(dbNav as MegamenuCollection[]);
-          setActiveCollectionId(dbNav[0].id);
+          // Keep all DB categories and augment with remaining fallback categories from reference
+          const existingNames = new Set(dbNav.map((c) => c.name.toUpperCase().trim()));
+          const extraFallback = currentFallback.filter((f) => !existingNames.has(f.name.toUpperCase().trim()));
+          const combined = [...dbNav, ...extraFallback];
+          setCollections(combined as MegamenuCollection[]);
+          setActiveCollectionId((prev) => {
+            const exists = combined.some((c) => c.id === prev);
+            return exists ? prev : combined[0].id;
+          });
         }
       } catch (err) {
         console.warn('Failed to load navigation from DB, using fallback:', err);
@@ -285,10 +402,12 @@ export function MegamenuPanel({ category, onClose, appearance }: MegamenuPanelPr
   const activeTabColor = config.megaMenuActiveTabColor || '#020617';
 
   // Height & Spacing Controls
+  const isFullViewport = config.megaMenuFullViewport !== false;
+  const effectiveHeaderHeight = headerHeight || (config.headerHeightPx || 72);
   const minHeight = config.megaMenuMinHeightPx || 460;
   const paddingYClass = PADDING_Y_MAP[config.megaMenuPaddingY || 'standard'] || 'py-8';
-  const categoryGapClass = CATEGORY_GAP_MAP[config.categoryRowSpacing || 'standard'] || 'space-y-3.5';
-  const subitemGapClass = SUBITEM_GAP_MAP[config.subitemRowSpacing || 'standard'] || 'space-y-3';
+  const categoryGapClass = CATEGORY_GAP_MAP[config.categoryRowSpacing || 'standard'] || 'space-y-4';
+  const subitemGapClass = SUBITEM_GAP_MAP[config.subitemRowSpacing || 'standard'] || 'space-y-3.5';
   const promoCardHeight = config.promoCardHeightPx || 390;
 
   // Promo Banner Dynamic Category Resolution
@@ -308,7 +427,7 @@ export function MegamenuPanel({ category, onClose, appearance }: MegamenuPanelPr
       ? currentCategoryPromo.imageUrl
       : config.promoBannerImageUrl ||
         currentCategoryPromo?.imageUrl ||
-        'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=1000&auto=format&fit=crop';
+        'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1200&auto=format&fit=crop';
 
   const promoCta =
     config.promoBannerActionLabel || currentCategoryPromo?.actionLabel || 'SHOP THE EDIT';
@@ -381,20 +500,25 @@ export function MegamenuPanel({ category, onClose, appearance }: MegamenuPanelPr
 
   return (
     <div
-      className="w-full shadow-2xl animate-in fade-in slide-in-from-top-1 duration-200"
+      className="w-full shadow-2xl animate-in fade-in slide-in-from-top-1 duration-200 flex flex-col select-none overflow-hidden"
       style={{
         backgroundColor: bgColor,
         color: textColor,
         borderBottom: `1px solid ${borderColor}`,
+        ...(isFullViewport
+          ? {
+              height: `calc(100vh - ${effectiveHeaderHeight}px)`,
+              maxHeight: `calc(100vh - ${effectiveHeaderHeight}px)`,
+            }
+          : { minHeight: `${minHeight}px` }),
       }}
     >
       <div
-        style={{ minHeight: `${minHeight}px` }}
-        className={`max-w-[1600px] mx-auto px-8 lg:px-14 ${paddingYClass} grid grid-cols-12 gap-8`}
+        className={`w-full flex-1 min-h-0 max-w-[1680px] mx-auto px-6 sm:px-10 lg:px-14 ${paddingYClass} grid grid-cols-12 gap-8 h-full`}
       >
         {/* Left Column: Vertical Category List */}
         <div
-          className={`col-span-3 flex flex-col ${categoryGapClass} pr-6`}
+          className={`col-span-3 flex flex-col ${categoryGapClass} pr-6 h-full overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-neutral-800`}
           style={{ borderRight: `1px solid ${borderColor}` }}
         >
           {collections.map((col) => {
@@ -413,7 +537,9 @@ export function MegamenuPanel({ category, onClose, appearance }: MegamenuPanelPr
                     backgroundColor: isActive ? activeTabColor : 'transparent',
                     color: isActive ? '#ffffff' : mutedColor,
                   }}
-                  className={`text-left text-sm lg:text-base tracking-tight cursor-pointer px-3.5 py-2 rounded-lg font-bold uppercase ${hoverClass}`}
+                  className={`text-left text-lg sm:text-xl tracking-tight cursor-pointer px-4 py-2 rounded-xl uppercase transition-all ${
+                    isActive ? 'font-bold' : 'font-medium hover:text-slate-900 dark:hover:text-white'
+                  } ${hoverClass}`}
                 >
                   {col.name}
                 </button>
@@ -430,9 +556,13 @@ export function MegamenuPanel({ category, onClose, appearance }: MegamenuPanelPr
                   onClick={() => setActiveCollectionId(col.id)}
                   style={{
                     color: isActive ? activeTabColor : mutedColor,
-                    borderBottom: isActive ? `2px solid ${activeTabColor}` : '2px solid transparent',
+                    borderBottom: isActive ? `3px solid ${activeTabColor}` : '3px solid transparent',
                   }}
-                  className={`text-left text-lg lg:text-xl tracking-tight cursor-pointer pb-1 uppercase inline-block self-start font-bold ${hoverClass}`}
+                  className={`text-left text-2xl sm:text-3xl tracking-tight cursor-pointer pb-1 uppercase inline-block self-start transition-colors ${
+                    isActive
+                      ? 'font-extrabold text-slate-950 dark:text-white'
+                      : 'font-light text-neutral-400 hover:text-slate-950 dark:hover:text-white'
+                  } ${hoverClass}`}
                 >
                   {col.name}
                 </button>
@@ -450,8 +580,10 @@ export function MegamenuPanel({ category, onClose, appearance }: MegamenuPanelPr
                   style={{
                     color: isActive ? activeTabColor : mutedColor,
                   }}
-                  className={`text-left text-lg lg:text-xl tracking-tight cursor-pointer uppercase ${
-                    isActive ? 'font-black' : 'font-semibold'
+                  className={`text-left text-2xl sm:text-3xl tracking-tight cursor-pointer uppercase transition-colors ${
+                    isActive
+                      ? 'font-black text-slate-950 dark:text-white'
+                      : 'font-light text-neutral-400 hover:text-slate-950 dark:hover:text-white'
                   } ${hoverClass}`}
                 >
                   {col.name}
@@ -469,11 +601,13 @@ export function MegamenuPanel({ category, onClose, appearance }: MegamenuPanelPr
                 onClick={() => setActiveCollectionId(col.id)}
                 style={{
                   color: isActive ? activeTabColor : mutedColor,
-                  borderLeft: isActive ? `2px solid ${activeTabColor}` : '2px solid transparent',
-                  paddingLeft: isActive ? '0.75rem' : '0rem',
+                  borderLeft: isActive ? `3px solid ${activeTabColor}` : '3px solid transparent',
+                  paddingLeft: isActive ? '0.85rem' : '0.85rem',
                 }}
-                className={`text-left text-lg lg:text-xl tracking-tight cursor-pointer ${
-                  isActive ? 'font-black uppercase' : 'font-semibold uppercase'
+                className={`text-left text-2xl sm:text-3xl tracking-tight cursor-pointer transition-colors ${
+                  isActive
+                    ? 'font-black uppercase text-slate-950 dark:text-white'
+                    : 'font-light uppercase text-neutral-400 hover:text-slate-950 dark:hover:text-white'
                 } ${hoverClass}`}
               >
                 {col.name}
@@ -482,17 +616,21 @@ export function MegamenuPanel({ category, onClose, appearance }: MegamenuPanelPr
           })}
         </div>
 
-        {/* Middle Column: Subitem Grid (expands to 9 cols if promo banner hidden) */}
-        <div className={`${showPromo ? 'col-span-5' : 'col-span-9'} px-6`}>
+        {/* Middle Column: Subitem Grid */}
+        <div
+          className={`${
+            showPromo ? 'col-span-4' : 'col-span-9'
+          } px-6 h-full overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-neutral-800 flex flex-col`}
+        >
           <p
-            className="text-[11px] font-extrabold tracking-[0.25em] uppercase mb-5"
+            className="text-[11px] sm:text-xs font-mono font-bold tracking-[0.25em] uppercase mb-6 shrink-0"
             style={{ color: mutedColor }}
           >
             {activeCollection?.name}
           </p>
 
           {hasSplitColumns ? (
-            <div className={`grid ${showPromo ? 'grid-cols-2' : 'grid-cols-3'} gap-x-8 gap-y-3.5`}>
+            <div className={`grid ${showPromo ? 'grid-cols-2' : 'grid-cols-3'} gap-x-8 gap-y-4`}>
               <div className={`flex flex-col ${subitemGapClass}`}>
                 {col1Items.map((sub, idx) => (
                   <Link
@@ -500,11 +638,11 @@ export function MegamenuPanel({ category, onClose, appearance }: MegamenuPanelPr
                     href={sub.href}
                     onClick={onClose}
                     style={{ color: textColor }}
-                    className={`text-xs font-semibold ${getSubitemHoverClasses()} line-clamp-1`}
+                    className={`text-sm font-medium ${getSubitemHoverClasses()} line-clamp-1`}
                   >
                     <span>{sub.label}</span>
                     {config.subitemHoverEffect === 'arrow' && (
-                      <ArrowRight className="w-3 h-3 opacity-0 group-hover/sub:opacity-100 transition-opacity shrink-0" />
+                      <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover/sub:opacity-100 transition-opacity shrink-0" />
                     )}
                   </Link>
                 ))}
@@ -516,29 +654,29 @@ export function MegamenuPanel({ category, onClose, appearance }: MegamenuPanelPr
                     href={sub.href}
                     onClick={onClose}
                     style={{ color: textColor }}
-                    className={`text-xs font-semibold ${getSubitemHoverClasses()} line-clamp-1`}
+                    className={`text-sm font-medium ${getSubitemHoverClasses()} line-clamp-1`}
                   >
                     <span>{sub.label}</span>
                     {config.subitemHoverEffect === 'arrow' && (
-                      <ArrowRight className="w-3 h-3 opacity-0 group-hover/sub:opacity-100 transition-opacity shrink-0" />
+                      <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover/sub:opacity-100 transition-opacity shrink-0" />
                     )}
                   </Link>
                 ))}
               </div>
             </div>
           ) : (
-            <div className={`grid ${showPromo ? 'grid-cols-2' : 'grid-cols-3'} gap-x-6 gap-y-3.5`}>
+            <div className={`grid ${showPromo ? 'grid-cols-2' : 'grid-cols-3'} gap-x-8 gap-y-4`}>
               {(activeCollection?.subitems || []).map((sub, idx) => (
                 <Link
                   key={idx}
                   href={sub.href}
                   onClick={onClose}
                   style={{ color: textColor }}
-                  className={`text-xs font-semibold ${getSubitemHoverClasses()} line-clamp-1`}
+                  className={`text-sm font-medium ${getSubitemHoverClasses()} line-clamp-1`}
                 >
                   <span>{sub.label}</span>
                   {config.subitemHoverEffect === 'arrow' && (
-                    <ArrowRight className="w-3 h-3 opacity-0 group-hover/sub:opacity-100 transition-opacity shrink-0" />
+                    <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover/sub:opacity-100 transition-opacity shrink-0" />
                   )}
                 </Link>
               ))}
@@ -548,15 +686,17 @@ export function MegamenuPanel({ category, onClose, appearance }: MegamenuPanelPr
 
         {/* Right Column: Featured Editorial Promotional Card */}
         {showPromo && (
-          <div className="col-span-4 pl-4">
+          <div className="col-span-5 pl-4 h-full flex flex-col pb-2">
             <Link
               href={promoHref}
               onClick={onClose}
               style={{
-                height: `${promoCardHeight}px`,
                 border: `1px solid ${borderColor}`,
+                ...(isFullViewport ? {} : { height: `${promoCardHeight}px` }),
               }}
-              className={`group relative block w-full ${promoRadiusClass} ${promoShadowClass} overflow-hidden`}
+              className={`group relative ${
+                isFullViewport ? 'flex-1 h-full min-h-[460px]' : ''
+              } block w-full ${promoRadiusClass} ${promoShadowClass} overflow-hidden`}
             >
               <Image
                 key={promoImage}
@@ -567,22 +707,22 @@ export function MegamenuPanel({ category, onClose, appearance }: MegamenuPanelPr
                 className={`${objectFitClass} ${objectPosClass} transition-all duration-700 ${
                   config.promoCardHoverZoom !== false ? 'group-hover:scale-105' : ''
                 }`}
-                sizes="(max-width: 1200px) 35vw, 28vw"
+                sizes="(max-width: 1200px) 45vw, 40vw"
               />
               <div
-                className={`absolute inset-0 flex flex-col ${alignmentClass} p-6 text-white transition-opacity duration-300`}
+                className={`absolute inset-0 flex flex-col ${alignmentClass} p-8 text-white transition-opacity duration-300`}
                 style={{
                   background: gradientBackground,
                 }}
               >
-                <span className="text-[10px] font-extrabold tracking-[0.25em] text-slate-300 uppercase mb-1">
+                <span className="text-[11px] font-extrabold tracking-[0.25em] text-white/80 uppercase mb-2">
                   {promoEyebrow}
                 </span>
-                <h4 className="text-2xl lg:text-3xl font-black font-heading uppercase tracking-tight text-white mb-2 leading-none">
+                <h4 className="text-3xl sm:text-4xl lg:text-5xl font-black font-heading uppercase tracking-tight text-white mb-3 leading-none">
                   {promoTitle}
                 </h4>
-                <div className="flex items-center text-xs font-bold text-white group-hover:translate-x-1.5 transition-transform">
-                  {promoCta} <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+                <div className="flex items-center text-xs sm:text-sm font-bold text-white uppercase tracking-wider group-hover:translate-x-2 transition-transform">
+                  {promoCta} <ArrowRight className="w-4 h-4 ml-2" />
                 </div>
               </div>
             </Link>

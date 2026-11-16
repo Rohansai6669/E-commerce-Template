@@ -117,35 +117,11 @@ export function CartSummaryComponent({
             <span className="text-foreground">{summary.formattedShipping}</span>
           </div>
 
-          {/* Tax Breakdown (Included in Price) */}
-          {summary.isTaxInclusive && summary.taxBreakdown ? (
-            <div className="p-2.5 rounded-lg bg-muted/40 border border-border/60 text-xs space-y-1.5">
-              <div className="flex justify-between items-center font-medium text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <span className="font-semibold text-foreground">Estimated GST (18%)</span>
-                  <span className="text-[10px] uppercase font-extrabold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
-                    Included
-                  </span>
-                </span>
-                <span className="font-semibold text-foreground font-mono">
-                  {summary.taxBreakdown.formattedTaxAmount}
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-1 text-[11px] text-muted-foreground pt-1 border-t border-border/40">
-                <div>CGST (9%): <span className="font-mono text-foreground">{summary.taxBreakdown.formattedCgst}</span></div>
-                <div className="text-right">SGST (9%): <span className="font-mono text-foreground">{summary.taxBreakdown.formattedSgst}</span></div>
-              </div>
-              <div className="text-[10px] text-muted-foreground/80 flex justify-between pt-0.5">
-                <span>Taxable Base Value:</span>
-                <span className="font-mono">{summary.taxBreakdown.formattedTaxableBase}</span>
-              </div>
-            </div>
-          ) : (
-            <div className="flex justify-between items-center text-sm font-semibold">
-              <span className="text-muted-foreground">Sales Tax</span>
-              <span className="text-foreground">{summary.formattedTax}</span>
-            </div>
-          )}
+          {/* Tax line */}
+          <div className="flex justify-between items-center text-xs text-muted-foreground">
+            <span>Taxes &amp; GST (18%)</span>
+            <span className="text-emerald-700 dark:text-emerald-400 font-medium">Included in price</span>
+          </div>
 
           <div className="border-t border-border pt-4 mt-1">
             <div className="flex justify-between items-center text-base font-extrabold">

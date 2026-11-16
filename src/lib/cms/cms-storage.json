@@ -11,28 +11,38 @@
         "slides": [
           {
             "id": "slide-2",
-            "eyebrow": "SUSTAINABLE TAILORING",
+            "eyebrow": "uguguui",
             "heading": "Lexido",
             "mediaUrl": "https://pub-ae8fd88d076743ec82d6335a981e38e3.r2.dev/products/1794757864142-photo-1612029938221-a01e8c947edb.jfif",
-            "subTitle": "Precision tailored outerwear designed to last a lifetime.",
+            "subTitle": "ivhkbujbjninininiinihngfcv",
             "mediaType": "image",
-            "description": "Zero-emission production ateliers in Milan & Florence.",
+            "description": "ivhkbujbjninininiinihngfcv",
             "primaryCtaUrl": "/products?category=outerwear",
             "overlayOpacity": 0.4,
             "primaryCtaText": "SHOP OUTERWEAR",
-            "contentPosition": "center-left"
+            "contentPosition": "bottom-left"
           }
         ],
         "enabled": true,
+        "eyebrow": "uguguui",
+        "heading": "Lexido",
         "autoplay": true,
+        "subTitle": "ivhkbujbjninininiinihngfcv",
         "heroHeight": "large",
         "layoutMode": "CAROUSEL",
+        "description": "ivhkbujbjninininiinihngfcv",
+        "desktopImage": "https://pub-ae8fd88d076743ec82d6335a981e38e3.r2.dev/products/1794757864142-photo-1612029938221-a01e8c947edb.jfif",
         "displayOrder": 1,
         "mobileVisible": true,
+        "primaryCtaUrl": "/products?category=outerwear",
         "tabletVisible": true,
         "desktopVisible": true,
-        "contentPosition": "center",
+        "overlayOpacity": 0.4,
+        "primaryCtaText": "SHOP OUTERWEAR",
+        "contentPosition": "bottom-left",
         "autoplayInterval": 5000,
+        "contentAlignment": "center",
+        "headingAlignment": "bottom-left",
         "descriptionLayout": "boxed-glass",
         "showPaginationDots": true,
         "showNavigationArrows": true
@@ -124,12 +134,12 @@
         "productSource": "all",
         "tabletVisible": true,
         "columnsDesktop": 4,
+        "containerWidth": "full",
         "desktopVisible": true,
-        "productsPerPage": 8,
-        "headingAlignment": "left",
-        "contentAlignment": "left",
         "contentPosition": "center-left",
-        "containerWidth": "full"
+        "productsPerPage": 8,
+        "contentAlignment": "left",
+        "headingAlignment": "left"
       },
       {
         "id": "editorial-1",
@@ -190,6 +200,20 @@
         "paddingRightPx": 0,
         "primaryCtaText": "READ OUR MANIFESTO",
         "paddingBottomPx": 0
+      },
+      {
+        "id": "sec-1794856676228",
+        "name": "Instagram Post Feed / Social Grid",
+        "type": "INSTAGRAM_FEED",
+        "enabled": true,
+        "displayOrder": 7,
+        "desktopVisible": true,
+        "tabletVisible": true,
+        "mobileVisible": true,
+        "handle": "@LEXIDO",
+        "eyebrow": "COMMUNITY & LOOKBOOK",
+        "followUrl": "https://instagram.com/lexido",
+        "cardRadius": "medium"
       }
     ],
     "seoTitle": "Ecommerce Storefront | Minimalist Luxury Apparel",
@@ -335,96 +359,96 @@
     "columns": [
       {
         "id": "col-shop",
-        "title": "SHOP",
         "links": [
           {
             "id": "lnk-1",
-            "label": "Men",
-            "url": "/products?category=men"
+            "url": "/products?category=men",
+            "label": "Men"
           },
           {
             "id": "lnk-2",
-            "label": "Women",
-            "url": "/products?category=women"
+            "url": "/products?category=women",
+            "label": "Women"
           },
           {
             "id": "lnk-3",
-            "label": "Denim",
-            "url": "/products?category=denim"
+            "url": "/products?category=denim",
+            "label": "Denim"
           },
           {
             "id": "lnk-4",
-            "label": "Hoodies",
-            "url": "/products?category=hoodies"
+            "url": "/products?category=hoodies",
+            "label": "Hoodies"
           }
-        ]
+        ],
+        "title": "SHOP"
       },
       {
         "id": "col-explore",
-        "title": "EXPLORE",
         "links": [
           {
             "id": "lnk-5",
-            "label": "Collections",
-            "url": "/collections"
+            "url": "/collections",
+            "label": "Collections"
           },
           {
             "id": "lnk-6",
-            "label": "Accessories",
-            "url": "/products?category=accessories"
+            "url": "/products?category=accessories",
+            "label": "Accessories"
           },
           {
             "id": "lnk-7",
-            "label": "Help",
-            "url": "/help"
+            "url": "/help",
+            "label": "Help"
           },
           {
             "id": "lnk-8",
-            "label": "About",
-            "url": "/about"
+            "url": "/about",
+            "label": "About"
           }
-        ]
+        ],
+        "title": "EXPLORE"
       },
       {
         "id": "col-help",
-        "title": "HELP",
         "links": [
           {
             "id": "lnk-9",
-            "label": "Help Center",
-            "url": "/help"
+            "url": "/help",
+            "label": "Help Center"
           },
           {
             "id": "lnk-10",
-            "label": "Track Order",
-            "url": "/track-order"
+            "url": "/track-order",
+            "label": "Track Order"
           },
           {
             "id": "lnk-11",
-            "label": "FAQs",
-            "url": "/faq"
+            "url": "/faq",
+            "label": "FAQs"
           },
           {
             "id": "lnk-12",
-            "label": "Raise Ticket",
-            "url": "/support"
+            "url": "/support",
+            "label": "Raise Ticket"
           },
           {
             "id": "lnk-13",
-            "label": "Shipping",
-            "url": "/shipping"
+            "url": "/shipping",
+            "label": "Shipping"
           },
           {
             "id": "lnk-14",
-            "label": "Returns",
-            "url": "/returns"
+            "url": "/returns",
+            "label": "Returns"
           },
           {
             "id": "lnk-15",
-            "label": "Privacy",
-            "url": "/privacy"
+            "url": "/privacy",
+            "label": "Privacy"
           }
-        ]
+        ],
+        "title": "HELP"
       }
     ],
     "contactTitle": "REACH US",
@@ -442,45 +466,45 @@
     "socialLinks": [
       {
         "id": "soc-ig",
-        "platform": "instagram",
-        "label": "Instagram",
         "url": "https://instagram.com/lexido",
-        "enabled": true
+        "label": "Instagram",
+        "enabled": true,
+        "platform": "instagram"
       },
       {
         "id": "soc-fb",
-        "platform": "facebook",
-        "label": "Facebook",
         "url": "https://facebook.com",
-        "enabled": true
+        "label": "Facebook",
+        "enabled": true,
+        "platform": "facebook"
       },
       {
         "id": "soc-x",
-        "platform": "x",
-        "label": "X (Twitter)",
         "url": "https://x.com",
-        "enabled": true
+        "label": "X (Twitter)",
+        "enabled": true,
+        "platform": "x"
       },
       {
         "id": "soc-pin",
-        "platform": "pinterest",
-        "label": "Pinterest",
         "url": "https://pinterest.com",
-        "enabled": true
+        "label": "Pinterest",
+        "enabled": true,
+        "platform": "pinterest"
       },
       {
         "id": "soc-tt",
-        "platform": "tiktok",
-        "label": "TikTok",
         "url": "https://tiktok.com",
-        "enabled": true
+        "label": "TikTok",
+        "enabled": true,
+        "platform": "tiktok"
       },
       {
         "id": "soc-yt",
-        "platform": "youtube",
-        "label": "YouTube",
         "url": "https://youtube.com",
-        "enabled": true
+        "label": "YouTube",
+        "enabled": true,
+        "platform": "youtube"
       }
     ],
     "copyrightText": "© 2026 LEXIDO. All rights reserved. Made in India.",
