@@ -6,15 +6,41 @@ import { profiles } from '@/lib/db/schema/auth';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function mapAuthError(rawError: string): string {
+  const lower = rawError.toLowerCase();
+  if (lower.includes('invalid login credentials') || lower.includes('invalid credentials')) {
+    return 'Incorrect email or password. Please verify your details and try again.';
+  }
+  if (lower.includes('user already registered') || lower.includes('already exists') || lower.includes('already registered')) {
+    return 'An account with this email already exists. Please sign in instead.';
+  }
+  if (lower.includes('email not confirmed')) {
+    return 'Please confirm your email address. Check your inbox for the confirmation link.';
+  }
+  if (lower.includes('password should be at least')) {
+    return 'Password must be at least 8 characters long.';
+  }
+  if (lower.includes('rate limit') || lower.includes('too many requests')) {
+    return 'Too many attempts. Please wait a few moments before trying again.';
+  }
+  return rawError;
+}
+
 /**
  * Server action to sign in customer using email and password.
  */
 export async function loginAction(formData: FormData): Promise<{ success: boolean; error?: string }> {
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
+  const email = (formData.get('email') as string || '').trim().toLowerCase();
+  const password = formData.get('password') as string || '';
 
   if (!email || !password) {
     return { success: false, error: 'Email and password are required.' };
+  }
+
+  if (!EMAIL_REGEX.test(email)) {
+    return { success: false, error: 'Please enter a valid email address.' };
   }
 
   try {
@@ -25,14 +51,14 @@ export async function loginAction(formData: FormData): Promise<{ success: boolea
     });
 
     if (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: mapAuthError(error.message) };
     }
 
     revalidatePath('/account');
     return { success: true };
-  } catch (err) {
+  } catch (err: any) {
     console.error('Login action failure:', err);
-    return { success: false, error: 'An unexpected authentication error occurred.' };
+    return { success: false, error: err?.message || 'An unexpected authentication error occurred.' };
   }
 }
 
@@ -40,12 +66,28 @@ export async function loginAction(formData: FormData): Promise<{ success: boolea
  * Server action to register a new customer profile.
  */
 export async function registerAction(formData: FormData): Promise<{ success: boolean; error?: string }> {
-  const fullName = formData.get('fullName') as string;
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
+  const fullName = (formData.get('fullName') as string || '').trim();
+  const email = (formData.get('email') as string || '').trim().toLowerCase();
+  const password = formData.get('password') as string || '';
 
-  if (!fullName || !email || !password) {
-    return { success: false, error: 'All fields are required.' };
+  if (!fullName) {
+    return { success: false, error: 'Full name is required.' };
+  }
+
+  if (fullName.length < 2) {
+    return { success: false, error: 'Full name must be at least 2 characters.' };
+  }
+
+  if (!email) {
+    return { success: false, error: 'Email address is required.' };
+  }
+
+  if (!EMAIL_REGEX.test(email)) {
+    return { success: false, error: 'Please enter a valid email address.' };
+  }
+
+  if (!password) {
+    return { success: false, error: 'Password is required.' };
   }
 
   if (password.length < 8) {
@@ -67,7 +109,7 @@ export async function registerAction(formData: FormData): Promise<{ success: boo
     });
 
     if (authError) {
-      return { success: false, error: authError.message };
+      return { success: false, error: mapAuthError(authError.message) };
     }
 
     const authUser = authData.user;
@@ -94,9 +136,9 @@ export async function registerAction(formData: FormData): Promise<{ success: boo
     }
 
     return { success: true };
-  } catch (err) {
+  } catch (err: any) {
     console.error('Registration action failure:', err);
-    return { success: false, error: 'An unexpected database error occurred during registration.' };
+    return { success: false, error: err?.message || 'An unexpected database error occurred during registration.' };
   }
 }
 

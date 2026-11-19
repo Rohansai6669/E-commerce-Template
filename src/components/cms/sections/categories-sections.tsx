@@ -49,9 +49,15 @@ export function CategoryGridSection({ config }: { config: CategoryGridConfig & a
     .filter((item: any) => item.enabled !== false)
     .sort((a: any, b: any) => (a.displayOrder || 0) - (b.displayOrder || 0));
 
-  // Dynamic Breakpoint Grid Columns
+  // Dynamic Breakpoint Grid Columns - strictly single column on smaller screen widths (< md: 768px)
   const mobileCols = config.columnsMobile === 2 ? 'grid-cols-2' : 'grid-cols-1';
-  const tabletCols = config.columnsTablet === 3 ? 'sm:grid-cols-3' : config.columnsTablet === 4 ? 'sm:grid-cols-4' : 'sm:grid-cols-2';
+  const tabletCols = config.columnsTablet === 4
+    ? 'md:grid-cols-4'
+    : config.columnsTablet === 3
+    ? 'md:grid-cols-3'
+    : config.columnsTablet === 1
+    ? 'md:grid-cols-1'
+    : 'md:grid-cols-2';
   const targetDesktop = config.columnsDesktop || (items.length <= 2 ? 2 : 4);
   const desktopCols = targetDesktop === 6
     ? 'lg:grid-cols-6'
@@ -59,6 +65,8 @@ export function CategoryGridSection({ config }: { config: CategoryGridConfig & a
     ? 'lg:grid-cols-4'
     : targetDesktop === 3
     ? 'lg:grid-cols-3'
+    : targetDesktop === 1
+    ? 'lg:grid-cols-1'
     : 'lg:grid-cols-2';
   const gridColsClass = `${mobileCols} ${tabletCols} ${desktopCols}`;
 
@@ -279,7 +287,7 @@ export function CollectionShowcaseSection({ config }: { config: BaseSectionConfi
   const cardRadiusStyle = config.cardRadiusPx !== undefined ? { borderRadius: `${config.cardRadiusPx}px` } : {};
 
   const cols = config.columnsDesktop || 3;
-  const colClass = cols === 2 ? 'sm:grid-cols-2' : cols === 4 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-3';
+  const colClass = cols === 2 ? 'md:grid-cols-2' : cols === 4 ? 'md:grid-cols-2 lg:grid-cols-4' : 'md:grid-cols-3';
 
   return (
     <SectionShell config={config}>

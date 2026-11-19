@@ -142,7 +142,10 @@ export function Footer({ initialConfig, previewConfig, className = '', onClick }
                 />
               </div>
             ) : (
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight font-heading">
+              <h2
+                style={{ fontFamily: "'Clash Display', 'ClashDisplay-Variable', sans-serif" }}
+                className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight font-clash"
+              >
                 {cfg.brandName || 'LEXIDO'}
               </h2>
             )}

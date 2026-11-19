@@ -120,7 +120,10 @@ export function MobileNav({ appearance }: MobileNavProps) {
           {/* Top Header with Brand Logo & Touch-Friendly Close Button */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 shrink-0">
             <div className="flex items-center gap-2">
-              <span className="text-base font-extrabold tracking-wider uppercase font-heading text-slate-950 dark:text-white">
+              <span
+                style={{ fontFamily: "'Clash Display', 'ClashDisplay-Variable', sans-serif" }}
+                className="text-base font-extrabold tracking-wider uppercase font-clash text-slate-950 dark:text-white"
+              >
                 {config?.logoText || 'LEXIDO'}
               </span>
               <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-full uppercase tracking-wider">

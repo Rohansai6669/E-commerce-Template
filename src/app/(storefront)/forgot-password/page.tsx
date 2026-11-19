@@ -3,15 +3,11 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { forgotPasswordAction } from '@/app/actions/auth-actions';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { FormField } from '@/components/forms/form-field';
-import { Heading, Text } from '@/components/ui/typography';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { toast } from 'sonner';
 
 /**
  * Storefront Forgot Password / Recovery triggers page.
+ * Follows minimal luxury editorial aesthetic.
  */
 export default function ForgotPasswordPage() {
   const [error, setError] = React.useState<string | null>(null);
@@ -37,65 +33,78 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-[60vh] flex items-center justify-center px-4 py-12 bg-neutral-50/50 dark:bg-neutral-950/20">
-      <Card className="w-full max-w-md border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 shadow-xl rounded-none">
-        <CardHeader className="text-center pb-2">
-          <span className="text-[10px] font-bold tracking-[0.25em] text-neutral-400 uppercase font-mono block mb-1">
-            LEXIDO • RECOVERY
-          </span>
-          <h1 className="text-2xl font-black font-heading uppercase text-neutral-950 dark:text-white tracking-tight">
-            Reset Password
-          </h1>
-          <p className="text-xs text-neutral-500 mt-1">
-            We will email you a secure link to reset your account password.
-          </p>
-        </CardHeader>
-        <CardContent className="pt-4">
-          {success ? (
-            <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-none text-center flex flex-col gap-2">
-              <span className="text-sm font-bold uppercase tracking-wider">Check Your Email</span>
-              <p className="text-xs text-emerald-600">
-                A password reset link has been dispatched to your inbox. Click the link to define a new password.
-              </p>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              <FormField label="Email Address">
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  required
-                  className="bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white focus:border-neutral-950 rounded-none"
-                  disabled={isPending}
-                />
-              </FormField>
+    <div className="w-full flex-1 flex flex-col items-center justify-center py-16 sm:py-24 px-4 select-none">
+      <div className="w-full max-w-[420px] sm:max-w-[460px] flex flex-col items-start">
+        {/* LEXIDO Wordmark Logo */}
+        <Link
+          href="/"
+          className="self-center font-clash font-black uppercase text-2xl sm:text-[30px] tracking-[0.04em] text-neutral-950 dark:text-white mb-10 sm:mb-12 hover:opacity-85 transition-opacity"
+        >
+          LEXIDO
+        </Link>
 
-              {error && (
-                <div className="p-3 text-xs bg-rose-50 border border-rose-200 text-rose-600 rounded-none">
-                  {error}
-                </div>
-              )}
+        {/* Back Link */}
+        <Link
+          href="/login"
+          className="text-[11px] font-mono font-medium tracking-[0.2em] uppercase text-neutral-400 hover:text-black dark:hover:text-white cursor-pointer inline-flex items-center gap-1.5 transition-colors mb-6"
+        >
+          ← BACK
+        </Link>
 
-              <Button type="submit" className="w-full mt-2 font-bold uppercase tracking-widest text-xs py-3 rounded-none bg-black hover:bg-neutral-800 text-white cursor-pointer" disabled={isPending}>
-                {isPending ? 'Sending Link...' : 'Send Reset Link'}
-              </Button>
-            </form>
-          )}
-        </CardContent>
-        <CardFooter className="flex justify-center border-t border-neutral-100 dark:border-neutral-800 pt-4">
-          <p className="text-xs text-neutral-500">
-            Remember your password?{' '}
+        {/* Page Title */}
+        <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-black font-clash uppercase tracking-tight text-neutral-950 dark:text-white leading-none mb-3">
+          RESET PASSWORD
+        </h1>
+
+        <p className="text-xs sm:text-[13px] text-neutral-500 dark:text-neutral-400 font-sans tracking-normal font-normal mb-8 leading-relaxed">
+          We will email you a secure link to reset your account password.
+        </p>
+
+        {success ? (
+          <div className="w-full p-6 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-center flex flex-col gap-2">
+            <span className="text-xs font-bold font-mono tracking-widest uppercase text-neutral-900 dark:text-white">
+              Check Your Email
+            </span>
+            <p className="text-xs text-neutral-500 leading-relaxed">
+              A password reset link has been dispatched to your inbox. Click the link to define a new password.
+            </p>
             <Link
               href="/login"
-              className="text-black dark:text-white hover:underline font-bold transition-colors uppercase tracking-wider"
+              className="mt-4 inline-block text-xs font-bold uppercase tracking-widest text-black dark:text-white underline hover:opacity-75"
             >
-              Sign In
+              Return to Sign In
             </Link>
-          </p>
-        </CardFooter>
-      </Card>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
+            {error && (
+              <div className="w-full p-3 text-xs bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300">
+                {error}
+              </div>
+            )}
+
+            <div className="w-full">
+              <input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="Email address"
+                required
+                disabled={isPending}
+                className="w-full h-12 px-4 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white text-sm placeholder:text-neutral-400 focus:border-black dark:focus:border-white focus:outline-none rounded-none transition-colors"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isPending}
+              className="w-full h-12 mt-2 bg-black hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 text-white font-bold text-[11px] sm:text-xs uppercase tracking-[0.2em] flex items-center justify-center transition-all cursor-pointer rounded-none disabled:opacity-50"
+            >
+              {isPending ? 'SENDING LINK...' : 'SEND RESET LINK'}
+            </button>
+          </form>
+        )}
+      </div>
     </div>
   );
 }

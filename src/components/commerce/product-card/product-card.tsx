@@ -42,7 +42,7 @@ export function ProductCard({ product: rawProduct, className, children, ...props
       <div
         suppressHydrationWarning
         className={cn(
-          'group relative rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-card text-card-foreground overflow-hidden shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full',
+          'group relative bg-transparent text-foreground overflow-hidden flex flex-col h-full rounded-none transition-all duration-300',
           className
         )}
         {...props}

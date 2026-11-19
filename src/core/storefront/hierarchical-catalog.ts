@@ -135,6 +135,10 @@ export async function resolveHierarchicalCatalog(
     audience = cleanSegments[0];
     categorySlug = cleanSegments[1];
     childSlug = cleanSegments[2];
+    if (categorySlug && categorySlug.toLowerCase() === audience.toLowerCase()) {
+      categorySlug = childSlug;
+      childSlug = undefined;
+    }
   } else {
     categorySlug = cleanSegments[0];
     childSlug = cleanSegments[1];
@@ -149,6 +153,10 @@ export async function resolveHierarchicalCatalog(
     if (db) {
       if (categorySlug) {
         // Find primary or sub-category
+        const cleanNoHyphen = categorySlug.replace(/[-_]/g, '');
+        const cleanWithHyphen = categorySlug.replace(/[-_]/g, '-');
+        const cleanWithSpace = categorySlug.replace(/[-_]/g, ' ');
+
         const [cat] = await db
           .select()
           .from(categories)
@@ -156,8 +164,11 @@ export async function resolveHierarchicalCatalog(
             and(
               or(
                 eq(categories.slug, categorySlug),
-                ilike(categories.slug, `%${categorySlug}%`),
-                ilike(categories.name, categorySlug.replace(/[-_]/g, ' '))
+                eq(categories.slug, cleanNoHyphen),
+                eq(categories.slug, cleanWithHyphen),
+                ilike(categories.slug, `%${cleanNoHyphen}%`),
+                ilike(categories.slug, `%${cleanWithHyphen}%`),
+                ilike(categories.name, `%${cleanWithSpace}%`)
               ),
               sql`${categories.deletedAt} IS NULL`,
               eq(categories.isActive, true)
@@ -184,6 +195,10 @@ export async function resolveHierarchicalCatalog(
 
         // If childSlug is provided, find child category definition
         if (childSlug) {
+          const childNoHyphen = childSlug.replace(/[-_]/g, '');
+          const childWithHyphen = childSlug.replace(/[-_]/g, '-');
+          const childWithSpace = childSlug.replace(/[-_]/g, ' ');
+
           const [childCat] = await db
             .select()
             .from(categories)
@@ -191,8 +206,10 @@ export async function resolveHierarchicalCatalog(
               and(
                 or(
                   eq(categories.slug, childSlug),
-                  ilike(categories.slug, `%${childSlug}%`),
-                  ilike(categories.name, childSlug.replace(/[-_]/g, ' '))
+                  eq(categories.slug, childNoHyphen),
+                  eq(categories.slug, childWithHyphen),
+                  ilike(categories.slug, `%${childNoHyphen}%`),
+                  ilike(categories.name, `%${childWithSpace}%`)
                 ),
                 sql`${categories.deletedAt} IS NULL`,
                 eq(categories.isActive, true)
@@ -205,7 +222,8 @@ export async function resolveHierarchicalCatalog(
           }
         }
       } else if (audience) {
-        // Look up top-level category row for audience (e.g. 'men', 'women', 'kids')
+        // Look up top-level category row for audience (e.g. 'men', 'women', 'kids') only for subtags navigation
+        // DO NOT set matchedCategory = audCat, because top audience is not a product category filter!
         const [audCat] = await db
           .select()
           .from(categories)
@@ -213,8 +231,7 @@ export async function resolveHierarchicalCatalog(
             and(
               or(
                 eq(categories.slug, audience),
-                ilike(categories.slug, `%${audience}%`),
-                ilike(categories.name, audience)
+                eq(categories.name, audience)
               ),
               sql`${categories.deletedAt} IS NULL`,
               eq(categories.isActive, true)
@@ -223,8 +240,6 @@ export async function resolveHierarchicalCatalog(
           .limit(1);
 
         if (audCat) {
-          matchedCategory = audCat;
-
           // Fetch direct subcategories under this top-level category
           childCategories = await db
             .select()
@@ -286,8 +301,14 @@ export async function resolveHierarchicalCatalog(
     pageTitle = `${childTitle.toUpperCase()}`;
     pageSubtitle = `${categoryTitle} • Atelier craftsmanship & timeless silhouettes`;
   } else if (categorySlug && categoryTitle && audienceTitle) {
-    pageTitle = `${audienceTitle.toUpperCase()}'S ${categoryTitle.toUpperCase()}`;
-    pageSubtitle = `Elevated ${categoryTitle.toLowerCase()} essentials curated for ${audienceTitle.toLowerCase()}`;
+    if (categoryTitle.toLowerCase() === audienceTitle.toLowerCase()) {
+      const deptConfig = audience ? DEPARTMENTS[audience] : undefined;
+      pageTitle = deptConfig?.title || `${audienceTitle.toUpperCase()}'S COLLECTION`;
+      pageSubtitle = deptConfig?.subtitle || `Elevated essentials curated for ${audienceTitle.toLowerCase()}`;
+    } else {
+      pageTitle = `${audienceTitle.toUpperCase()}'S ${categoryTitle.toUpperCase()}`;
+      pageSubtitle = `Elevated ${categoryTitle.toLowerCase()} essentials curated for ${audienceTitle.toLowerCase()}`;
+    }
   } else if (categorySlug && categoryTitle) {
     pageTitle = `${categoryTitle.toUpperCase()} COLLECTION`;
     pageSubtitle = matchedCategory?.description || `Curated ${categoryTitle.toLowerCase()} garments with atelier precision`;
@@ -389,11 +410,11 @@ export async function resolveHierarchicalCatalog(
       // A. Filter by Audience / Gender
       if (audience) {
         if (audience === 'men') {
-          conditions.push(or(eq(sql`lower(${products.gender})`, 'men'), eq(sql`lower(${products.gender})`, 'unisex'), eq(sql`lower(${products.gender})`, 'male')));
+          conditions.push(or(sql`${products.gender} IS NULL`, eq(sql`lower(${products.gender})`, 'men'), eq(sql`lower(${products.gender})`, 'unisex'), eq(sql`lower(${products.gender})`, 'male')));
         } else if (audience === 'women') {
-          conditions.push(or(eq(sql`lower(${products.gender})`, 'women'), eq(sql`lower(${products.gender})`, 'unisex'), eq(sql`lower(${products.gender})`, 'female')));
+          conditions.push(or(sql`${products.gender} IS NULL`, eq(sql`lower(${products.gender})`, 'women'), eq(sql`lower(${products.gender})`, 'unisex'), eq(sql`lower(${products.gender})`, 'female')));
         } else if (audience === 'kids') {
-          conditions.push(or(eq(sql`lower(${products.gender})`, 'kids'), eq(sql`lower(${products.gender})`, 'boys'), eq(sql`lower(${products.gender})`, 'girls')));
+          conditions.push(or(sql`${products.gender} IS NULL`, eq(sql`lower(${products.gender})`, 'kids'), eq(sql`lower(${products.gender})`, 'boys'), eq(sql`lower(${products.gender})`, 'girls')));
         } else if (audience === 'unisex') {
           conditions.push(eq(sql`lower(${products.gender})`, 'unisex'));
         }
@@ -502,30 +523,18 @@ export async function resolveHierarchicalCatalog(
         inStock: true,
       }));
 
-      // If child filter was too strict and returned 0 items, fetch parent category products as graceful fallback
-      if (items.length === 0 && childSlug && (matchedCategory || categorySlug)) {
+      // If category or child filter returned 0 items, fetch audience products as graceful fallback
+      if (items.length === 0) {
         const relaxedConditions: any[] = [
           sql`${products.deletedAt} IS NULL`,
           eq(products.status, 'active'),
         ];
-        if (audience) {
-          if (audience === 'men') {
-            const mCond = or(eq(sql`lower(${products.gender})`, 'men'), eq(sql`lower(${products.gender})`, 'unisex'));
-            if (mCond) relaxedConditions.push(mCond);
-          } else if (audience === 'women') {
-            const wCond = or(eq(sql`lower(${products.gender})`, 'women'), eq(sql`lower(${products.gender})`, 'unisex'));
-            if (wCond) relaxedConditions.push(wCond);
-          }
-        }
-        if (matchedCategory) {
-          const cCond = or(
-            eq(products.categoryId, matchedCategory.id),
-            sql`exists (
-              select 1 from ${productCategories}
-              where ${productCategories.productId} = ${products.id} and ${productCategories.categoryId} = ${matchedCategory.id}
-            )`
-          );
-          if (cCond) relaxedConditions.push(cCond);
+        if (audience === 'men') {
+          relaxedConditions.push(or(sql`${products.gender} IS NULL`, eq(sql`lower(${products.gender})`, 'men'), eq(sql`lower(${products.gender})`, 'unisex'), eq(sql`lower(${products.gender})`, 'male')));
+        } else if (audience === 'women') {
+          relaxedConditions.push(or(sql`${products.gender} IS NULL`, eq(sql`lower(${products.gender})`, 'women'), eq(sql`lower(${products.gender})`, 'unisex'), eq(sql`lower(${products.gender})`, 'female')));
+        } else if (audience === 'kids') {
+          relaxedConditions.push(or(sql`${products.gender} IS NULL`, eq(sql`lower(${products.gender})`, 'kids'), eq(sql`lower(${products.gender})`, 'boys'), eq(sql`lower(${products.gender})`, 'girls')));
         }
 
         const fallbackDbProducts = await db
@@ -558,7 +567,7 @@ export async function resolveHierarchicalCatalog(
                   matchedCategory?.imageUrl ||
                     'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=800&auto=format&fit=crop',
                 ],
-            badges: ['FEATURED IN ' + categoryTitle.toUpperCase()],
+            badges: ['FEATURED COLLECTION'],
             inStock: true,
           }));
         }

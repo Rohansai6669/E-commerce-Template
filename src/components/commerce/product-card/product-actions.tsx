@@ -37,7 +37,7 @@ export function ProductCardActions({
     }
     e.preventDefault();
     if (isOutOfStock) {
-      toast.error('Product is out of stock.');
+      toast.error('Product is out of stock.', { id: `cart-${product.id}` });
       return;
     }
     addItem({
@@ -51,7 +51,7 @@ export function ProductCardActions({
       quantity: 1,
       stockLimit: product.quantity ?? 10,
     });
-    toast.success(`Added ${product.name} to cart!`);
+    toast.success(`Added ${product.name} to cart!`, { id: `cart-${product.id}` });
   };
 
   const [toggled, setToggled] = React.useState(isFavorited);
@@ -68,12 +68,18 @@ export function ProductCardActions({
       const result = await toggleWishlistAction(product.id);
       if (result.success) {
         setToggled(!!result.isSaved);
-        toast.success(result.isSaved ? 'Added to wishlist!' : 'Removed from wishlist.');
+        toast.success(result.isSaved ? 'Added to wishlist!' : 'Removed from wishlist.', {
+          id: `wishlist-${product.id}`,
+        });
       } else {
-        toast.error(result.error ?? 'Failed to update wishlist.');
+        toast.error(result.error ?? 'Failed to update wishlist.', {
+          id: `wishlist-${product.id}`,
+        });
       }
     } catch {
-      toast.error('Could not update wishlist.');
+      toast.error('Could not update wishlist.', {
+        id: `wishlist-${product.id}`,
+      });
     } finally {
       setIsToggling(false);
     }

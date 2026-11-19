@@ -21,11 +21,13 @@ import {
   Check,
   Sparkles,
   Info,
+  Heart,
 } from 'lucide-react';
 
 import { useCart } from '@/components/commerce/cart-context';
 import { toast } from 'sonner';
 import { toggleWishlistAction } from '@/app/actions/wishlist';
+import { formatPrice } from '@/core/pricing/format-price';
 
 export interface ProductInfoProps {
   product: ProductDetailModel;
@@ -38,11 +40,47 @@ export interface ProductInfoProps {
  */
 export function ProductInfo({ product, initialIsSaved = false }: ProductInfoProps) {
   const { addItem } = useCart();
+
+  const resolvedOptions = React.useMemo(() => {
+    if (product.options && product.options.length > 0) {
+      return product.options;
+    }
+    return [
+      {
+        id: 'opt-size',
+        name: 'Size',
+        values: [
+          { id: 'sz-xs', value: 'XS' },
+          { id: 'sz-s', value: 'S' },
+          { id: 'sz-m', value: 'M' },
+          { id: 'sz-l', value: 'L' },
+          { id: 'sz-xl', value: 'XL' },
+        ],
+      },
+    ];
+  }, [product.options]);
+
   const [selectedOptions, setSelectedOptions] = React.useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
-    product.options.forEach((opt) => {
+    const opts = (product.options && product.options.length > 0)
+      ? product.options
+      : [
+          {
+            id: 'opt-size',
+            name: 'Size',
+            values: [
+              { id: 'sz-xs', value: 'XS' },
+              { id: 'sz-s', value: 'S' },
+              { id: 'sz-m', value: 'M' },
+              { id: 'sz-l', value: 'L' },
+              { id: 'sz-xl', value: 'XL' },
+            ],
+          },
+        ];
+    opts.forEach((opt) => {
       if (opt.values.length > 0) {
-        initial[opt.name] = opt.values[0].value;
+        const preferred = opt.values.find((v) => v.value.toUpperCase() === 'M') || opt.values[0];
+        initial[opt.name] = preferred.value;
       }
     });
     return initial;
@@ -135,7 +173,9 @@ export function ProductInfo({ product, initialIsSaved = false }: ProductInfoProp
       quantity,
       stockLimit,
     });
-    toast.success(`Added ${product.name} to cart!`);
+    toast.success(`Added ${product.name} to cart!`, {
+      id: `cart-${product.id}`,
+    });
     setIsAdding(false);
   };
 
@@ -145,12 +185,18 @@ export function ProductInfo({ product, initialIsSaved = false }: ProductInfoProp
       const result = await toggleWishlistAction(product.id);
       if (result.success) {
         setIsFavorited(!!result.isSaved);
-        toast.success(result.isSaved ? 'Added to wishlist!' : 'Removed from wishlist.');
+        toast.success(result.isSaved ? 'Added to wishlist!' : 'Removed from wishlist.', {
+          id: `wishlist-${product.id}`,
+        });
       } else {
-        toast.error(result.error ?? 'Failed to update wishlist.');
+        toast.error(result.error ?? 'Failed to update wishlist.', {
+          id: `wishlist-${product.id}`,
+        });
       }
     } catch {
-      toast.error('Could not update wishlist.');
+      toast.error('Could not update wishlist.', {
+        id: `wishlist-${product.id}`,
+      });
     } finally {
       setIsToggling(false);
     }
@@ -194,152 +240,102 @@ export function ProductInfo({ product, initialIsSaved = false }: ProductInfoProp
   };
 
   return (
-    <Stack gap="6" className="w-full">
-      {/* 1. Variant selectors */}
-      {product.options.map((opt) => (
-        <Stack key={opt.id} gap="2">
+    <div className="flex flex-col gap-6 w-full select-none">
+      {/* 1. Variant selectors (Size / Color) matching reference PDP */}
+      {resolvedOptions.map((opt) => (
+        <div key={opt.id} className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <Heading
-              level={4}
-              className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-heading"
-            >
-              {opt.name}:{' '}
-              <span className="text-foreground font-semibold lowercase first-letter:uppercase">
-                {selectedOptions[opt.name] || 'Select'}
-              </span>
-            </Heading>
+            <span className="text-xs font-black uppercase tracking-wider text-neutral-950 dark:text-white font-heading">
+              {opt.name.toUpperCase()}
+            </span>
+            {opt.name.toLowerCase().includes('size') && (
+              <button
+                type="button"
+                onClick={() => toast.info('True to size tailored fit. Model is 6\'1" wearing size M.')}
+                className="text-xs font-bold uppercase tracking-wider text-neutral-500 hover:text-black dark:hover:text-white underline cursor-pointer"
+              >
+                SIZE GUIDE
+              </button>
+            )}
           </div>
           <div className="flex flex-wrap gap-2">
             {opt.values.map((val) => {
               const isActive = selectedOptions[opt.name] === val.value;
-              const isAvailable = isOptionCombinationAvailable(
-                product.variants,
-                opt.name,
-                val.value,
-                selectedOptions
-              );
+              const isAvailable = product.variants && product.variants.length > 0
+                ? isOptionCombinationAvailable(product.variants, opt.name, val.value, selectedOptions)
+                : true;
 
               return (
-                <Button
+                <button
                   key={val.id}
                   type="button"
-                  variant={isActive ? 'default' : 'outline'}
-                  size="sm"
                   onClick={() => handleOptionChange(opt.name, val.value)}
                   disabled={!isAvailable && !isActive}
-                  className={`h-9 px-4 font-semibold text-xs cursor-pointer border-border transition-all ${
+                  className={`h-11 min-w-[52px] px-4 font-heading font-bold text-xs uppercase tracking-wider transition-all cursor-pointer border rounded-none flex items-center justify-center ${
                     isActive
-                      ? 'shadow-sm ring-1 ring-primary'
-                      : 'hover:border-foreground/50'
+                      ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white font-black shadow-xs'
+                      : 'bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 border-neutral-300 dark:border-neutral-700 hover:border-black dark:hover:border-white'
                   }`}
                 >
                   {val.value}
-                </Button>
+                </button>
               );
             })}
           </div>
-        </Stack>
+        </div>
       ))}
 
-      {/* 2. Stock badges & warnings */}
-      <Stack gap="2">
-        <Heading
-          level={4}
-          className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-heading"
-        >
-          Availability Status
-        </Heading>
-        <div className="flex items-center gap-3">
-          <StockBadge quantity={stockLimit} />
-          {stockLimit > 0 && stockLimit <= 5 && (
-            <Text className="text-xs font-bold text-amber-600 dark:text-amber-400 animate-pulse flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5" />
-              Only {stockLimit} units left in stock!
-            </Text>
-          )}
+      {/* 2. Stock urgency banner (if low stock) */}
+      {stockLimit > 0 && stockLimit <= 5 && (
+        <div className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5 py-1">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Only {stockLimit} pieces remaining in stock</span>
         </div>
-      </Stack>
+      )}
 
-      {/* 3. QuantityStepper & Add to Cart button */}
-      <Stack gap="4">
-        <div className="flex flex-wrap items-center gap-3">
-          <QuantitySelector
-            value={quantity}
-            onValueChange={setQuantity}
-            min={1}
-            max={stockLimit}
-            disabled={isOutOfStock}
-          />
-          <div className="flex-1 min-w-[200px] flex items-center gap-2">
-            <AddToCartButton
-              isLoading={isAdding}
-              isOutOfStock={isOutOfStock}
-              onClick={handleAddToCart}
-              className="flex-1 cursor-pointer h-11 text-xs uppercase tracking-wider font-bold shadow-sm"
-            >
-              Add to Cart
-            </AddToCartButton>
-            <WishlistButton
-              isFavorited={isFavorited}
-              isLoading={isToggling}
-              onClick={handleWishlist}
-            />
-          </div>
-        </div>
-      </Stack>
-
-      {/* 4. Luxury Value Perks Grid with Direct Policy Links */}
-      <div className="grid grid-cols-2 gap-3 pt-2">
-        <Link
-          href="/shipping-policy"
-          className="flex items-start gap-2.5 p-3 rounded-lg border border-border/80 bg-muted/20 hover:bg-muted/40 transition-colors group cursor-pointer"
+      {/* 3. Primary CTA Action Row: Full-width ADD TO BAG • ₹... + Square Wishlist */}
+      <div className="flex items-center gap-3 pt-1">
+        <button
+          type="button"
+          disabled={isAdding || isOutOfStock}
+          onClick={handleAddToCart}
+          className="flex-1 h-13 bg-black hover:bg-neutral-900 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-black font-heading font-black text-xs sm:text-sm uppercase tracking-[0.2em] rounded-none shadow-md transition-all flex items-center justify-center cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Truck className="w-4 h-4 text-primary shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
-          <div className="min-w-0">
-            <p className="text-xs font-bold text-foreground flex items-center gap-1">
-              Free Shipping
-              <span className="text-[10px] text-primary underline underline-offset-2">Info</span>
-            </p>
-            <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">
-              Complimentary on orders over ₹1,999
-            </p>
-          </div>
-        </Link>
+          {isAdding ? 'ADDING TO BAG...' : isOutOfStock ? 'OUT OF STOCK' : `ADD TO BAG • ${formatPrice(currentPrice)}`}
+        </button>
 
-        <Link
-          href="/refund-policy"
-          className="flex items-start gap-2.5 p-3 rounded-lg border border-border/80 bg-muted/20 hover:bg-muted/40 transition-colors group cursor-pointer"
+        <button
+          type="button"
+          disabled={isToggling}
+          onClick={handleWishlist}
+          className="h-13 w-13 rounded-none border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 flex items-center justify-center text-neutral-800 dark:text-neutral-200 hover:text-black dark:hover:text-white hover:border-black dark:hover:border-white transition-all cursor-pointer shrink-0 shadow-xs"
+          aria-label="Add to Wishlist"
         >
-          <RotateCcw className="w-4 h-4 text-primary shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
-          <div className="min-w-0">
-            <p className="text-xs font-bold text-foreground flex items-center gap-1">
-              7-Day Returns
-              <span className="text-[10px] text-primary underline underline-offset-2">Policy</span>
-            </p>
-            <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">
-              Hassle-free doorstep exchanges & refund
-            </p>
-          </div>
-        </Link>
+          <Heart className={`h-5 w-5 transition-colors ${isFavorited ? 'fill-black dark:fill-white text-black dark:text-white' : ''}`} />
+        </button>
+      </div>
 
-        <div className="flex items-start gap-2.5 p-3 rounded-lg border border-border/80 bg-muted/20">
-          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-          <div className="min-w-0">
-            <p className="text-xs font-bold text-foreground">100% Authentic</p>
-            <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">
-              Verified original {product.brandName || 'Lexido'} atelier craft
-            </p>
-          </div>
+      {/* 4. Three-Column Value Perks Bar (Free Ship, Returns, Authentic) */}
+      <div className="grid grid-cols-3 border border-neutral-200 dark:border-neutral-800 rounded-none text-center divide-x divide-neutral-200 dark:divide-neutral-800 py-3.5 px-2 bg-neutral-50/50 dark:bg-neutral-900/40 select-none">
+        <div className="flex flex-col items-center justify-center gap-1.5 px-1">
+          <Truck className="w-4 h-4 text-neutral-800 dark:text-neutral-200" />
+          <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-neutral-900 dark:text-neutral-100 font-mono">
+            FREE SHIP ₹2K+
+          </span>
         </div>
 
-        <div className="flex items-start gap-2.5 p-3 rounded-lg border border-border/80 bg-muted/20">
-          <Banknote className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-          <div className="min-w-0">
-            <p className="text-xs font-bold text-foreground">Cash on Delivery</p>
-            <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">
-              Available across all major PIN codes
-            </p>
-          </div>
+        <div className="flex flex-col items-center justify-center gap-1.5 px-1">
+          <RotateCcw className="w-4 h-4 text-neutral-800 dark:text-neutral-200" />
+          <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-neutral-900 dark:text-neutral-100 font-mono">
+            15-DAY RETURNS
+          </span>
+        </div>
+
+        <div className="flex flex-col items-center justify-center gap-1.5 px-1">
+          <ShieldCheck className="w-4 h-4 text-neutral-800 dark:text-neutral-200" />
+          <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-neutral-900 dark:text-neutral-100 font-mono">
+            AUTHENTIC
+          </span>
         </div>
       </div>
 
@@ -523,7 +519,7 @@ export function ProductInfo({ product, initialIsSaved = false }: ProductInfoProp
           )}
         </div>
       </div>
-    </Stack>
+    </div>
   );
 }
 

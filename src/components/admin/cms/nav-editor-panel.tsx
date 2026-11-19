@@ -1000,7 +1000,8 @@ export function NavEditorPanel({
                       onChange={(e) => updateField('logoFont', e.target.value as any)}
                       className="w-full text-xs font-bold px-2.5 py-2 rounded-lg border border-slate-300 bg-white text-slate-900"
                     >
-                      <option value="heading">Heading Display (Outfit / Geist)</option>
+                      <option value="clash">Clash Display (LEXIDO Official)</option>
+                      <option value="heading">Heading Display (Clash / Grotesque)</option>
                       <option value="sans">Clean Modern Sans</option>
                       <option value="serif">Luxury Editorial Serif</option>
                       <option value="mono">Technical Monospace</option>

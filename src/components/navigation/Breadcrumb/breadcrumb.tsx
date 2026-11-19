@@ -16,6 +16,9 @@ export interface BreadcrumbProps extends React.HTMLAttributes<HTMLElement> {
  * Accessible Breadcrumb navigation trace.
  */
 export function Breadcrumb({ items, className, ...props }: BreadcrumbProps) {
+  // Eliminate redundant leading 'Home' element since the Home icon already links to '/'
+  const filteredItems = (items || []).filter((item, idx) => !(idx === 0 && item.label.trim().toLowerCase() === 'home'));
+
   return (
     <nav
       aria-label="Breadcrumb"
@@ -27,8 +30,8 @@ export function Breadcrumb({ items, className, ...props }: BreadcrumbProps) {
         <span className="sr-only">Go to Home</span>
       </Link>
 
-      {items.map((item, idx) => {
-        const isLast = idx === items.length - 1;
+      {filteredItems.map((item, idx) => {
+        const isLast = idx === filteredItems.length - 1;
 
         return (
           <React.Fragment key={idx}>

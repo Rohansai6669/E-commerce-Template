@@ -69,13 +69,22 @@ interface CmsProductGridProps {
 export function CmsProductGrid({ config, products }: CmsProductGridProps) {
   if (!config.enabled) return null;
 
-  const gridColsClass = {
-    2: 'grid-cols-1 sm:grid-cols-2',
-    3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
-    4: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
-    5: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5',
-    6: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6',
-  }[config.columnsDesktop || 4];
+  const mobileCols = config.columnsMobile === 2 ? 'grid-cols-2' : 'grid-cols-1';
+  const tabletCols = Number(config.columnsTablet) === 3
+    ? 'md:grid-cols-3'
+    : config.columnsMobile === 1
+    ? 'md:grid-cols-2'
+    : 'sm:grid-cols-2';
+  const desktopCols = (config.columnsDesktop || 4) === 6
+    ? 'lg:grid-cols-6'
+    : (config.columnsDesktop || 4) === 5
+    ? 'lg:grid-cols-5'
+    : (config.columnsDesktop || 4) === 3
+    ? 'lg:grid-cols-3'
+    : (config.columnsDesktop || 4) === 2
+    ? 'lg:grid-cols-2'
+    : 'lg:grid-cols-4';
+  const gridColsClass = `${mobileCols} ${tabletCols} ${desktopCols}`;
 
   const gapClass = {
     small: 'gap-4',

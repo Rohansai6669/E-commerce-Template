@@ -20,14 +20,22 @@ export function ProductGridSection({
   const filtered = filterCatalogProducts(baseProducts, config);
   const displayProducts = filtered.length > 0 ? filtered : baseProducts;
   const cols = Number(config.columnsDesktop) || 4;
-
-  const colClasses: Record<number, string> = {
-    2: 'grid-cols-1 sm:grid-cols-2',
-    3: 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3',
-    4: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
-    5: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5',
-    6: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6',
-  };
+  const mobileCols = config.columnsMobile === 2 ? 'grid-cols-2' : 'grid-cols-1';
+  const tabletCols = Number(config.columnsTablet) === 3
+    ? 'md:grid-cols-3'
+    : config.columnsMobile === 1
+    ? 'md:grid-cols-2'
+    : 'sm:grid-cols-2';
+  const desktopCols = cols === 6
+    ? 'lg:grid-cols-6'
+    : cols === 5
+    ? 'lg:grid-cols-5'
+    : cols === 4
+    ? 'lg:grid-cols-4'
+    : cols === 3
+    ? 'lg:grid-cols-3'
+    : 'lg:grid-cols-2';
+  const gridColsClass = `${mobileCols} ${tabletCols} ${desktopCols}`;
 
   return (
     <SectionShell config={config}>
@@ -38,7 +46,7 @@ export function ProductGridSection({
         alignment={config.headingAlignment || config.contentAlignment || 'center'}
       />
       {displayProducts.length > 0 ? (
-        <div className={`grid ${colClasses[cols] || colClasses[4]} gap-6`}>
+        <div className={`grid ${gridColsClass} gap-6`}>
           {displayProducts.slice(0, config.maxProducts || 8).map((product) => (
             <ConfigurableProductCard
               key={product.id}

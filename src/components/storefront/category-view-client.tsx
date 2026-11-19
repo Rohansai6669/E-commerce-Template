@@ -45,7 +45,7 @@ const PRICE_PRESETS = [
 function isAllTag(tag: string | null | undefined): boolean {
   if (!tag) return true;
   const lower = tag.trim().toLowerCase();
-  return lower === 'all' || lower.startsWith('all ') || lower.startsWith('all-');
+  return lower === 'all' || lower.startsWith('all ') || lower.startsWith('all-') || lower.startsWith('all_');
 }
 
 export function CategoryViewClient({
@@ -530,9 +530,9 @@ export function CategoryViewClient({
         {displayedItems.length === 0 ? (
           <EmptyState
             icon="Package"
-            title={initialItems.length === 0 ? 'No Products in this Category' : `No Products Found for "${activeTag}"`}
+            title={initialItems.length === 0 || isAllTag(activeTag) ? 'No Products in this Category' : `No Products Found for "${activeTag}"`}
             description={
-              initialItems.length === 0
+              initialItems.length === 0 || isAllTag(activeTag)
                 ? 'New silhouettes for this collection are arriving soon. Browse our complete catalog in the meantime.'
                 : `None of the items in this view match your active filters. Try selecting another tag or clearing the filter.`
             }

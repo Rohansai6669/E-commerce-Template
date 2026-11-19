@@ -72,7 +72,7 @@ export function CmsHero({ config }: { config: HeroConfig }) {
       ? 'justify-end'
       : 'justify-center';
 
-  const renderDescriptionLayout = (descLayout: DescriptionLayout = 'boxed-glass') => {
+  const renderDescriptionLayout = (descLayout: DescriptionLayout = 'transparent') => {
     if (!activeSlide.description && !activeSlide.subTitle) return null;
 
     if (descLayout === 'boxed-glass') {

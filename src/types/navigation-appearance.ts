@@ -10,7 +10,7 @@ export interface NavLinkItem {
 
 export type HeaderHeightOption = 'compact' | 'standard' | 'luxury' | 'custom';
 export type HeaderWidthOption = 'boxed' | 'wide' | 'full';
-export type LogoFontOption = 'heading' | 'sans' | 'serif' | 'mono';
+export type LogoFontOption = 'clash' | 'heading' | 'sans' | 'serif' | 'mono';
 export type LogoSizeOption = 'sm' | 'base' | 'lg' | 'xl' | '2xl' | '3xl';
 export type LogoWeightOption = 'normal' | 'medium' | 'semibold' | 'bold' | 'extrabold' | 'black';
 export type LogoSpacingOption = 'normal' | 'wide' | 'widest' | 'ultra-wide';

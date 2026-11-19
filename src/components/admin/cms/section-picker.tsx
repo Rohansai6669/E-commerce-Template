@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { SECTION_REGISTRY, RegistryEntry } from '@/lib/cms/registry';
 import { SectionCategory } from '@/types/cms';
 import { Search, X, Plus, Sparkles, Layers, Image as ImageIcon, LayoutGrid, Megaphone, Clock, ShoppingBag } from 'lucide-react';
@@ -144,8 +145,13 @@ function MiniComponentPreview({ category, type }: { category: SectionCategory; t
 }
 
 export function SectionPicker({ onSelectSection, onClose }: SectionPickerProps) {
+  const [mounted, setMounted] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState<SectionCategory | 'all'>('all');
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const entries = Object.values(SECTION_REGISTRY);
 
@@ -162,8 +168,8 @@ export function SectionPicker({ onSelectSection, onClose }: SectionPickerProps) 
     return matchesCategory && matchesSearch;
   });
 
-  return (
-    <div className="fixed inset-0 z-[2000] bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-2 sm:p-6 select-none">
+  const modalContent = (
+    <div className="fixed inset-0 z-[99999] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-6 select-none">
       <div className="bg-white w-full max-w-5xl h-[95vh] sm:max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-300">
         {/* Header Bar */}
         <div className="p-3.5 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-950 text-white shrink-0">
@@ -255,4 +261,6 @@ export function SectionPicker({ onSelectSection, onClose }: SectionPickerProps) 
       </div>
     </div>
   );
+
+  return mounted ? createPortal(modalContent, document.body) : null;
 }

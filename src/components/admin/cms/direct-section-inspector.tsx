@@ -586,18 +586,73 @@ export function DirectSectionInspector({
                       </select>
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-700">Description Style</label>
-                      <select
-                        value={heroConfig.descriptionLayout || 'boxed-glass'}
-                        onChange={(e) => onUpdateField('descriptionLayout', e.target.value)}
-                        className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900"
-                      >
-                        <option value="boxed-glass">Boxed Glass</option>
-                        <option value="badge-pill">Rounded Pill</option>
-                        <option value="quote">Quote</option>
-                        <option value="default">Default</option>
-                      </select>
+                    <div className="col-span-2 space-y-1.5 pt-2 border-t border-slate-100">
+                      <label className="text-[11px] font-bold text-slate-800 flex items-center justify-between">
+                        <span>Tagline / Subtitle Background</span>
+                        <span className="text-[10px] font-semibold text-indigo-600 uppercase">
+                          {heroConfig.descriptionLayout === 'boxed-glass'
+                            ? 'Badge Box'
+                            : heroConfig.descriptionLayout === 'badge-pill'
+                            ? 'Rounded Pill'
+                            : heroConfig.descriptionLayout === 'quote'
+                            ? 'Quote'
+                            : 'Transparent'}
+                        </span>
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => onUpdateField('descriptionLayout', 'transparent')}
+                          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col gap-0.5 ${
+                            heroConfig.descriptionLayout === 'transparent' || heroConfig.descriptionLayout === 'default'
+                              ? 'bg-slate-950 text-white border-slate-950 shadow-xs'
+                              : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                          }`}
+                        >
+                          <span className="text-xs font-bold">Transparent</span>
+                          <span className={`text-[10px] ${heroConfig.descriptionLayout === 'transparent' || heroConfig.descriptionLayout === 'default' ? 'text-slate-300' : 'text-slate-500'}`}>
+                            No overlay box
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onUpdateField('descriptionLayout', 'boxed-glass')}
+                          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col gap-0.5 ${
+                            heroConfig.descriptionLayout === 'boxed-glass'
+                              ? 'bg-slate-950 text-white border-slate-950 shadow-xs'
+                              : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                          }`}
+                        >
+                          <span className="text-xs font-bold">Badge Box</span>
+                          <span className={`text-[10px] ${heroConfig.descriptionLayout === 'boxed-glass' ? 'text-slate-300' : 'text-slate-500'}`}>
+                            Glass background & border
+                          </span>
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => onUpdateField('descriptionLayout', 'badge-pill')}
+                          className={`px-2.5 py-1.5 text-[11px] font-semibold rounded-lg border text-center transition-all cursor-pointer ${
+                            heroConfig.descriptionLayout === 'badge-pill'
+                              ? 'bg-slate-900 text-white border-slate-900'
+                              : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          Pill Badge
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onUpdateField('descriptionLayout', 'quote')}
+                          className={`px-2.5 py-1.5 text-[11px] font-semibold rounded-lg border text-center transition-all cursor-pointer ${
+                            heroConfig.descriptionLayout === 'quote'
+                              ? 'bg-slate-900 text-white border-slate-900'
+                              : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          Quote Accent
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

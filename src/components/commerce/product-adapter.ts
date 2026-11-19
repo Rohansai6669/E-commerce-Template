@@ -14,6 +14,9 @@ export interface UnifiedProduct {
   quantity?: number;
   isNew?: boolean;
   imageUrl?: string;
+  fit?: string;
+  brand?: string;
+  colors?: string[];
   attributes?: Array<{ name: string; value: string }>;
 }
 
@@ -94,6 +97,12 @@ export function normalizeProduct(product: any): UnifiedProduct {
     quantity,
     isNew: Boolean(product.isNew),
     imageUrl: images[0],
+    fit: product.fit || undefined,
+    brand: product.brand || product.brandName || product.vendor || undefined,
+    colors: Array.isArray(product.colors)
+      ? product.colors
+      : product.options?.find((o: any) => o.name?.toLowerCase() === 'color')?.values?.map((v: any) => typeof v === 'string' ? v : v.value) ||
+        (product.attributes?.find((a: any) => a.name?.toLowerCase() === 'color')?.value ? [product.attributes.find((a: any) => a.name?.toLowerCase() === 'color')?.value] : undefined),
     attributes: product.attributes || [],
   };
 }

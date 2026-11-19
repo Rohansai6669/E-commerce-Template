@@ -153,6 +153,25 @@ export function ThemeEditorPanel({ tokens, onTokenChange, onSelectPreset }: Them
         </h4>
 
         <div className="space-y-3">
+          {/* Operating Theme Mode & Device Dark Mode Protection */}
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+            <label className="text-xs font-bold text-slate-900 block">
+              Storefront Theme Mode &amp; Device Protection
+            </label>
+            <select
+              value={tokens.themeMode || 'light'}
+              onChange={(e) => onTokenChange('themeMode', e.target.value)}
+              className="w-full text-xs font-semibold px-2.5 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:border-slate-950 focus:ring-1 focus:ring-slate-950 focus:outline-none cursor-pointer"
+            >
+              <option value="light">☀️ Strict Light (Recommended: Visitor device dark mode is ignored)</option>
+              <option value="dark">🌙 Strict Dark (Always Dark across all devices)</option>
+              <option value="system">💻 System Adaptive (Follow visitor device theme)</option>
+            </select>
+            <p className="text-[10.5px] text-slate-500 leading-snug">
+              Ensures font colors and page backgrounds strictly follow your admin settings and are not distorted or inverted by user device dark mode.
+            </p>
+          </div>
+
           {[
             { key: 'primaryColor', label: 'Primary Brand Color' },
             { key: 'secondaryColor', label: 'Secondary Color' },

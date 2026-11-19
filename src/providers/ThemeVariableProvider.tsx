@@ -20,9 +20,30 @@ export function ThemeVariableProvider({ children }: { children: React.ReactNode 
 
     const root = document.documentElement;
 
+    // 0. Theme Mode Enforcement (Strictly Admin-Controlled; ignores visitor device OS theme unless explicitly set to 'system')
+    const themeMode = t.themeMode || 'light';
+    if (themeMode === 'dark') {
+      root.classList.add('dark');
+      root.style.colorScheme = 'dark';
+    } else if (themeMode === 'system') {
+      // Admin explicitly allowed system adaptive mode
+      const prefersDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (prefersDark) {
+        root.classList.add('dark');
+        root.style.colorScheme = 'dark';
+      } else {
+        root.classList.remove('dark');
+        root.style.colorScheme = 'light';
+      }
+    } else {
+      // Strict Light Mode (Default) - Visitor phone/desktop dark mode is 100% ignored
+      root.classList.remove('dark');
+      root.style.colorScheme = 'light';
+    }
+
     // Apply Global Typography Tokens
-    const headingFontVal = t.headingFont || t.primaryFont || "'Clash Display', sans-serif";
-    const bodyFontVal = t.paragraphFont || t.primaryFont || "'Plus Jakarta Sans', sans-serif";
+    const headingFontVal = t.headingFont || t.primaryFont || "'Clash Display', 'Helvetica Now Display', sans-serif";
+    const bodyFontVal = t.paragraphFont || t.primaryFont || "'Helvetica Now Display', 'Plus Jakarta Sans', sans-serif";
     const accentFontVal = t.accentFont || "'Cinzel', serif";
     const monoFontVal = t.monoFont || "'JetBrains Mono', monospace";
 
@@ -43,6 +64,12 @@ export function ThemeVariableProvider({ children }: { children: React.ReactNode 
 
     if (document.body) {
       document.body.style.fontFamily = bodyFontVal;
+      if (t.backgroundColor) {
+        document.body.style.backgroundColor = t.backgroundColor;
+      }
+      if (t.textColor) {
+        document.body.style.color = t.textColor;
+      }
     }
     const trackingMap: Record<string, string> = {
       tighter: '-0.05em',
@@ -270,6 +297,26 @@ export function ThemeVariableProvider({ children }: { children: React.ReactNode 
     window.addEventListener('cms-tokens-updated', handleUpdate);
     return () => window.removeEventListener('cms-tokens-updated', handleUpdate);
   }, [loadTokens]);
+
+  // Listen to OS device theme changes ONLY if admin explicitly enabled 'system' mode
+  useEffect(() => {
+    if (typeof window === 'undefined' || tokens.themeMode !== 'system') return;
+
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e: MediaQueryListEvent) => {
+      const root = document.documentElement;
+      if (e.matches) {
+        root.classList.add('dark');
+        root.style.colorScheme = 'dark';
+      } else {
+        root.classList.remove('dark');
+        root.style.colorScheme = 'light';
+      }
+    };
+
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, [tokens.themeMode]);
 
   const updateTokens = (newTokens: SiteDesignTokens) => {
     setTokens(newTokens);

@@ -1,19 +1,30 @@
 'use client';
 
-import { Toaster } from 'sonner';
+import * as React from 'react';
+import { Toaster as SonnerToaster } from 'sonner';
+import 'sonner/dist/styles.css';
 
+/**
+ * Global Luxury E-Commerce Toast Provider
+ * Replaces intrusive popups and unstyled alert boxes with
+ * refined, floating, modern luxury pill toast notifications.
+ */
 export function ToastProvider() {
   return (
-    <Toaster
-      position="top-right"
+    <SonnerToaster
+      position="bottom-right"
+      offset={24}
+      gap={8}
+      visibleToasts={3}
+      duration={2600}
+      closeButton={false}
+      theme="dark"
       toastOptions={{
-        style: {
-          background: 'var(--background)',
-          color: 'var(--foreground)',
-          border: '1px solid var(--border)',
-        },
+        unstyled: false,
+        className: 'lexido-luxury-toast',
       }}
     />
   );
 }
+
 export default ToastProvider;

@@ -84,7 +84,9 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
       quantity,
       stockLimit: product.quantity ?? 10,
     });
-    toast.success(`Added ${quantity} x ${product.name} (${selectedSize}) to cart!`);
+    toast.success(`Added ${quantity} x ${product.name} (${selectedSize}) to cart!`, {
+      id: `cart-${product.id}`,
+    });
     setIsAdding(false);
     onClose();
   };
@@ -95,12 +97,18 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
       const res = await toggleWishlistAction(product.id);
       if (res.success) {
         setIsWishlisted(!!res.isSaved);
-        toast.success(res.isSaved ? 'Added to wishlist!' : 'Removed from wishlist.');
+        toast.success(res.isSaved ? 'Added to wishlist!' : 'Removed from wishlist.', {
+          id: `wishlist-${product.id}`,
+        });
       } else {
-        toast.error(res.error || 'Failed to update wishlist.');
+        toast.error(res.error || 'Failed to update wishlist.', {
+          id: `wishlist-${product.id}`,
+        });
       }
     } catch {
-      toast.error('Could not update wishlist.');
+      toast.error('Could not update wishlist.', {
+        id: `wishlist-${product.id}`,
+      });
     } finally {
       setIsTogglingWishlist(false);
     }

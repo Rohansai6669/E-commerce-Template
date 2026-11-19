@@ -3,111 +3,96 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Heading, Text } from '@/components/ui/typography';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Icon } from '@/components/ui/icon';
 
 /**
  * State-driven Email Verification Status Page.
+ * Follows minimal luxury editorial aesthetic.
  */
 export default function VerifyEmailPage() {
+  return (
+    <React.Suspense fallback={<div className="min-h-[70vh] flex items-center justify-center" />}>
+      <VerifyEmailContent />
+    </React.Suspense>
+  );
+}
+
+function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const email = searchParams.get('email') || '';
   const status = searchParams.get('status') || 'pending'; // 'pending' | 'verified' | 'expired' | 'invalid'
 
   return (
-    <div className="min-h-[60vh] flex items-center justify-center px-4 py-12 bg-neutral-50/50 dark:bg-neutral-950/20">
-      <Card className="w-full max-w-md border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 shadow-xl rounded-none">
-        <CardHeader className="text-center pb-2 flex flex-col items-center">
-          {status === 'pending' && (
-            <>
-              <div className="h-12 w-12 rounded-full bg-neutral-100 text-neutral-900 flex items-center justify-center mb-4">
-                <Icon name="Mail" className="h-6 w-6" />
-              </div>
-              <h1 className="text-2xl font-black font-heading uppercase text-neutral-950 dark:text-white tracking-tight">
-                Check Your Inbox
-              </h1>
-            </>
-          )}
+    <div className="w-full flex-1 flex flex-col items-center justify-center py-16 sm:py-24 px-4 select-none">
+      <div className="w-full max-w-[420px] sm:max-w-[460px] flex flex-col items-center text-center">
+        {/* LEXIDO Wordmark Logo */}
+        <Link
+          href="/"
+          className="font-clash font-black uppercase text-2xl sm:text-[30px] tracking-[0.04em] text-neutral-950 dark:text-white mb-10 sm:mb-12 hover:opacity-85 transition-opacity"
+        >
+          LEXIDO
+        </Link>
 
-          {status === 'verified' && (
-            <>
-              <div className="h-12 w-12 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center mb-4">
-                <Icon name="CheckCircle" className="h-6 w-6" />
-              </div>
-              <h1 className="text-2xl font-black font-heading uppercase text-neutral-950 dark:text-white tracking-tight">
-                Account Verified!
-              </h1>
-            </>
-          )}
+        {status === 'pending' && (
+          <>
+            <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-black font-clash uppercase tracking-tight text-neutral-950 dark:text-white leading-none mb-4">
+              CHECK YOUR INBOX
+            </h1>
+            <p className="text-xs sm:text-[13px] text-neutral-500 dark:text-neutral-400 font-sans tracking-normal font-normal max-w-[340px] mb-8 leading-relaxed">
+              We dispatched an authentication confirmation link to{' '}
+              <strong className="text-neutral-900 dark:text-white font-semibold">{email || 'your email'}</strong>. Please open the link to activate your profile.
+            </p>
+          </>
+        )}
 
-          {status === 'expired' && (
-            <>
-              <div className="h-12 w-12 rounded-full bg-rose-100 text-rose-800 flex items-center justify-center mb-4">
-                <Icon name="AlertTriangle" className="h-6 w-6" />
-              </div>
-              <h1 className="text-2xl font-black font-heading uppercase text-neutral-950 dark:text-white tracking-tight">
-                Verification Expired
-              </h1>
-            </>
-          )}
+        {status === 'verified' && (
+          <>
+            <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-black font-clash uppercase tracking-tight text-neutral-950 dark:text-white leading-none mb-4">
+              ACCOUNT VERIFIED
+            </h1>
+            <p className="text-xs sm:text-[13px] text-neutral-500 dark:text-neutral-400 font-sans tracking-normal font-normal max-w-[340px] mb-8 leading-relaxed">
+              Your profile is now verified and active. You can now access your orders, wishlist, and exclusive drops.
+            </p>
+            <Link
+              href="/account"
+              className="w-full h-12 bg-black hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 text-white font-bold text-[11px] sm:text-xs uppercase tracking-[0.2em] flex items-center justify-center transition-all cursor-pointer rounded-none"
+            >
+              PROCEED TO ACCOUNT
+            </Link>
+          </>
+        )}
 
-          {status === 'invalid' && (
-            <>
-              <div className="h-12 w-12 rounded-full bg-rose-100 text-rose-800 flex items-center justify-center mb-4">
-                <Icon name="XCircle" className="h-6 w-6" />
-              </div>
-              <h1 className="text-2xl font-black font-heading uppercase text-neutral-950 dark:text-white tracking-tight">
-                Invalid Verification Link
-              </h1>
-            </>
-          )}
-        </CardHeader>
-        <CardContent className="pt-4 text-center">
-          {status === 'pending' && (
-            <div className="flex flex-col gap-3">
-              <p className="text-sm text-neutral-600 leading-relaxed">
-                We have sent an activation link to <span className="font-semibold text-neutral-950">{email || 'your email'}</span>.
-              </p>
-              <p className="text-xs text-neutral-400 leading-normal">
-                Please click the link inside that message to activate and verify your customer profile.
-              </p>
-            </div>
-          )}
+        {status === 'expired' && (
+          <>
+            <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-black font-clash uppercase tracking-tight text-neutral-950 dark:text-white leading-none mb-4">
+              LINK EXPIRED
+            </h1>
+            <p className="text-xs sm:text-[13px] text-neutral-500 dark:text-neutral-400 font-sans tracking-normal font-normal max-w-[340px] mb-8 leading-relaxed">
+              The verification token has expired. Please sign in to request a fresh activation link.
+            </p>
+          </>
+        )}
 
-          {status === 'verified' && (
-            <div className="flex flex-col gap-3">
-              <p className="text-sm text-neutral-600 leading-relaxed">
-                Your email address has been successfully verified. You can now access your cart and account details.
-              </p>
-            </div>
-          )}
+        {status === 'invalid' && (
+          <>
+            <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-black font-clash uppercase tracking-tight text-neutral-950 dark:text-white leading-none mb-4">
+              INVALID LINK
+            </h1>
+            <p className="text-xs sm:text-[13px] text-neutral-500 dark:text-neutral-400 font-sans tracking-normal font-normal max-w-[340px] mb-8 leading-relaxed">
+              We could not authenticate this verification code. Please check that you clicked the full URL or request a new code.
+            </p>
+          </>
+        )}
 
-          {status === 'expired' && (
-            <div className="flex flex-col gap-3">
-              <p className="text-sm text-neutral-600 leading-relaxed">
-                This verification link has expired. Please sign in to request a fresh confirmation link.
-              </p>
-            </div>
-          )}
-
-          {status === 'invalid' && (
-            <div className="flex flex-col gap-3">
-              <p className="text-sm text-neutral-600 leading-relaxed">
-                The verification token is invalid or has already been used.
-              </p>
-            </div>
-          )}
-        </CardContent>
-        <CardFooter className="flex justify-center border-t border-neutral-100 dark:border-neutral-800 pt-4">
+        <div className="w-full flex flex-col gap-3 mt-4">
           <Link
-            href={status === 'verified' ? '/account' : '/login'}
-            className="px-6 py-2.5 bg-black hover:bg-neutral-800 text-white rounded-none text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors"
+            href="/login"
+            className="w-full h-12 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 hover:border-black dark:hover:border-white text-neutral-900 dark:text-white font-bold text-[11px] sm:text-xs uppercase tracking-[0.2em] flex items-center justify-center transition-all cursor-pointer rounded-none"
           >
-            {status === 'verified' ? 'Go to My Account' : 'Back to Login'}
+            RETURN TO SIGN IN
           </Link>
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

@@ -53,12 +53,18 @@ export function ProductCardImage({
       const res = await toggleWishlistAction(product.id);
       if (res.success) {
         setIsWishlisted(!!res.isSaved);
-        toast.success(res.isSaved ? 'Added to wishlist!' : 'Removed from wishlist.');
+        toast.success(res.isSaved ? 'Added to wishlist!' : 'Removed from wishlist.', {
+          id: `wishlist-${product.id}`,
+        });
       } else {
-        toast.error(res.error || 'Failed to update wishlist.');
+        toast.error(res.error || 'Failed to update wishlist.', {
+          id: `wishlist-${product.id}`,
+        });
       }
     } catch {
-      toast.error('Could not update wishlist.');
+      toast.error('Could not update wishlist.', {
+        id: `wishlist-${product.id}`,
+      });
     } finally {
       setIsTogglingWishlist(false);
     }
@@ -68,7 +74,9 @@ export function ProductCardImage({
     e.preventDefault();
     e.stopPropagation();
     if (!product.inStock) {
-      toast.error('Product is out of stock.');
+      toast.error('Product is out of stock.', {
+        id: `cart-${product.id}`,
+      });
       return;
     }
     setIsAddingToCart(true);
@@ -83,7 +91,9 @@ export function ProductCardImage({
       quantity: 1,
       stockLimit: product.quantity ?? 10,
     });
-    toast.success(`Added ${product.name} to cart!`);
+    toast.success(`Added ${product.name} to cart!`, {
+      id: `cart-${product.id}`,
+    });
     setIsAddingToCart(false);
   };
 

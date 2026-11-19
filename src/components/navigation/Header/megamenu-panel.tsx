@@ -330,15 +330,15 @@ const PADDING_Y_MAP: Record<string, string> = {
 };
 
 const CATEGORY_GAP_MAP: Record<string, string> = {
-  compact: 'space-y-2',
-  standard: 'space-y-3.5',
-  relaxed: 'space-y-5',
+  compact: 'space-y-3',
+  standard: 'space-y-4 sm:space-y-5 lg:space-y-6',
+  relaxed: 'space-y-6 sm:space-y-7',
 };
 
 const SUBITEM_GAP_MAP: Record<string, string> = {
-  compact: 'space-y-2',
-  standard: 'space-y-3',
-  relaxed: 'space-y-4.5',
+  compact: 'space-y-2.5',
+  standard: 'space-y-3.5 sm:space-y-4',
+  relaxed: 'space-y-4.5 sm:space-y-5',
 };
 
 interface MegamenuPanelProps {
@@ -513,190 +513,180 @@ export function MegamenuPanel({ category, onClose, appearance, headerHeight }: M
           : { minHeight: `${minHeight}px` }),
       }}
     >
-      <div
-        className={`w-full flex-1 min-h-0 max-w-[1680px] mx-auto px-6 sm:px-10 lg:px-14 ${paddingYClass} grid grid-cols-12 gap-8 h-full`}
-      >
-        {/* Left Column: Vertical Category List */}
-        <div
-          className={`col-span-3 flex flex-col ${categoryGapClass} pr-6 h-full overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-neutral-800`}
-          style={{ borderRight: `1px solid ${borderColor}` }}
-        >
-          {collections.map((col) => {
-            const isActive = col.id === activeCollection?.id;
-            const hoverClass = getCategoryHoverClasses(isActive);
-
-            if (tabStyle === 'pill') {
-              return (
-                <button
-                  type="button"
-                  suppressHydrationWarning
-                  key={col.id}
-                  onMouseEnter={() => setActiveCollectionId(col.id)}
-                  onClick={() => setActiveCollectionId(col.id)}
-                  style={{
-                    backgroundColor: isActive ? activeTabColor : 'transparent',
-                    color: isActive ? '#ffffff' : mutedColor,
-                  }}
-                  className={`text-left text-lg sm:text-xl tracking-tight cursor-pointer px-4 py-2 rounded-xl uppercase transition-all ${
-                    isActive ? 'font-bold' : 'font-medium hover:text-slate-900 dark:hover:text-white'
-                  } ${hoverClass}`}
-                >
-                  {col.name}
-                </button>
-              );
-            }
-
-            if (tabStyle === 'underline') {
-              return (
-                <button
-                  type="button"
-                  suppressHydrationWarning
-                  key={col.id}
-                  onMouseEnter={() => setActiveCollectionId(col.id)}
-                  onClick={() => setActiveCollectionId(col.id)}
-                  style={{
-                    color: isActive ? activeTabColor : mutedColor,
-                    borderBottom: isActive ? `3px solid ${activeTabColor}` : '3px solid transparent',
-                  }}
-                  className={`text-left text-2xl sm:text-3xl tracking-tight cursor-pointer pb-1 uppercase inline-block self-start transition-colors ${
-                    isActive
-                      ? 'font-extrabold text-slate-950 dark:text-white'
-                      : 'font-light text-neutral-400 hover:text-slate-950 dark:hover:text-white'
-                  } ${hoverClass}`}
-                >
-                  {col.name}
-                </button>
-              );
-            }
-
-            if (tabStyle === 'bold-only') {
-              return (
-                <button
-                  type="button"
-                  suppressHydrationWarning
-                  key={col.id}
-                  onMouseEnter={() => setActiveCollectionId(col.id)}
-                  onClick={() => setActiveCollectionId(col.id)}
-                  style={{
-                    color: isActive ? activeTabColor : mutedColor,
-                  }}
-                  className={`text-left text-2xl sm:text-3xl tracking-tight cursor-pointer uppercase transition-colors ${
-                    isActive
-                      ? 'font-black text-slate-950 dark:text-white'
-                      : 'font-light text-neutral-400 hover:text-slate-950 dark:hover:text-white'
-                  } ${hoverClass}`}
-                >
-                  {col.name}
-                </button>
-              );
-            }
-
-            // Default 'border-left'
-            return (
-              <button
-                type="button"
-                suppressHydrationWarning
-                key={col.id}
-                onMouseEnter={() => setActiveCollectionId(col.id)}
-                onClick={() => setActiveCollectionId(col.id)}
-                style={{
-                  color: isActive ? activeTabColor : mutedColor,
-                  borderLeft: isActive ? `3px solid ${activeTabColor}` : '3px solid transparent',
-                  paddingLeft: isActive ? '0.85rem' : '0.85rem',
-                }}
-                className={`text-left text-2xl sm:text-3xl tracking-tight cursor-pointer transition-colors ${
-                  isActive
-                    ? 'font-black uppercase text-slate-950 dark:text-white'
-                    : 'font-light uppercase text-neutral-400 hover:text-slate-950 dark:hover:text-white'
-                } ${hoverClass}`}
-              >
-                {col.name}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Middle Column: Subitem Grid */}
-        <div
-          className={`${
-            showPromo ? 'col-span-4' : 'col-span-9'
-          } px-6 h-full overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-neutral-800 flex flex-col`}
-        >
-          <p
-            className="text-[11px] sm:text-xs font-mono font-bold tracking-[0.25em] uppercase mb-6 shrink-0"
-            style={{ color: mutedColor }}
+      <div className="w-full flex-1 flex flex-row min-h-0 h-full overflow-hidden">
+        {/* Left & Middle Column Container */}
+        <div className="flex-1 min-w-0 flex flex-row h-full overflow-y-auto no-scrollbar py-8 sm:py-10 lg:py-12 pl-8 sm:pl-12 lg:pl-16 pr-6 sm:pr-8">
+          {/* Left Column: Vertical Category List */}
+          <div
+            className={`w-[240px] sm:w-[280px] lg:w-[320px] shrink-0 flex flex-col ${categoryGapClass} pr-6 h-full overflow-y-auto no-scrollbar`}
           >
-            {activeCollection?.name}
-          </p>
+            {collections.map((col) => {
+              const isActive = col.id === activeCollection?.id;
+              const hoverClass = getCategoryHoverClasses(isActive);
 
-          {hasSplitColumns ? (
-            <div className={`grid ${showPromo ? 'grid-cols-2' : 'grid-cols-3'} gap-x-8 gap-y-4`}>
-              <div className={`flex flex-col ${subitemGapClass}`}>
-                {col1Items.map((sub, idx) => (
-                  <Link
-                    key={idx}
-                    href={sub.href}
-                    onClick={onClose}
-                    style={{ color: textColor }}
-                    className={`text-sm font-medium ${getSubitemHoverClasses()} line-clamp-1`}
+              if (tabStyle === 'pill') {
+                return (
+                  <button
+                    type="button"
+                    suppressHydrationWarning
+                    key={col.id}
+                    onMouseEnter={() => setActiveCollectionId(col.id)}
+                    onClick={() => setActiveCollectionId(col.id)}
+                    style={{
+                      backgroundColor: isActive ? activeTabColor : 'transparent',
+                      color: isActive ? '#ffffff' : mutedColor,
+                    }}
+                    className={`text-left text-lg sm:text-xl tracking-tight cursor-pointer px-4 py-2 rounded-xl uppercase transition-all ${
+                      isActive ? 'font-bold' : 'font-medium hover:text-slate-900 dark:hover:text-white'
+                    } ${hoverClass}`}
                   >
-                    <span>{sub.label}</span>
-                    {config.subitemHoverEffect === 'arrow' && (
-                      <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover/sub:opacity-100 transition-opacity shrink-0" />
-                    )}
-                  </Link>
-                ))}
-              </div>
-              <div className={`flex flex-col ${subitemGapClass}`}>
-                {col2Items.map((sub, idx) => (
-                  <Link
-                    key={idx}
-                    href={sub.href}
-                    onClick={onClose}
-                    style={{ color: textColor }}
-                    className={`text-sm font-medium ${getSubitemHoverClasses()} line-clamp-1`}
+                    {col.name}
+                  </button>
+                );
+              }
+
+              if (tabStyle === 'underline') {
+                return (
+                  <button
+                    type="button"
+                    suppressHydrationWarning
+                    key={col.id}
+                    onMouseEnter={() => setActiveCollectionId(col.id)}
+                    onClick={() => setActiveCollectionId(col.id)}
+                    style={{
+                      color: isActive ? activeTabColor : mutedColor,
+                      borderBottom: isActive ? `2px solid ${activeTabColor}` : '2px solid transparent',
+                    }}
+                    className={`text-left text-fluid-nav text-[22px] sm:text-[26px] lg:text-[30px] font-nav-title tracking-tight cursor-pointer pb-1 uppercase inline-block self-start transition-colors ${
+                      isActive
+                        ? 'font-medium text-slate-950 dark:text-white'
+                        : 'font-light text-neutral-400 dark:text-neutral-500 hover:text-slate-950 dark:hover:text-white'
+                    } ${hoverClass}`}
                   >
-                    <span>{sub.label}</span>
-                    {config.subitemHoverEffect === 'arrow' && (
-                      <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover/sub:opacity-100 transition-opacity shrink-0" />
-                    )}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className={`grid ${showPromo ? 'grid-cols-2' : 'grid-cols-3'} gap-x-8 gap-y-4`}>
-              {(activeCollection?.subitems || []).map((sub, idx) => (
-                <Link
-                  key={idx}
-                  href={sub.href}
-                  onClick={onClose}
-                  style={{ color: textColor }}
-                  className={`text-sm font-medium ${getSubitemHoverClasses()} line-clamp-1`}
+                    {col.name}
+                  </button>
+                );
+              }
+
+              if (tabStyle === 'bold-only') {
+                return (
+                  <button
+                    type="button"
+                    suppressHydrationWarning
+                    key={col.id}
+                    onMouseEnter={() => setActiveCollectionId(col.id)}
+                    onClick={() => setActiveCollectionId(col.id)}
+                    style={{
+                      color: isActive ? activeTabColor : mutedColor,
+                    }}
+                    className={`text-left text-fluid-nav text-[22px] sm:text-[26px] lg:text-[30px] font-nav-title tracking-tight cursor-pointer uppercase transition-colors ${
+                      isActive
+                        ? 'font-medium text-slate-950 dark:text-white'
+                        : 'font-light text-neutral-400 dark:text-neutral-500 hover:text-slate-950 dark:hover:text-white'
+                    } ${hoverClass}`}
+                  >
+                    {col.name}
+                  </button>
+                );
+              }
+
+              // Default 'border-left'
+              return (
+                <button
+                  type="button"
+                  suppressHydrationWarning
+                  key={col.id}
+                  onMouseEnter={() => setActiveCollectionId(col.id)}
+                  onClick={() => setActiveCollectionId(col.id)}
+                  style={{
+                    color: isActive ? activeTabColor : mutedColor,
+                    borderLeft: isActive ? `2px solid ${activeTabColor}` : '2px solid transparent',
+                    paddingLeft: '0.75rem',
+                    marginLeft: '-0.75rem',
+                  }}
+                  className={`text-left text-fluid-nav text-[22px] sm:text-[26px] lg:text-[30px] font-nav-title tracking-tight cursor-pointer transition-colors ${
+                    isActive
+                      ? 'font-medium uppercase text-slate-950 dark:text-white'
+                      : 'font-light uppercase text-neutral-400 dark:text-neutral-500 hover:text-slate-950 dark:hover:text-white'
+                  } ${hoverClass}`}
                 >
-                  <span>{sub.label}</span>
-                  {config.subitemHoverEffect === 'arrow' && (
-                    <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover/sub:opacity-100 transition-opacity shrink-0" />
-                  )}
-                </Link>
-              ))}
-            </div>
-          )}
+                  {col.name}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Middle Column: Subitem Grid */}
+          <div className="flex-1 min-w-0 pl-10 sm:pl-16 lg:pl-20 pr-6 flex flex-col h-full overflow-y-auto no-scrollbar">
+            <p
+              className="text-[10px] sm:text-[11px] font-normal tracking-[0.25em] text-neutral-400 dark:text-neutral-500 uppercase mb-7 sm:mb-8 shrink-0"
+            >
+              {activeCollection?.name}
+            </p>
+
+            {hasSplitColumns ? (
+              <div className="grid grid-cols-2 gap-x-12 sm:gap-x-16 lg:gap-x-20">
+                <div className={`flex flex-col ${subitemGapClass}`}>
+                  {col1Items.map((sub, idx) => (
+                    <Link
+                      key={idx}
+                      href={sub.href}
+                      onClick={onClose}
+                      style={{ color: textColor }}
+                      className={`text-[13px] sm:text-[14px] font-normal text-neutral-800 dark:text-neutral-200 hover:text-black dark:hover:text-white transition-colors duration-150 py-0.5 ${getSubitemHoverClasses()} line-clamp-1`}
+                    >
+                      <span>{sub.label}</span>
+                      {config.subitemHoverEffect === 'arrow' && (
+                        <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover/sub:opacity-100 transition-opacity shrink-0" />
+                      )}
+                    </Link>
+                  ))}
+                </div>
+                <div className={`flex flex-col ${subitemGapClass}`}>
+                  {col2Items.map((sub, idx) => (
+                    <Link
+                      key={idx}
+                      href={sub.href}
+                      onClick={onClose}
+                      style={{ color: textColor }}
+                      className={`text-[13px] sm:text-[14px] font-normal text-neutral-800 dark:text-neutral-200 hover:text-black dark:hover:text-white transition-colors duration-150 py-0.5 ${getSubitemHoverClasses()} line-clamp-1`}
+                    >
+                      <span>{sub.label}</span>
+                      {config.subitemHoverEffect === 'arrow' && (
+                        <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover/sub:opacity-100 transition-opacity shrink-0" />
+                      )}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-x-12 sm:gap-x-16 lg:gap-x-20 gap-y-4 sm:gap-y-4.5">
+                {(activeCollection?.subitems || []).map((sub, idx) => (
+                  <Link
+                    key={idx}
+                    href={sub.href}
+                    onClick={onClose}
+                    style={{ color: textColor }}
+                    className={`text-[13px] sm:text-[14px] font-normal text-neutral-800 dark:text-neutral-200 hover:text-black dark:hover:text-white transition-colors duration-150 py-0.5 ${getSubitemHoverClasses()} line-clamp-1`}
+                  >
+                    <span>{sub.label}</span>
+                    {config.subitemHoverEffect === 'arrow' && (
+                      <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover/sub:opacity-100 transition-opacity shrink-0" />
+                    )}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right Column: Featured Editorial Promotional Card */}
         {showPromo && (
-          <div className="col-span-5 pl-4 h-full flex flex-col pb-2">
+          <div className="w-[36%] sm:w-[38%] lg:w-[40%] xl:w-[42%] shrink-0 h-full relative overflow-hidden flex flex-col">
             <Link
               href={promoHref}
               onClick={onClose}
-              style={{
-                border: `1px solid ${borderColor}`,
-                ...(isFullViewport ? {} : { height: `${promoCardHeight}px` }),
-              }}
-              className={`group relative ${
-                isFullViewport ? 'flex-1 h-full min-h-[460px]' : ''
-              } block w-full ${promoRadiusClass} ${promoShadowClass} overflow-hidden`}
+              className="group relative h-full w-full block overflow-hidden"
             >
               <Image
                 key={promoImage}
@@ -710,19 +700,19 @@ export function MegamenuPanel({ category, onClose, appearance, headerHeight }: M
                 sizes="(max-width: 1200px) 45vw, 40vw"
               />
               <div
-                className={`absolute inset-0 flex flex-col ${alignmentClass} p-8 text-white transition-opacity duration-300`}
+                className={`absolute inset-0 flex flex-col ${alignmentClass} p-8 sm:p-10 lg:p-12 text-white transition-opacity duration-300`}
                 style={{
                   background: gradientBackground,
                 }}
               >
-                <span className="text-[11px] font-extrabold tracking-[0.25em] text-white/80 uppercase mb-2">
+                <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.25em] text-white/90 uppercase mb-1.5">
                   {promoEyebrow}
                 </span>
-                <h4 className="text-3xl sm:text-4xl lg:text-5xl font-black font-heading uppercase tracking-tight text-white mb-3 leading-none">
+                <h4 className="text-3xl sm:text-4xl lg:text-5xl font-black font-clash uppercase tracking-tight text-white mb-3 leading-none">
                   {promoTitle}
                 </h4>
-                <div className="flex items-center text-xs sm:text-sm font-bold text-white uppercase tracking-wider group-hover:translate-x-2 transition-transform">
-                  {promoCta} <ArrowRight className="w-4 h-4 ml-2" />
+                <div className="flex items-center text-[11px] sm:text-xs font-bold text-white uppercase tracking-[0.2em] group-hover:translate-x-1.5 transition-transform">
+                  {promoCta} <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
                 </div>
               </div>
             </Link>

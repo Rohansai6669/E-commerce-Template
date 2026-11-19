@@ -19,6 +19,7 @@ export const THEME_PRESETS: Record<string, ThemePreset> = {
     previewPrimary: '#f8fafc',
     previewAccent: '#d97706',
     tokens: {
+      themeMode: 'dark',
       primaryFont: 'var(--font-geist-sans)',
       headingFont: 'var(--font-geist-sans)',
       primaryColor: '#f8fafc',
@@ -46,6 +47,7 @@ export const THEME_PRESETS: Record<string, ThemePreset> = {
     previewPrimary: '#064e3b',
     previewAccent: '#059669',
     tokens: {
+      themeMode: 'light',
       primaryFont: 'var(--font-geist-sans)',
       headingFont: 'var(--font-geist-sans)',
       primaryColor: '#064e3b',
@@ -73,6 +75,7 @@ export const THEME_PRESETS: Record<string, ThemePreset> = {
     previewPrimary: '#a855f7',
     previewAccent: '#06b6d4',
     tokens: {
+      themeMode: 'dark',
       primaryFont: 'var(--font-geist-sans)',
       headingFont: 'var(--font-geist-sans)',
       primaryColor: '#a855f7',
@@ -100,6 +103,7 @@ export const THEME_PRESETS: Record<string, ThemePreset> = {
     previewPrimary: '#431407',
     previewAccent: '#e11d48',
     tokens: {
+      themeMode: 'light',
       primaryFont: 'var(--font-geist-sans)',
       headingFont: 'var(--font-geist-sans)',
       primaryColor: '#431407',
@@ -127,6 +131,7 @@ export const THEME_PRESETS: Record<string, ThemePreset> = {
     previewPrimary: '#3f6212',
     previewAccent: '#c2410c',
     tokens: {
+      themeMode: 'light',
       primaryFont: 'var(--font-geist-sans)',
       headingFont: 'var(--font-geist-sans)',
       primaryColor: '#3f6212',
@@ -154,6 +159,7 @@ export const THEME_PRESETS: Record<string, ThemePreset> = {
     previewPrimary: '#1e3a8a',
     previewAccent: '#0284c7',
     tokens: {
+      themeMode: 'light',
       primaryFont: 'var(--font-geist-sans)',
       headingFont: 'var(--font-geist-sans)',
       primaryColor: '#1e3a8a',
@@ -181,6 +187,7 @@ export const THEME_PRESETS: Record<string, ThemePreset> = {
     previewPrimary: '#000000',
     previewAccent: '#000000',
     tokens: {
+      themeMode: 'light',
       primaryFont: "'Plus Jakarta Sans', sans-serif",
       headingFont: "'Space Grotesk', sans-serif",
       headingTracking: 'tighter',

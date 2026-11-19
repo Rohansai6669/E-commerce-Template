@@ -208,6 +208,7 @@ export type HeroLayoutMode =
   | 'CARDS_OVERLAY';
 
 export type DescriptionLayout =
+  | 'transparent'
   | 'default'
   | 'boxed-glass'
   | 'badge-pill'
@@ -423,6 +424,7 @@ export interface AnnouncementBarConfig extends BaseSectionConfig {
 }
 
 export interface SiteDesignTokens {
+  themeMode?: 'light' | 'dark' | 'system';
   primaryFont: string;
   headingFont: string;
   paragraphFont?: string;

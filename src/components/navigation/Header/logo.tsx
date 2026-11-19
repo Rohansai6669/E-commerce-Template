@@ -5,7 +5,7 @@ import Link from 'next/link';
 export interface LogoProps {
   type?: 'text' | 'image';
   text?: string;
-  font?: 'heading' | 'sans' | 'serif' | 'mono';
+  font?: 'heading' | 'sans' | 'serif' | 'mono' | 'clash';
   fontSize?: 'sm' | 'base' | 'lg' | 'xl' | '2xl' | '3xl';
   fontWeight?: 'normal' | 'medium' | 'semibold' | 'bold' | 'extrabold' | 'black';
   letterSpacing?: 'normal' | 'wide' | 'widest' | 'ultra-wide';
@@ -16,7 +16,8 @@ export interface LogoProps {
 }
 
 const FONT_MAP = {
-  heading: 'font-heading',
+  clash: 'font-clash',
+  heading: 'font-clash',
   sans: 'font-sans',
   serif: 'font-serif',
   mono: 'font-mono',
@@ -75,15 +76,20 @@ export function Logo({
     );
   }
 
-  const fontClass = FONT_MAP[font] || 'font-heading';
+  const fontClass = FONT_MAP[font] || 'font-clash';
   const sizeClass = SIZE_MAP[fontSize] || 'text-2xl';
   const weightClass = WEIGHT_MAP[fontWeight] || 'font-black';
   const spacingClass = SPACING_MAP[letterSpacing] || 'tracking-[0.2em]';
 
+  const isClashOrHeading = font === 'clash' || font === 'heading' || !font;
+
   return (
     <Link href="/" className={`flex items-center gap-2 select-none group cursor-pointer ${className}`}>
       <span
-        style={color ? { color } : undefined}
+        style={{
+          ...(isClashOrHeading ? { fontFamily: "'Clash Display', 'ClashDisplay-Variable', sans-serif" } : {}),
+          ...(color ? { color } : {}),
+        }}
         className={`${fontClass} ${sizeClass} ${weightClass} ${spacingClass} uppercase ${
           color ? '' : 'text-foreground'
         } transition-colors leading-none`}

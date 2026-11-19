@@ -359,6 +359,20 @@ export function CategoryCardsEditor({
               <option value={6}>6 Columns (Compact Grid)</option>
             </select>
           </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-slate-700 block">
+              Mobile Columns (Smaller Screens)
+            </label>
+            <select
+              value={cfg.columnsMobile || 1}
+              onChange={(e) => onChange('columnsMobile', Number(e.target.value))}
+              className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 font-medium cursor-pointer"
+            >
+              <option value={1}>1 Column (Recommended - Clean & Punchy)</option>
+              <option value={2}>2 Columns (Compact Grid)</option>
+            </select>
+          </div>
         </div>
 
         {/* Hover Effects & Shadows */}

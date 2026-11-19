@@ -37,7 +37,7 @@ export function FeaturedCategories({ categories }: FeaturedCategoriesProps) {
             </Text>
           </Stack>
 
-          <Grid cols="2" colsSm="2" colsMd="4" gap="4">
+          <Grid cols="1" colsSm="1" colsMd="2" colsLg="4" gap="4">
             {categories.map((cat) => (
               <Link
                 key={cat.id}

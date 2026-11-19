@@ -41,7 +41,7 @@ export function HeroSection({ config }: { config: HeroConfig }) {
     config.desktopImage ||
     'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop';
   const overlayOpacity = slide.overlayOpacity ?? config.overlayOpacity ?? 0.35;
-  const descriptionLayout = config.descriptionLayout || (slide as any).descriptionLayout || 'boxed-glass';
+  const descriptionLayout = config.descriptionLayout || (slide as any).descriptionLayout || 'transparent';
 
   const heightMap: Record<string, string> = {
     auto: 'h-auto py-20 sm:py-28 min-h-[400px]',

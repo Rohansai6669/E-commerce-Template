@@ -336,7 +336,47 @@ export default function AdminCmsPage() {
             </div>
           </div>
 
-          {/* 3. Border Radius & Elevation */}
+          {/* 3. Theme Mode & Device Dark Mode Control */}
+          <div className="space-y-4 pt-6 border-t border-border">
+            <div>
+              <h3 className="text-base font-extrabold uppercase tracking-tight text-foreground font-heading">
+                Storefront Theme Mode & Device Adaptive Control
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Control whether visitor operating system themes (iOS, Android, macOS, Windows Dark Mode) affect website colors.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl border border-border bg-card space-y-2">
+              <label className="text-xs font-semibold text-foreground block">
+                Operating Theme Mode
+              </label>
+              <select
+                value={themeTokens.themeMode || 'light'}
+                onChange={(e) => handleColorChange('themeMode', e.target.value)}
+                className="w-full rounded-xl border border-input bg-background p-2.5 text-xs text-foreground cursor-pointer"
+              >
+                <option value="light">
+                  ☀️ Strict Light Mode (Recommended: Device dark mode is ignored, strictly uses your selected colors)
+                </option>
+                <option value="dark">
+                  🌙 Strict Dark Mode (Always Dark: Device light mode is ignored, strictly uses dark palette)
+                </option>
+                <option value="system">
+                  💻 Device Adaptive (Automatically switches if visitor has dark mode enabled on their device)
+                </option>
+              </select>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                {themeTokens.themeMode === 'system'
+                  ? 'Storefront will automatically adapt to the visitor phone or computer dark/light mode.'
+                  : themeTokens.themeMode === 'dark'
+                  ? 'Storefront is permanently locked in Dark Mode across all devices.'
+                  : 'Storefront is strictly locked in Light Mode. Visitors phone or computer dark mode will NOT alter or invert any website colors or fonts.'}
+              </p>
+            </div>
+          </div>
+
+          {/* 4. Border Radius & Elevation */}
           <div className="space-y-4 pt-6 border-t border-border">
             <div>
               <h3 className="text-base font-extrabold uppercase tracking-tight text-foreground font-heading">

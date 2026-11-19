@@ -6,6 +6,7 @@ import { SupabaseProvider } from "@/providers/SupabaseProvider";
 import { ThemeVariableProvider } from "@/providers/ThemeVariableProvider";
 import { CartProvider } from "@/components/commerce/cart-context";
 import { NetworkStatusIndicator } from "@/components/common/network-status-indicator";
+import { ToastProvider } from "@/providers/ToastProvider";
 import * as React from 'react';
 
 const geistSans = Geist({
@@ -21,6 +22,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Ecommerce Platform",
   description: "Production-ready custom e-commerce storefront template",
+  colorScheme: "light",
 };
 
 export default function RootLayout({
@@ -39,7 +41,6 @@ export default function RootLayout({
           attribute="class"
           defaultTheme="light"
           enableSystem={false}
-          forcedTheme="light"
           disableTransitionOnChange
         >
           <ThemeVariableProvider>
@@ -49,6 +50,7 @@ export default function RootLayout({
                   {children}
                 </React.Suspense>
                 <NetworkStatusIndicator />
+                <ToastProvider />
               </CartProvider>
             </SupabaseProvider>
           </ThemeVariableProvider>
