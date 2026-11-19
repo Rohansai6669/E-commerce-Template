@@ -53,31 +53,15 @@ export async function getCmsPageConfigServer(slug: string = '/'): Promise<PageCo
 }
 
 /**
- * Saves PageConfig both to Database and server filesystem for complete DB sync.
+ * Saves PageConfig both to Database (Authoritative) and server filesystem (Dev mirror).
  */
 export async function saveCmsPageConfigAction(slug: string, config: PageConfig): Promise<boolean> {
   try {
-    // 1. Try Saving to Disk Storage safely (works in local dev, gracefully skips on read-only serverless/Vercel)
-    try {
-      let existingData: Record<string, PageConfig> = {};
-      if (fs.existsSync(CMS_STORAGE_PATH)) {
-        try {
-          const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
-          existingData = JSON.parse(raw);
-        } catch (e) {
-          existingData = {};
-        }
-      }
-      existingData[slug] = config;
-      fs.writeFileSync(CMS_STORAGE_PATH, JSON.stringify(existingData, null, 2), 'utf-8');
-    } catch (fsErr) {
-      console.warn('saveCmsPageConfigAction disk write skipped (read-only filesystem):', fsErr);
-    }
+    const dbKey = `page_config_${slug}`;
 
-    // 2. Authoritative Sync to PostgreSQL Database
-    try {
-      if (db) {
-        const dbKey = `page_config_${slug}`;
+    // 1. Authoritative Primary Sync to PostgreSQL Database
+    if (db) {
+      try {
         await db
           .insert(cmsSiteSettings)
           .values({
@@ -91,9 +75,28 @@ export async function saveCmsPageConfigAction(slug: string, config: PageConfig):
               updatedAt: new Date(),
             },
           });
+      } catch (dbErr) {
+        console.warn('saveCmsPageConfigAction DB sync write warning:', dbErr);
       }
-    } catch (dbErr) {
-      console.warn('saveCmsPageConfigAction DB sync write warning:', dbErr);
+    }
+
+    // 2. Local dev filesystem mirror (only in local development, skipped on serverless / Vercel)
+    if (!process.env.VERCEL && process.env.NODE_ENV !== 'production') {
+      try {
+        let existingData: Record<string, PageConfig> = {};
+        if (fs.existsSync(CMS_STORAGE_PATH)) {
+          try {
+            const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
+            existingData = JSON.parse(raw);
+          } catch {
+            existingData = {};
+          }
+        }
+        existingData[slug] = config;
+        fs.writeFileSync(CMS_STORAGE_PATH, JSON.stringify(existingData, null, 2), 'utf-8');
+      } catch (fsErr) {
+        console.warn('saveCmsPageConfigAction disk mirror skipped:', fsErr);
+      }
     }
 
     // 3. Flush in-memory cache and revalidate storefront route
@@ -112,24 +115,7 @@ export async function saveCmsPageConfigAction(slug: string, config: PageConfig):
  */
 export async function saveSiteDesignTokensAction(tokens: SiteDesignTokens): Promise<boolean> {
   try {
-    // 1. Safe Disk Storage
-    try {
-      let existingData: Record<string, any> = {};
-      if (fs.existsSync(CMS_STORAGE_PATH)) {
-        try {
-          const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
-          existingData = JSON.parse(raw);
-        } catch (e) {
-          existingData = {};
-        }
-      }
-      existingData.site_design_tokens = tokens;
-      fs.writeFileSync(CMS_STORAGE_PATH, JSON.stringify(existingData, null, 2), 'utf-8');
-    } catch (fsErr) {
-      console.warn('saveSiteDesignTokensAction disk write skipped (read-only filesystem):', fsErr);
-    }
-
-    // 2. Authoritative Sync to Database
+    // 1. Authoritative Primary Sync to Database
     if (db) {
       try {
         await db
@@ -150,6 +136,25 @@ export async function saveSiteDesignTokensAction(tokens: SiteDesignTokens): Prom
       }
     }
 
+    // 2. Local dev filesystem mirror
+    if (!process.env.VERCEL && process.env.NODE_ENV !== 'production') {
+      try {
+        let existingData: Record<string, any> = {};
+        if (fs.existsSync(CMS_STORAGE_PATH)) {
+          try {
+            const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
+            existingData = JSON.parse(raw);
+          } catch {
+            existingData = {};
+          }
+        }
+        existingData.site_design_tokens = tokens;
+        fs.writeFileSync(CMS_STORAGE_PATH, JSON.stringify(existingData, null, 2), 'utf-8');
+      } catch (fsErr) {
+        console.warn('saveSiteDesignTokensAction disk mirror skipped:', fsErr);
+      }
+    }
+
     invalidateCmsCache('design_tokens');
     revalidatePath('/');
     revalidatePath('/', 'layout');
@@ -165,26 +170,9 @@ export async function saveSiteDesignTokensAction(tokens: SiteDesignTokens): Prom
  */
 export async function saveNavAppearanceConfigAction(config: NavAppearanceConfig): Promise<boolean> {
   try {
-    // 1. Safe Disk Storage
-    try {
-      let existingData: Record<string, any> = {};
-      if (fs.existsSync(CMS_STORAGE_PATH)) {
-        try {
-          const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
-          existingData = JSON.parse(raw);
-        } catch (e) {
-          existingData = {};
-        }
-      }
-      existingData.nav_appearance = config;
-      fs.writeFileSync(CMS_STORAGE_PATH, JSON.stringify(existingData, null, 2), 'utf-8');
-    } catch (fsErr) {
-      console.warn('saveNavAppearanceConfigAction disk write skipped (read-only filesystem):', fsErr);
-    }
-
-    // 2. Authoritative Sync to Database
-    try {
-      if (db) {
+    // 1. Authoritative Primary Sync to Database
+    if (db) {
+      try {
         await db
           .insert(cmsSiteSettings)
           .values({
@@ -198,9 +186,28 @@ export async function saveNavAppearanceConfigAction(config: NavAppearanceConfig)
               updatedAt: new Date(),
             },
           });
+      } catch (dbErr) {
+        console.warn('saveNavAppearanceConfigAction DB sync write warning:', dbErr);
       }
-    } catch (dbErr) {
-      console.warn('saveNavAppearanceConfigAction DB sync write warning:', dbErr);
+    }
+
+    // 2. Local dev filesystem mirror
+    if (!process.env.VERCEL && process.env.NODE_ENV !== 'production') {
+      try {
+        let existingData: Record<string, any> = {};
+        if (fs.existsSync(CMS_STORAGE_PATH)) {
+          try {
+            const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
+            existingData = JSON.parse(raw);
+          } catch {
+            existingData = {};
+          }
+        }
+        existingData.nav_appearance = config;
+        fs.writeFileSync(CMS_STORAGE_PATH, JSON.stringify(existingData, null, 2), 'utf-8');
+      } catch (fsErr) {
+        console.warn('saveNavAppearanceConfigAction disk mirror skipped:', fsErr);
+      }
     }
 
     invalidateCmsCache('nav_appearance');
@@ -265,26 +272,9 @@ export async function getNavAppearanceConfigServer(): Promise<NavAppearanceConfi
  */
 export async function saveFooterConfigAction(config: FooterConfig): Promise<boolean> {
   try {
-    // 1. Safe Disk Storage
-    try {
-      let existingData: Record<string, any> = {};
-      if (fs.existsSync(CMS_STORAGE_PATH)) {
-        try {
-          const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
-          existingData = JSON.parse(raw);
-        } catch (e) {
-          existingData = {};
-        }
-      }
-      existingData.footer_config = config;
-      fs.writeFileSync(CMS_STORAGE_PATH, JSON.stringify(existingData, null, 2), 'utf-8');
-    } catch (fsErr) {
-      console.warn('saveFooterConfigAction disk write skipped (read-only filesystem):', fsErr);
-    }
-
-    // 2. Authoritative Sync to Database
-    try {
-      if (db) {
+    // 1. Authoritative Primary Sync to Database
+    if (db) {
+      try {
         await db
           .insert(cmsSiteSettings)
           .values({
@@ -298,9 +288,28 @@ export async function saveFooterConfigAction(config: FooterConfig): Promise<bool
               updatedAt: new Date(),
             },
           });
+      } catch (dbErr) {
+        console.warn('saveFooterConfigAction DB sync write warning:', dbErr);
       }
-    } catch (dbErr) {
-      console.warn('saveFooterConfigAction DB sync write warning:', dbErr);
+    }
+
+    // 2. Local dev filesystem mirror
+    if (!process.env.VERCEL && process.env.NODE_ENV !== 'production') {
+      try {
+        let existingData: Record<string, any> = {};
+        if (fs.existsSync(CMS_STORAGE_PATH)) {
+          try {
+            const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
+            existingData = JSON.parse(raw);
+          } catch {
+            existingData = {};
+          }
+        }
+        existingData.footer_config = config;
+        fs.writeFileSync(CMS_STORAGE_PATH, JSON.stringify(existingData, null, 2), 'utf-8');
+      } catch (fsErr) {
+        console.warn('saveFooterConfigAction disk mirror skipped:', fsErr);
+      }
     }
 
     invalidateCmsCache('footer_config');

@@ -19,6 +19,25 @@ export function invalidateCmsCache(key?: string) {
 }
 
 /**
+ * Self-healing helper: If a CMS setting is retrieved from bundled JSON fallback,
+ * asynchronously seed it into PostgreSQL so the database becomes the permanent source of truth.
+ */
+async function ensureDbCmsKey(key: string, value: unknown) {
+  if (!db || !value) return;
+  try {
+    await db
+      .insert(cmsSiteSettings)
+      .values({
+        key,
+        value: value as any,
+      })
+      .onConflictDoNothing();
+  } catch {
+    // Non-blocking self-healing
+  }
+}
+
+/**
  * Direct server-side read of persistent PageConfig from DB or disk.
  * Fast in-memory cached to eliminate remote DB latency on storefront renders.
  */
@@ -31,6 +50,7 @@ export async function getCmsPageConfigServer(slug: string = '/'): Promise<PageCo
   }
 
   let result: PageConfig | null = null;
+  let fromDb = false;
 
   try {
     if (db) {
@@ -42,6 +62,7 @@ export async function getCmsPageConfigServer(slug: string = '/'): Promise<PageCo
 
       if (res && res.value) {
         result = res.value as PageConfig;
+        fromDb = true;
       }
     }
   } catch (dbErr) {
@@ -49,16 +70,19 @@ export async function getCmsPageConfigServer(slug: string = '/'): Promise<PageCo
   }
 
   if (!result) {
-    try {
-      if (fs.existsSync(CMS_STORAGE_PATH)) {
-        const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
-        const data = JSON.parse(raw);
-        if (data[slug]) {
-          result = data[slug] as PageConfig;
+    // Only attempt disk read in non-serverless dev
+    if (!process.env.VERCEL) {
+      try {
+        if (fs.existsSync(CMS_STORAGE_PATH)) {
+          const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
+          const data = JSON.parse(raw);
+          if (data[slug]) {
+            result = data[slug] as PageConfig;
+          }
         }
+      } catch (err) {
+        console.error('getCmsPageConfigServer storage error:', err);
       }
-    } catch (err) {
-      console.error('getCmsPageConfigServer storage error:', err);
     }
     if (!result && (bundledCmsStorage as Record<string, any>)[slug]) {
       result = (bundledCmsStorage as Record<string, any>)[slug] as PageConfig;
@@ -67,6 +91,12 @@ export async function getCmsPageConfigServer(slug: string = '/'): Promise<PageCo
 
   const finalConfig = result || defaultHomepageConfig;
   cmsMemoryCache.set(cacheKey, { value: finalConfig, expiresAt: Date.now() + CMS_CACHE_TTL });
+
+  // Self-heal DB if it wasn't populated
+  if (!fromDb) {
+    ensureDbCmsKey(cacheKey, finalConfig);
+  }
+
   return finalConfig;
 }
 
@@ -82,6 +112,7 @@ export async function getSiteDesignTokensServer(): Promise<SiteDesignTokens> {
   }
 
   let result: SiteDesignTokens | null = null;
+  let fromDb = false;
 
   try {
     if (db) {
@@ -93,6 +124,7 @@ export async function getSiteDesignTokensServer(): Promise<SiteDesignTokens> {
 
       if (res && res.value) {
         result = res.value as SiteDesignTokens;
+        fromDb = true;
       }
     }
   } catch (err) {
@@ -100,16 +132,18 @@ export async function getSiteDesignTokensServer(): Promise<SiteDesignTokens> {
   }
 
   if (!result) {
-    try {
-      if (fs.existsSync(CMS_STORAGE_PATH)) {
-        const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
-        const data = JSON.parse(raw);
-        if (data.site_design_tokens) {
-          result = data.site_design_tokens as SiteDesignTokens;
+    if (!process.env.VERCEL) {
+      try {
+        if (fs.existsSync(CMS_STORAGE_PATH)) {
+          const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
+          const data = JSON.parse(raw);
+          if (data.site_design_tokens) {
+            result = data.site_design_tokens as SiteDesignTokens;
+          }
         }
+      } catch (err) {
+        console.error('getSiteDesignTokensServer storage error:', err);
       }
-    } catch (err) {
-      console.error('getSiteDesignTokensServer storage error:', err);
     }
     if (!result && (bundledCmsStorage as any).site_design_tokens) {
       result = (bundledCmsStorage as any).site_design_tokens as SiteDesignTokens;
@@ -122,6 +156,9 @@ export async function getSiteDesignTokensServer(): Promise<SiteDesignTokens> {
   };
 
   cmsMemoryCache.set(cacheKey, { value: finalTokens, expiresAt: Date.now() + CMS_CACHE_TTL });
+  if (!fromDb) {
+    ensureDbCmsKey(cacheKey, finalTokens);
+  }
   return finalTokens;
 }
 
@@ -137,6 +174,7 @@ export async function getNavAppearanceConfigServer(): Promise<NavAppearanceConfi
   }
 
   let result: Partial<NavAppearanceConfig> | null = null;
+  let fromDb = false;
 
   try {
     if (db) {
@@ -148,6 +186,7 @@ export async function getNavAppearanceConfigServer(): Promise<NavAppearanceConfi
 
       if (res && res.value) {
         result = res.value as Partial<NavAppearanceConfig>;
+        fromDb = true;
       }
     }
   } catch (err) {
@@ -155,16 +194,18 @@ export async function getNavAppearanceConfigServer(): Promise<NavAppearanceConfi
   }
 
   if (!result) {
-    try {
-      if (fs.existsSync(CMS_STORAGE_PATH)) {
-        const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
-        const data = JSON.parse(raw);
-        if (data.nav_appearance) {
-          result = data.nav_appearance;
+    if (!process.env.VERCEL) {
+      try {
+        if (fs.existsSync(CMS_STORAGE_PATH)) {
+          const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
+          const data = JSON.parse(raw);
+          if (data.nav_appearance) {
+            result = data.nav_appearance;
+          }
         }
+      } catch (err) {
+        console.error('getNavAppearanceConfigServer storage error:', err);
       }
-    } catch (err) {
-      console.error('getNavAppearanceConfigServer storage error:', err);
     }
     if (!result && (bundledCmsStorage as any).nav_appearance) {
       result = (bundledCmsStorage as any).nav_appearance as Partial<NavAppearanceConfig>;
@@ -177,6 +218,9 @@ export async function getNavAppearanceConfigServer(): Promise<NavAppearanceConfi
   };
 
   cmsMemoryCache.set(cacheKey, { value: finalConfig, expiresAt: Date.now() + CMS_CACHE_TTL });
+  if (!fromDb) {
+    ensureDbCmsKey(cacheKey, finalConfig);
+  }
   return finalConfig;
 }
 
@@ -192,6 +236,7 @@ export async function getFooterConfigServer(): Promise<FooterConfig> {
   }
 
   let result: Partial<FooterConfig> | null = null;
+  let fromDb = false;
 
   try {
     if (db) {
@@ -203,6 +248,7 @@ export async function getFooterConfigServer(): Promise<FooterConfig> {
 
       if (res && res.value) {
         result = res.value as Partial<FooterConfig>;
+        fromDb = true;
       }
     }
   } catch (err) {
@@ -210,16 +256,18 @@ export async function getFooterConfigServer(): Promise<FooterConfig> {
   }
 
   if (!result) {
-    try {
-      if (fs.existsSync(CMS_STORAGE_PATH)) {
-        const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
-        const data = JSON.parse(raw);
-        if (data.footer_config) {
-          result = data.footer_config;
+    if (!process.env.VERCEL) {
+      try {
+        if (fs.existsSync(CMS_STORAGE_PATH)) {
+          const raw = fs.readFileSync(CMS_STORAGE_PATH, 'utf-8');
+          const data = JSON.parse(raw);
+          if (data.footer_config) {
+            result = data.footer_config;
+          }
         }
+      } catch (err) {
+        console.error('getFooterConfigServer storage error:', err);
       }
-    } catch (err) {
-      console.error('getFooterConfigServer storage error:', err);
     }
     if (!result && (bundledCmsStorage as any).footer_config) {
       result = (bundledCmsStorage as any).footer_config as Partial<FooterConfig>;
@@ -232,5 +280,8 @@ export async function getFooterConfigServer(): Promise<FooterConfig> {
   };
 
   cmsMemoryCache.set(cacheKey, { value: finalConfig, expiresAt: Date.now() + CMS_CACHE_TTL });
+  if (!fromDb) {
+    ensureDbCmsKey(cacheKey, finalConfig);
+  }
   return finalConfig;
 }

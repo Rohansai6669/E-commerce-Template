@@ -1,8 +1,9 @@
 'use client';
 
 import * as React from 'react';
-import { updateOrderStatusAction } from '@/app/actions/admin-actions';
+import { updateOrderStatusAction, shipOrderWithShiprocketAction } from '@/app/actions/admin-actions';
 import { DataTable, type ColumnDef, type FilterConfig } from '@/components/admin/data-table';
+import { Truck, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface OrderItem {
@@ -39,10 +40,45 @@ export function OrdersList({
 }: OrdersListProps) {
   const [orders, setOrders] = React.useState(initialOrders);
   const [isPending, startTransition] = React.useTransition();
+  const [shippingOrderId, setShippingOrderId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     setOrders(initialOrders);
   }, [initialOrders]);
+
+  const handleShiprocketDispatch = (orderId: string) => {
+    setShippingOrderId(orderId);
+    startTransition(async () => {
+      const res = await shipOrderWithShiprocketAction(orderId);
+      setShippingOrderId(null);
+      if (res.success) {
+        toast.success(`Dispatched via ${res.courierName}! AWB: ${res.awbCode}`);
+        setOrders((prev) =>
+          prev.map((o) => {
+            if (o.id === orderId) {
+              const currentAddr = o.shippingAddress || {};
+              return {
+                ...o,
+                status: 'shipped',
+                shippingAddress: {
+                  ...currentAddr,
+                  tracking: {
+                    shippingProvider: 'shiprocket',
+                    awb: res.awbCode,
+                    courierName: res.courierName,
+                    trackingUrl: res.trackingUrl,
+                  },
+                },
+              };
+            }
+            return o;
+          })
+        );
+      } else {
+        toast.error(res.error || 'Failed to dispatch via Shiprocket.');
+      }
+    });
+  };
 
   const handleStatusChange = (orderId: string, currentStatus: string, newStatus: string) => {
     setOrders((prev) =>
@@ -262,6 +298,50 @@ export function OrdersList({
             <option value="refunded">REFUNDED</option>
           </select>
         ),
+      },
+      {
+        header: 'Shiprocket Logistics',
+        sortable: false,
+        cell: (row) => {
+          const tracking = (row.shippingAddress as any)?.tracking;
+          const isShippingThis = shippingOrderId === row.id;
+
+          if (tracking?.awb) {
+            return (
+              <div className="flex flex-col gap-1 items-start text-xs">
+                <span className="font-extrabold text-slate-900 text-[11px] font-mono flex items-center gap-1.5">
+                  <Truck className="w-3.5 h-3.5 text-slate-700" />
+                  {tracking.courierName || 'Carrier'}
+                </span>
+                <span className="text-[10px] font-mono text-slate-500">
+                  AWB: {tracking.awb}
+                </span>
+                {tracking.trackingUrl && (
+                  <a
+                    href={tracking.trackingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:underline"
+                  >
+                    <span>Track Consignment</span>
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                )}
+              </div>
+            );
+          }
+
+          return (
+            <button
+              onClick={() => handleShiprocketDispatch(row.id)}
+              disabled={isPending || isShippingThis || row.status === 'cancelled' || row.status === 'refunded'}
+              className="px-2.5 py-1 bg-slate-900 text-white rounded text-[10px] font-bold uppercase tracking-wider hover:bg-slate-800 disabled:opacity-40 transition inline-flex items-center gap-1.5 cursor-pointer"
+            >
+              <Truck className="w-3 h-3" />
+              <span>{isShippingThis ? 'Generating AWB...' : 'Ship with Shiprocket'}</span>
+            </button>
+          );
+        },
       },
       {
         header: 'Revenue & Profit',

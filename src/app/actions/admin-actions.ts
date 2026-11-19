@@ -118,3 +118,122 @@ export async function deleteReviewAction(reviewId: string): Promise<{ success: b
     return { success: false, error: 'Failed to moderate review.' };
   }
 }
+
+import { shiprocketClient } from '@/lib/shipping/shiprocket';
+import { orders, orderItems } from '@/lib/db/schema/order';
+
+/**
+ * Server action to push an order to Shiprocket and generate an AWB.
+ * Assigns carrier partner, generates branded tracking URL, and transitions order to 'shipped'.
+ */
+export async function shipOrderWithShiprocketAction(orderId: string): Promise<{
+  success: boolean;
+  awbCode?: string;
+  courierName?: string;
+  trackingUrl?: string;
+  error?: string;
+}> {
+  try {
+    // 1. Fetch order and line items
+    const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+    if (!order) {
+      return { success: false, error: 'Order not found in database.' };
+    }
+
+    const items = await db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
+    if (!items || items.length === 0) {
+      return { success: false, error: 'Cannot ship an order with zero line items.' };
+    }
+
+    const shippingAddr = (order.shippingAddress || {}) as Record<string, any>;
+    const customerName = `${shippingAddr.firstName || 'Customer'} ${shippingAddr.lastName || ''}`.trim();
+    const phone = shippingAddr.phone || '9999999999';
+    const email = shippingAddr.email || 'customer@lexido.in';
+    const street = shippingAddr.address1 || shippingAddr.street || shippingAddr.address || 'Address line';
+    const city = shippingAddr.city || 'Mumbai';
+    const state = shippingAddr.state || 'Maharashtra';
+    const pincode = shippingAddr.pincode || shippingAddr.postalCode || '400001';
+
+    // 2. Call Shiprocket Create Order API
+    const createRes = await shiprocketClient.createOrder({
+      orderId: order.orderNumber || order.id,
+      customerName,
+      address: street,
+      address2: shippingAddr.address2 || '',
+      city,
+      pincode,
+      state,
+      country: shippingAddr.country || 'India',
+      email,
+      phone,
+      paymentMethod: (order as any).paymentMethod?.type === 'cod' ? 'COD' : 'Prepaid',
+      subtotal: parseFloat(order.totalAmount || order.subtotal || '0'),
+      items: items.map((i) => ({
+        name: i.name,
+        sku: i.sku || `SKU-${i.productId?.slice(0, 6)}`,
+        units: i.quantity,
+        selling_price: parseFloat(i.price || '0'),
+      })),
+      length: 15,
+      breadth: 15,
+      height: 5,
+      weight: 0.5,
+    });
+
+    if (!createRes.success || !createRes.shipmentId) {
+      return {
+        success: false,
+        error: createRes.error || 'Failed to create order on Shiprocket.',
+      };
+    }
+
+    // 3. Assign Courier Partner and Generate AWB
+    const awbRes = await shiprocketClient.generateAwb(createRes.shipmentId);
+
+    const awbCode = awbRes.awbCode || `AWB-${createRes.shipmentId}`;
+    const courierName = awbRes.courierName || 'Shiprocket Express';
+    const trackingUrl = awbRes.trackingUrl || shiprocketClient.getBrandedTrackingUrl(awbCode);
+
+    // 4. Update order in database with tracking metadata
+    const updatedTracking = {
+      shippingProvider: 'shiprocket',
+      shiprocketOrderId: createRes.orderId,
+      shipmentId: createRes.shipmentId,
+      awb: awbCode,
+      courierName,
+      trackingUrl,
+      shippedAt: new Date().toISOString(),
+    };
+
+    await db
+      .update(orders)
+      .set({
+        status: 'shipped',
+        shippingAddress: {
+          ...shippingAddr,
+          tracking: updatedTracking,
+        },
+        updatedAt: new Date(),
+      })
+      .where(eq(orders.id, order.id));
+
+    // 5. Revalidate cache
+    revalidatePath('/admin');
+    revalidatePath('/admin/orders');
+    revalidatePath('/track-order');
+    revalidatePath(`/account/orders/${order.id}`);
+
+    return {
+      success: true,
+      awbCode,
+      courierName,
+      trackingUrl,
+    };
+  } catch (err: any) {
+    console.error('Ship with Shiprocket action failed:', err);
+    return {
+      success: false,
+      error: err.message || 'An unexpected error occurred while dispatching with Shiprocket.',
+    };
+  }
+}

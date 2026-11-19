@@ -179,7 +179,17 @@ export async function placeOrderAction(params: {
 export async function trackOrderAction(
   orderNumber: string,
   email: string
-): Promise<{ success: boolean; status?: string; createdAt?: Date; error?: string }> {
+): Promise<{
+  success: boolean;
+  status?: string;
+  createdAt?: Date;
+  awb?: string | null;
+  courierName?: string | null;
+  trackingUrl?: string | null;
+  estimatedDelivery?: string | null;
+  latestScan?: { status: string; location: string; activity: string; timestamp: string } | null;
+  error?: string;
+}> {
   if (!orderNumber || !email) {
     return { success: false, error: 'Order number and billing email address are required.' };
   }
@@ -211,10 +221,17 @@ export async function trackOrderAction(
       };
     }
 
+    const tracking = (order.shippingAddress as any)?.tracking;
+
     return {
       success: true,
       status: order.status,
       createdAt: order.createdAt,
+      awb: tracking?.awb || null,
+      courierName: tracking?.courierName || null,
+      trackingUrl: tracking?.trackingUrl || null,
+      estimatedDelivery: tracking?.estimatedDelivery || null,
+      latestScan: tracking?.latestScan || null,
     };
   } catch (err) {
     console.error('Track order action failure:', err);

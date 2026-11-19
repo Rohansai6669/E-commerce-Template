@@ -3,11 +3,21 @@
 import * as React from 'react';
 import { trackOrderAction } from '@/app/actions/order';
 import { TrackOrderConfig } from '@/types/help-pages';
-import { Search, Check, XCircle, ArrowRight, Package, Truck, Clock } from 'lucide-react';
+import { Search, Check, XCircle, ArrowRight, Package, Truck, Clock, ExternalLink, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
 const STEPS = ['pending', 'processing', 'shipped', 'delivered'] as const;
+
+interface TrackResult {
+  status: string;
+  createdAt: Date;
+  awb?: string | null;
+  courierName?: string | null;
+  trackingUrl?: string | null;
+  estimatedDelivery?: string | null;
+  latestScan?: { status: string; location: string; activity: string; timestamp: string } | null;
+}
 
 interface TrackOrderClientProps {
   config: TrackOrderConfig;
@@ -15,7 +25,7 @@ interface TrackOrderClientProps {
 
 export function TrackOrderClient({ config }: TrackOrderClientProps) {
   const [error, setError] = React.useState<string | null>(null);
-  const [result, setResult] = React.useState<{ status: string; createdAt: Date } | null>(null);
+  const [result, setResult] = React.useState<TrackResult | null>(null);
   const [isPending, startTransition] = React.useTransition();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -33,6 +43,11 @@ export function TrackOrderClient({ config }: TrackOrderClientProps) {
         setResult({
           status: res.status,
           createdAt: new Date(res.createdAt),
+          awb: res.awb,
+          courierName: res.courierName,
+          trackingUrl: res.trackingUrl,
+          estimatedDelivery: res.estimatedDelivery,
+          latestScan: res.latestScan,
         });
         toast.success('Order located successfully!');
       } else {
@@ -151,6 +166,52 @@ export function TrackOrderClient({ config }: TrackOrderClientProps) {
                   </div>
                 </div>
               </div>
+
+              {/* Carrier & AWB Logistics Snapshot (Shiprocket Integration) */}
+              {result.awb && (
+                <div className="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 flex flex-col gap-3">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <Truck className="w-4 h-4 text-neutral-900 dark:text-white" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
+                        {result.courierName || 'Shiprocket Partner'}
+                      </span>
+                    </div>
+                    <span className="font-mono text-xs font-bold px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700">
+                      AWB: {result.awb}
+                    </span>
+                  </div>
+
+                  {result.latestScan && (
+                    <div className="flex items-start gap-2 text-xs text-neutral-600 dark:text-neutral-400 border-t border-neutral-100 dark:border-neutral-800 pt-2">
+                      <MapPin className="w-3.5 h-3.5 text-neutral-500 shrink-0 mt-0.5" />
+                      <div className="flex flex-col">
+                        <span className="font-medium text-neutral-900 dark:text-neutral-200">
+                          {result.latestScan.activity} {result.latestScan.location ? `— ${result.latestScan.location}` : ''}
+                        </span>
+                        <span className="text-[10px] text-neutral-400 font-mono">
+                          {new Date(result.latestScan.timestamp).toLocaleString('en-IN', {
+                            dateStyle: 'medium',
+                            timeStyle: 'short',
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {result.trackingUrl && (
+                    <a
+                      href={result.trackingUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1 w-full py-2.5 px-4 bg-black text-white dark:bg-white dark:text-black text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                    >
+                      <span>Track Live on Carrier Map</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                </div>
+              )}
 
               {result.status === 'cancelled' || result.status === 'refunded' ? (
                 <div className="p-4 bg-rose-500/10 border border-rose-500/20 flex items-center gap-3">

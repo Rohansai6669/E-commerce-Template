@@ -86,16 +86,33 @@ if (!databaseUrl) {
   throw new Error('DATABASE_URL is not set in environment variables');
 }
 
+// Detect serverless execution environment (Vercel, AWS Lambda, Netlify, Container)
+const isServerless = Boolean(
+  process.env.VERCEL ||
+  process.env.AWS_LAMBDA_FUNCTION_NAME ||
+  process.env.NETLIFY ||
+  process.env.NODE_ENV === 'production'
+);
+
+// Adaptive connection pool sizing: 2-3 per serverless instance to prevent Supabase pooler exhaustion, 10 in dev/VPS
+const maxConnections = process.env.DATABASE_POOL_MAX
+  ? parseInt(process.env.DATABASE_POOL_MAX, 10)
+  : isServerless
+  ? 3
+  : 10;
+
+const idleTimeout = isServerless ? 15 : 120; // Swiftly release idle connections back to Supabase pooler
+
 // Establish a singleton connection pool optimized for low-latency with Supabase Transaction pooler
 const globalForDb = globalThis as unknown as { client: ReturnType<typeof postgres> | undefined };
 const client =
   globalForDb.client ||
   postgres(databaseUrl, {
-    max: 12,
-    idle_timeout: 120,
+    max: maxConnections,
+    idle_timeout: idleTimeout,
     max_lifetime: 1800,
     connect_timeout: 10,
-    prepare: false,
+    prepare: false, // Mandatory for Supabase PGBouncer transaction pooler (port 6543)
   });
 
 if (process.env.NODE_ENV !== 'production') {

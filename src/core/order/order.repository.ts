@@ -241,20 +241,30 @@ export class OrderRepository {
           const storeMode = await getStoreModeServer();
 
           if (storeMode === 'standalone') {
-            // Direct central inventory deduction for standalone mode
+            // Direct atomic central inventory deduction with overselling concurrency protection
             for (let i = 0; i < params.items.length; i++) {
               const cartItem = params.items[i];
-              await tx
+              const updatedRows = await tx
                 .update(inventory)
                 .set({
                   quantity: sql`${inventory.quantity} - ${cartItem.quantity}`,
                   updatedAt: new Date(),
                 })
                 .where(
-                  cartItem.variantId
-                    ? eq(inventory.variantId, cartItem.variantId)
-                    : eq(inventory.productId, cartItem.productId)
+                  and(
+                    cartItem.variantId
+                      ? eq(inventory.variantId, cartItem.variantId)
+                      : eq(inventory.productId, cartItem.productId),
+                    sql`${inventory.quantity} >= ${cartItem.quantity}`
+                  )
+                )
+                .returning({ id: inventory.id, remaining: inventory.quantity });
+
+              if (!updatedRows || updatedRows.length === 0) {
+                throw new Error(
+                  `INSUFFICIENT_STOCK: "${cartItem.name}" is no longer available in the requested quantity (${cartItem.quantity}). Another customer may have just purchased the remaining stock.`
                 );
+              }
             }
           } else {
             // Routing & Consignment Split for Marketplace Mode
