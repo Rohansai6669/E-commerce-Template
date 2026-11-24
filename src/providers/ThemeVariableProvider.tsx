@@ -10,34 +10,51 @@ interface ThemeVariableContextValue {
   updateTokens: (newTokens: SiteDesignTokens) => void;
 }
 
+export interface ThemeVariableProviderProps {
+  children: React.ReactNode;
+  initialTokens?: SiteDesignTokens;
+}
+
 const ThemeVariableContext = createContext<ThemeVariableContextValue | null>(null);
 
-export function ThemeVariableProvider({ children }: { children: React.ReactNode }) {
-  const [tokens, setTokens] = useState<SiteDesignTokens>(defaultSiteDesignTokens);
+export function ThemeVariableProvider({ children, initialTokens }: ThemeVariableProviderProps) {
+  const [tokens, setTokens] = useState<SiteDesignTokens>(initialTokens || defaultSiteDesignTokens);
 
   const applyCssVariables = useCallback((t: SiteDesignTokens) => {
     if (typeof document === 'undefined') return;
 
     const root = document.documentElement;
 
+    // Purge any stale client-side theme overrides left in localStorage by third-party packages
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem('theme');
+        localStorage.removeItem('next-themes');
+      } catch {}
+    }
+
     // 0. Theme Mode Enforcement (Strictly Admin-Controlled; ignores visitor device OS theme unless explicitly set to 'system')
     const themeMode = t.themeMode || 'light';
     if (themeMode === 'dark') {
       root.classList.add('dark');
+      root.setAttribute('data-theme', 'dark');
       root.style.colorScheme = 'dark';
     } else if (themeMode === 'system') {
       // Admin explicitly allowed system adaptive mode
       const prefersDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
       if (prefersDark) {
         root.classList.add('dark');
+        root.setAttribute('data-theme', 'dark');
         root.style.colorScheme = 'dark';
       } else {
         root.classList.remove('dark');
+        root.removeAttribute('data-theme');
         root.style.colorScheme = 'light';
       }
     } else {
       // Strict Light Mode (Default) - Visitor phone/desktop dark mode is 100% ignored
       root.classList.remove('dark');
+      root.removeAttribute('data-theme');
       root.style.colorScheme = 'light';
     }
 
@@ -288,6 +305,9 @@ export function ThemeVariableProvider({ children }: { children: React.ReactNode 
   }, [applyCssVariables]);
 
   useEffect(() => {
+    if (initialTokens) {
+      applyCssVariables(initialTokens);
+    }
     loadTokens();
 
     const handleUpdate = () => {
@@ -296,7 +316,7 @@ export function ThemeVariableProvider({ children }: { children: React.ReactNode 
 
     window.addEventListener('cms-tokens-updated', handleUpdate);
     return () => window.removeEventListener('cms-tokens-updated', handleUpdate);
-  }, [loadTokens]);
+  }, [loadTokens, initialTokens, applyCssVariables]);
 
   // Listen to OS device theme changes ONLY if admin explicitly enabled 'system' mode
   useEffect(() => {

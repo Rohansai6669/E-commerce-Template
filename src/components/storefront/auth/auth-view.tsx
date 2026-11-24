@@ -198,7 +198,7 @@ export function AuthView({
         {/* LEXIDO Wordmark Logo */}
         <Link
           href="/"
-          className="text-center font-clash font-black uppercase text-2xl sm:text-[30px] tracking-[0.04em] text-neutral-950 dark:text-white mb-10 sm:mb-12 hover:opacity-85 transition-opacity"
+          className="text-center font-display font-black uppercase text-2xl sm:text-[30px] tracking-[0.04em] text-foreground mb-10 sm:mb-12 hover:opacity-85 transition-opacity"
         >
           LEXIDO
         </Link>
@@ -208,11 +208,11 @@ export function AuthView({
           /* 1. ENTER LEXIDO LANDING VIEW (Options)                   */
           /* ======================================================== */
           <div className="flex flex-col items-center text-center animate-in fade-in duration-200">
-            <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-black font-clash uppercase tracking-tight text-neutral-950 dark:text-white leading-none mb-3">
+            <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-black font-display uppercase tracking-tight text-foreground leading-none mb-3">
               ENTER LEXIDO
             </h1>
 
-            <p className="text-xs sm:text-[13px] text-neutral-500 dark:text-neutral-400 font-sans tracking-normal font-normal max-w-[320px] mb-8 sm:mb-10 leading-relaxed">
+            <p className="text-xs sm:text-[13px] text-muted-foreground font-sans tracking-normal font-normal max-w-[320px] mb-8 sm:mb-10 leading-relaxed">
               Sign in to access orders, wishlist and exclusive drops.
             </p>
 
@@ -229,7 +229,7 @@ export function AuthView({
                 type="button"
                 onClick={() => handleOAuthSignIn('google')}
                 disabled={isOAuthPending !== null || isPending}
-                className="w-full h-12 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 hover:border-black dark:hover:border-white text-neutral-900 dark:text-white font-bold text-[11px] sm:text-xs uppercase tracking-[0.2em] flex items-center justify-center transition-all cursor-pointer rounded-none disabled:opacity-50"
+                className="w-full h-12 bg-background border border-border hover:border-foreground text-foreground font-bold text-[11px] sm:text-xs uppercase tracking-[0.2em] flex items-center justify-center transition-all cursor-pointer rounded-none disabled:opacity-50"
               >
                 {/* Official Multi-Color Google G SVG */}
                 <svg className="w-4 h-4 mr-2.5 shrink-0" viewBox="0 0 24 24">
@@ -260,7 +260,7 @@ export function AuthView({
                 type="button"
                 onClick={() => handleOAuthSignIn('apple')}
                 disabled={isOAuthPending !== null || isPending}
-                className="w-full h-12 bg-black hover:bg-neutral-800 text-white font-bold text-[11px] sm:text-xs uppercase tracking-[0.2em] flex items-center justify-center transition-all cursor-pointer rounded-none disabled:opacity-50"
+                className="w-full h-12 bg-foreground hover:opacity-90 text-background font-bold text-[11px] sm:text-xs uppercase tracking-[0.2em] flex items-center justify-center transition-all cursor-pointer rounded-none disabled:opacity-50"
               >
                 {/* Apple SVG */}
                 <svg className="w-4 h-4 mr-2.5 fill-current shrink-0" viewBox="0 0 170 170">
@@ -273,11 +273,11 @@ export function AuthView({
 
               {/* Minimal Divider */}
               <div className="relative flex py-2 items-center w-full my-2">
-                <div className="flex-grow border-t border-neutral-200 dark:border-neutral-800"></div>
-                <span className="flex-shrink mx-4 text-[10px] font-mono tracking-[0.25em] text-neutral-400 uppercase">
+                <div className="flex-grow border-t border-border"></div>
+                <span className="flex-shrink mx-4 text-[10px] font-mono tracking-[0.25em] text-muted-foreground uppercase">
                   OR
                 </span>
-                <div className="flex-grow border-t border-neutral-200 dark:border-neutral-800"></div>
+                <div className="flex-grow border-t border-border"></div>
               </div>
 
               {/* Continue With Email Button */}
@@ -287,10 +287,20 @@ export function AuthView({
                   setMode('email');
                   setServerError(null);
                 }}
-                className="w-full h-12 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 hover:border-black dark:hover:border-white text-neutral-900 dark:text-white font-bold text-[11px] sm:text-xs uppercase tracking-[0.2em] flex items-center justify-center transition-all cursor-pointer rounded-none"
+                className="w-full h-12 bg-background border border-border hover:border-foreground text-foreground font-bold text-[11px] sm:text-xs uppercase tracking-[0.2em] flex items-center justify-center transition-all cursor-pointer rounded-none"
               >
                 CONTINUE WITH EMAIL
               </button>
+
+              {/* Forgot Password Helper */}
+              <div className="flex justify-center w-full mt-4">
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Trouble signing in? <span className="underline font-medium text-foreground">Reset password</span>
+                </Link>
+              </div>
             </div>
           </div>
         ) : (
@@ -306,13 +316,13 @@ export function AuthView({
                 setServerError(null);
                 setFieldErrors({});
               }}
-              className="text-[11px] font-mono font-medium tracking-[0.2em] uppercase text-neutral-400 hover:text-black dark:hover:text-white cursor-pointer inline-flex items-center gap-1.5 transition-colors mb-6"
+              className="text-[11px] font-mono font-medium tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground cursor-pointer inline-flex items-center gap-1.5 transition-colors mb-6"
             >
               ← BACK
             </button>
 
             {/* Page Title */}
-            <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-black font-clash uppercase tracking-tight text-neutral-950 dark:text-white leading-none mb-6">
+            <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-black font-display uppercase tracking-tight text-foreground leading-none mb-6">
               {tab === 'login' ? 'SIGN IN' : 'CREATE ACCOUNT'}
             </h1>
 
@@ -327,8 +337,8 @@ export function AuthView({
                 }}
                 className={`text-xs sm:text-[13px] tracking-normal transition-all pb-1 cursor-pointer ${
                   tab === 'login'
-                    ? 'font-medium text-black dark:text-white border-b-2 border-black dark:border-white'
-                    : 'font-normal text-neutral-400 dark:text-neutral-500 hover:text-black dark:hover:text-white border-b-2 border-transparent'
+                    ? 'font-medium text-foreground border-b-2 border-foreground'
+                    : 'font-normal text-muted-foreground hover:text-foreground border-b-2 border-transparent'
                 }`}
               >
                 Sign In
@@ -343,8 +353,8 @@ export function AuthView({
                 }}
                 className={`text-xs sm:text-[13px] tracking-normal transition-all pb-1 cursor-pointer ${
                   tab === 'register'
-                    ? 'font-medium text-black dark:text-white border-b-2 border-black dark:border-white'
-                    : 'font-normal text-neutral-400 dark:text-neutral-500 hover:text-black dark:hover:text-white border-b-2 border-transparent'
+                    ? 'font-medium text-foreground border-b-2 border-foreground'
+                    : 'font-normal text-muted-foreground hover:text-foreground border-b-2 border-transparent'
                 }`}
               >
                 Create Account
@@ -376,11 +386,11 @@ export function AuthView({
                     }}
                     placeholder="Full name"
                     disabled={isPending}
-                    className={`w-full h-12 px-4 bg-white dark:bg-neutral-950 border ${
+                    className={`w-full h-12 px-4 bg-background border ${
                       fieldErrors.fullName
-                        ? 'border-rose-500 dark:border-rose-500'
-                        : 'border-neutral-200 dark:border-neutral-800 focus:border-black dark:focus:border-white'
-                    } text-neutral-900 dark:text-white text-sm placeholder:text-neutral-400 focus:outline-none rounded-none transition-colors`}
+                        ? 'border-rose-500'
+                        : 'border-border focus:border-foreground'
+                    } text-foreground text-sm placeholder:text-muted-foreground focus:outline-none rounded-none transition-colors`}
                   />
                   {fieldErrors.fullName && (
                     <p className="text-[11px] text-rose-600 dark:text-rose-400 mt-1.5 flex items-center gap-1 font-medium">
@@ -405,11 +415,11 @@ export function AuthView({
                   }}
                   placeholder="Email"
                   disabled={isPending}
-                  className={`w-full h-12 px-4 bg-white dark:bg-neutral-950 border ${
+                  className={`w-full h-12 px-4 bg-background border ${
                     fieldErrors.email
-                      ? 'border-rose-500 dark:border-rose-500'
-                      : 'border-neutral-200 dark:border-neutral-800 focus:border-black dark:focus:border-white'
-                  } text-neutral-900 dark:text-white text-sm placeholder:text-neutral-400 focus:outline-none rounded-none transition-colors`}
+                      ? 'border-rose-500'
+                      : 'border-border focus:border-foreground'
+                  } text-foreground text-sm placeholder:text-muted-foreground focus:outline-none rounded-none transition-colors`}
                 />
                 {fieldErrors.email && (
                   <p className="text-[11px] text-rose-600 dark:text-rose-400 mt-1.5 flex items-center gap-1 font-medium">
@@ -434,11 +444,11 @@ export function AuthView({
                     }}
                     placeholder="Password"
                     disabled={isPending}
-                    className={`w-full h-12 pl-4 pr-16 bg-white dark:bg-neutral-950 border ${
+                    className={`w-full h-12 pl-4 pr-20 bg-background border ${
                       fieldErrors.password
-                        ? 'border-rose-500 dark:border-rose-500'
-                        : 'border-neutral-200 dark:border-neutral-800 focus:border-black dark:focus:border-white'
-                    } text-neutral-900 dark:text-white text-sm placeholder:text-neutral-400 focus:outline-none rounded-none transition-colors`}
+                        ? 'border-rose-500'
+                        : 'border-border focus:border-foreground'
+                    } text-foreground text-sm placeholder:text-muted-foreground focus:outline-none rounded-none transition-colors`}
                   />
 
                   {/* Show / Hide Toggle Button */}
@@ -446,18 +456,19 @@ export function AuthView({
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showPassword}
                     tabIndex={0}
-                    className="absolute right-0 top-0 h-12 px-3 flex items-center gap-1.5 text-neutral-400 hover:text-black dark:hover:text-white transition-colors cursor-pointer select-none text-[10px] sm:text-[11px] font-mono tracking-wider"
+                    className="absolute right-0 top-0 h-12 px-3.5 flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer select-none text-[11px] font-mono tracking-wider z-10"
                   >
                     {showPassword ? (
                       <>
-                        <EyeOff className="w-4 h-4" />
-                        <span className="hidden sm:inline">HIDE</span>
+                        <EyeOff className="w-4 h-4 shrink-0" />
+                        <span>HIDE</span>
                       </>
                     ) : (
                       <>
-                        <Eye className="w-4 h-4" />
-                        <span className="hidden sm:inline">SHOW</span>
+                        <Eye className="w-4 h-4 shrink-0" />
+                        <span>SHOW</span>
                       </>
                     )}
                   </button>
@@ -471,7 +482,7 @@ export function AuthView({
 
                 {/* Password helper in Register tab */}
                 {tab === 'register' && !fieldErrors.password && (
-                  <p className="text-[11px] text-neutral-400 mt-1.5 flex items-center gap-1">
+                  <p className="text-[11px] text-muted-foreground mt-1.5 flex items-center gap-1">
                     {password.length >= 8 ? (
                       <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-medium">
                         <Check className="w-3.5 h-3.5" /> 8+ characters requirement met
@@ -488,7 +499,7 @@ export function AuthView({
                 <div className="flex justify-end -mt-1">
                   <Link
                     href="/forgot-password"
-                    className="text-xs text-neutral-400 hover:text-black dark:hover:text-white transition-colors"
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Forgot Password?
                   </Link>
@@ -499,7 +510,7 @@ export function AuthView({
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full h-12 mt-2 bg-black hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 text-white font-bold text-[11px] sm:text-xs uppercase tracking-[0.2em] flex items-center justify-center transition-all cursor-pointer rounded-none disabled:opacity-50"
+                className="w-full h-12 mt-2 bg-foreground text-background hover:opacity-90 font-bold text-[11px] sm:text-xs uppercase tracking-[0.2em] flex items-center justify-center transition-all cursor-pointer rounded-none disabled:opacity-50"
               >
                 {isPending
                   ? tab === 'login'

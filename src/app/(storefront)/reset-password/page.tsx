@@ -4,34 +4,101 @@ import * as React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { resetPasswordAction } from '@/app/actions/auth-actions';
-import { Eye, EyeOff } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import { Eye, EyeOff, Check, AlertCircle, CheckCircle2, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 
-/**
- * Storefront Reset Password updates page.
- * Follows minimal luxury editorial aesthetic with show/hide password toggle.
- */
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter();
-  const [error, setError] = React.useState<string | null>(null);
-  const [success, setSuccess] = React.useState(false);
-  const [isPending, startTransition] = React.useTransition();
+
+  const [checkingSession, setCheckingSession] = React.useState(true);
+  const [hasValidSession, setHasValidSession] = React.useState(false);
+
+  const [password, setPassword] = React.useState('');
+  const [confirmPassword, setConfirmPassword] = React.useState('');
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
 
+  const [fieldErrors, setFieldErrors] = React.useState<{ password?: string; confirmPassword?: string }>({});
+  const [serverError, setServerError] = React.useState<string | null>(null);
+  const [success, setSuccess] = React.useState(false);
+  const [isPending, startTransition] = React.useTransition();
+
+  // Verify that an active session or recovery token exists
+  React.useEffect(() => {
+    const supabase = createClient();
+
+    async function checkAuthSession() {
+      try {
+        // 1. Check if URL hash contains recovery access token
+        if (typeof window !== 'undefined' && window.location.hash.includes('type=recovery')) {
+          setHasValidSession(true);
+          setCheckingSession(false);
+          return;
+        }
+
+        // 2. Check active Supabase session (established via /auth/callback)
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          setHasValidSession(true);
+          setCheckingSession(false);
+          return;
+        }
+
+        // 3. Listen for asynchronous auth event (PASSWORD_RECOVERY)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+          if (event === 'PASSWORD_RECOVERY' || session) {
+            setHasValidSession(true);
+            setCheckingSession(false);
+          }
+        });
+
+        // 4. Grace period timeout before flagging expired link
+        const timeoutId = setTimeout(() => {
+          setCheckingSession(false);
+        }, 1200);
+
+        return () => {
+          subscription.unsubscribe();
+          clearTimeout(timeoutId);
+        };
+      } catch (err) {
+        console.error('Session check error:', err);
+        setCheckingSession(false);
+      }
+    }
+
+    checkAuthSession();
+  }, []);
+
+  const validateForm = (): boolean => {
+    const errors: { password?: string; confirmPassword?: string } = {};
+
+    if (!password) {
+      errors.password = 'Please enter a new password.';
+    } else if (password.length < 8) {
+      errors.password = 'Password must be at least 8 characters long.';
+    }
+
+    if (!confirmPassword) {
+      errors.confirmPassword = 'Please confirm your new password.';
+    } else if (password !== confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match.';
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(false);
-    const formData = new FormData(e.currentTarget);
+    setServerError(null);
 
-    const password = formData.get('password') as string;
-    const confirmPassword = formData.get('confirmPassword') as string;
+    if (!validateForm()) return;
 
-    if (password !== confirmPassword) {
-      setError('Passwords do not match.');
-      return;
-    }
+    const formData = new FormData();
+    formData.append('password', password);
+    formData.append('confirmPassword', confirmPassword);
 
     startTransition(async () => {
       const res = await resetPasswordAction(formData);
@@ -40,9 +107,9 @@ export default function ResetPasswordPage() {
         toast.success('Your password has been successfully updated.');
         setTimeout(() => {
           router.push('/login');
-        }, 2000);
+        }, 2200);
       } else {
-        setError(res.error || 'Failed to update password.');
+        setServerError(res.error || 'Failed to update password.');
         toast.error(res.error || 'Failed to update password.');
       }
     });
@@ -54,7 +121,7 @@ export default function ResetPasswordPage() {
         {/* LEXIDO Wordmark Logo */}
         <Link
           href="/"
-          className="self-center font-clash font-black uppercase text-2xl sm:text-[30px] tracking-[0.04em] text-neutral-950 dark:text-white mb-10 sm:mb-12 hover:opacity-85 transition-opacity"
+          className="self-center font-display font-black uppercase text-2xl sm:text-[30px] tracking-[0.04em] text-foreground mb-10 sm:mb-12 hover:opacity-85 transition-opacity"
         >
           LEXIDO
         </Link>
@@ -62,93 +129,242 @@ export default function ResetPasswordPage() {
         {/* Back Link */}
         <Link
           href="/login"
-          className="text-[11px] font-mono font-medium tracking-[0.2em] uppercase text-neutral-400 hover:text-black dark:hover:text-white cursor-pointer inline-flex items-center gap-1.5 transition-colors mb-6"
+          className="text-[11px] font-mono font-medium tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground cursor-pointer inline-flex items-center gap-1.5 transition-colors mb-6"
         >
-          ← BACK
+          ← BACK TO SIGN IN
         </Link>
 
         {/* Page Title */}
-        <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-black font-clash uppercase tracking-tight text-neutral-950 dark:text-white leading-none mb-3">
+        <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-black font-display uppercase tracking-tight text-foreground leading-none mb-3">
           NEW PASSWORD
         </h1>
 
-        <p className="text-xs sm:text-[13px] text-neutral-500 dark:text-neutral-400 font-sans tracking-normal font-normal mb-8 leading-relaxed">
-          Please choose a strong, secure password of at least 8 characters.
+        <p className="text-xs sm:text-[13px] text-muted-foreground font-sans tracking-normal font-normal mb-8 leading-relaxed">
+          Please define a strong, secure password of at least 8 characters.
         </p>
 
-        {success ? (
-          <div className="w-full p-6 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-center flex flex-col gap-2">
-            <span className="text-xs font-bold font-mono tracking-widest uppercase text-neutral-900 dark:text-white">
-              Password Updated
+        {/* Loading Verification State */}
+        {checkingSession && (
+          <div className="w-full p-8 border border-border bg-background flex flex-col items-center justify-center gap-3">
+            <div className="w-5 h-5 border-2 border-foreground border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs font-mono tracking-widest text-muted-foreground uppercase">
+              Verifying Recovery Link...
             </span>
-            <p className="text-xs text-neutral-500 leading-relaxed">
-              Your password has been securely reset. Redirecting to sign in...
-            </p>
-            <Link
-              href="/login"
-              className="mt-4 inline-block text-xs font-bold uppercase tracking-widest text-black dark:text-white underline hover:opacity-75"
-            >
-              Go to Sign In
-            </Link>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
-            {error && (
-              <div className="w-full p-3 text-xs bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300">
-                {error}
+        )}
+
+        {/* Expired / Invalid Session State */}
+        {!checkingSession && !hasValidSession && (
+          <div className="w-full p-6 sm:p-8 bg-background border border-border flex flex-col gap-4 animate-in fade-in duration-200">
+            <div className="flex items-center gap-2.5 text-foreground">
+              <ShieldAlert className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+              <span className="text-sm font-bold font-display uppercase tracking-wider">
+                Link Expired or Invalid
+              </span>
+            </div>
+
+            <p className="text-xs text-muted-foreground leading-relaxed font-sans">
+              This password reset link is invalid or has expired. For your security, reset links can only be used once and expire shortly after being issued.
+            </p>
+
+            <div className="pt-2 flex flex-col gap-3">
+              <Link
+                href="/forgot-password"
+                className="w-full h-12 bg-foreground text-background hover:opacity-90 font-bold text-[11px] sm:text-xs uppercase tracking-[0.2em] flex items-center justify-center transition-all cursor-pointer rounded-none"
+              >
+                REQUEST NEW RESET LINK
+              </Link>
+
+              <Link
+                href="/login"
+                className="text-center text-xs font-mono uppercase tracking-widest text-muted-foreground hover:text-foreground underline pt-1"
+              >
+                Return to Sign In
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Active Session: Reset Form */}
+        {!checkingSession && hasValidSession && (
+          <>
+            {success ? (
+              <div className="w-full p-6 sm:p-8 bg-background border border-border flex flex-col gap-4 animate-in fade-in duration-200">
+                <div className="flex items-center gap-2.5 text-foreground">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span className="text-sm font-bold font-display uppercase tracking-wider">
+                    Password Updated
+                  </span>
+                </div>
+
+                <p className="text-xs text-muted-foreground leading-relaxed font-sans">
+                  Your account password has been securely updated. You will now be redirected to sign in with your new credentials.
+                </p>
+
+                <div className="pt-2">
+                  <Link
+                    href="/login"
+                    className="w-full h-12 bg-foreground text-background hover:opacity-90 font-bold text-[11px] sm:text-xs uppercase tracking-[0.2em] flex items-center justify-center transition-all cursor-pointer rounded-none"
+                  >
+                    GO TO SIGN IN NOW →
+                  </Link>
+                </div>
               </div>
+            ) : (
+              <form onSubmit={handleSubmit} noValidate className="w-full flex flex-col gap-4">
+                {serverError && (
+                  <div className="w-full p-3.5 mb-2 text-xs bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 flex items-start gap-2.5">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span>{serverError}</span>
+                  </div>
+                )}
+
+                {/* New Password */}
+                <div className="w-full flex flex-col">
+                  <div className="relative w-full">
+                    <input
+                      id="password"
+                      name="password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (fieldErrors.password) {
+                          setFieldErrors((prev) => ({ ...prev, password: undefined }));
+                        }
+                      }}
+                      placeholder="New password (8+ characters)"
+                      required
+                      disabled={isPending}
+                      className={`w-full h-12 pl-4 pr-16 bg-background border ${
+                        fieldErrors.password
+                          ? 'border-rose-500'
+                          : 'border-border focus:border-foreground'
+                      } text-foreground text-sm placeholder:text-muted-foreground focus:outline-none rounded-none transition-colors`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      tabIndex={0}
+                      className="absolute right-0 top-0 h-12 px-3 flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer select-none text-[10px] sm:text-[11px] font-mono tracking-wider z-10"
+                    >
+                      {showPassword ? (
+                        <>
+                          <EyeOff className="w-4 h-4" />
+                          <span className="hidden sm:inline">HIDE</span>
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="w-4 h-4" />
+                          <span className="hidden sm:inline">SHOW</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {fieldErrors.password && (
+                    <p className="text-[11px] text-rose-600 dark:text-rose-400 mt-1.5 font-medium">
+                      {fieldErrors.password}
+                    </p>
+                  )}
+
+                  {!fieldErrors.password && password && (
+                    <p className="text-[11px] text-muted-foreground mt-1.5 flex items-center gap-1">
+                      {password.length >= 8 ? (
+                        <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-medium">
+                          <Check className="w-3.5 h-3.5" /> 8+ characters requirement met
+                        </span>
+                      ) : (
+                        <span>Needs at least 8 characters</span>
+                      )}
+                    </p>
+                  )}
+                </div>
+
+                {/* Confirm Password */}
+                <div className="w-full flex flex-col">
+                  <div className="relative w-full">
+                    <input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={(e) => {
+                        setConfirmPassword(e.target.value);
+                        if (fieldErrors.confirmPassword) {
+                          setFieldErrors((prev) => ({ ...prev, confirmPassword: undefined }));
+                        }
+                      }}
+                      placeholder="Confirm new password"
+                      required
+                      disabled={isPending}
+                      className={`w-full h-12 pl-4 pr-16 bg-background border ${
+                        fieldErrors.confirmPassword
+                          ? 'border-rose-500'
+                          : 'border-border focus:border-foreground'
+                      } text-foreground text-sm placeholder:text-muted-foreground focus:outline-none rounded-none transition-colors`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword((prev) => !prev)}
+                      aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                      tabIndex={0}
+                      className="absolute right-0 top-0 h-12 px-3 flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer select-none text-[10px] sm:text-[11px] font-mono tracking-wider z-10"
+                    >
+                      {showConfirmPassword ? (
+                        <>
+                          <EyeOff className="w-4 h-4" />
+                          <span className="hidden sm:inline">HIDE</span>
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="w-4 h-4" />
+                          <span className="hidden sm:inline">SHOW</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {fieldErrors.confirmPassword && (
+                    <p className="text-[11px] text-rose-600 dark:text-rose-400 mt-1.5 font-medium">
+                      {fieldErrors.confirmPassword}
+                    </p>
+                  )}
+
+                  {!fieldErrors.confirmPassword && confirmPassword && (
+                    <p className="text-[11px] text-muted-foreground mt-1.5 flex items-center gap-1">
+                      {password === confirmPassword ? (
+                        <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-medium">
+                          <Check className="w-3.5 h-3.5" /> Passwords match
+                        </span>
+                      ) : (
+                        <span className="text-rose-500">Passwords do not match yet</span>
+                      )}
+                    </p>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className="w-full h-12 mt-2 bg-foreground text-background hover:opacity-90 font-bold text-[11px] sm:text-xs uppercase tracking-[0.2em] flex items-center justify-center transition-all cursor-pointer rounded-none disabled:opacity-50"
+                >
+                  {isPending ? 'UPDATING PASSWORD...' : 'UPDATE PASSWORD'}
+                </button>
+              </form>
             )}
-
-            <div className="w-full relative">
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="New password (8+ characters)"
-                required
-                disabled={isPending}
-                className="w-full h-12 pl-4 pr-14 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white text-sm placeholder:text-neutral-400 focus:border-black dark:focus:border-white focus:outline-none rounded-none transition-colors"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                className="absolute right-0 top-0 h-12 px-3 flex items-center text-neutral-400 hover:text-black dark:hover:text-white transition-colors cursor-pointer select-none"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-
-            <div className="w-full relative">
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type={showConfirmPassword ? 'text' : 'password'}
-                placeholder="Confirm new password"
-                required
-                disabled={isPending}
-                className="w-full h-12 pl-4 pr-14 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-white text-sm placeholder:text-neutral-400 focus:border-black dark:focus:border-white focus:outline-none rounded-none transition-colors"
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword((prev) => !prev)}
-                aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                className="absolute right-0 top-0 h-12 px-3 flex items-center text-neutral-400 hover:text-black dark:hover:text-white transition-colors cursor-pointer select-none"
-              >
-                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isPending}
-              className="w-full h-12 mt-2 bg-black hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 text-white font-bold text-[11px] sm:text-xs uppercase tracking-[0.2em] flex items-center justify-center transition-all cursor-pointer rounded-none disabled:opacity-50"
-            >
-              {isPending ? 'UPDATING PASSWORD...' : 'UPDATE PASSWORD'}
-            </button>
-          </form>
+          </>
         )}
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <React.Suspense fallback={<div className="min-h-[70vh] flex items-center justify-center" />}>
+      <ResetPasswordContent />
+    </React.Suspense>
   );
 }

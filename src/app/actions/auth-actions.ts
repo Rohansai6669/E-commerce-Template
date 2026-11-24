@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import { profiles } from '@/lib/db/schema/auth';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -22,8 +23,11 @@ function mapAuthError(rawError: string): string {
   if (lower.includes('password should be at least')) {
     return 'Password must be at least 8 characters long.';
   }
-  if (lower.includes('rate limit') || lower.includes('too many requests')) {
-    return 'Too many attempts. Please wait a few moments before trying again.';
+  if (lower.includes('rate limit') || lower.includes('too many requests') || lower.includes('for security purposes')) {
+    return 'For security purposes, you can only request this once every 60 seconds. Please wait before trying again.';
+  }
+  if (lower.includes('auth session missing') || lower.includes('session missing') || lower.includes('jwt expired') || lower.includes('invalid token')) {
+    return 'Your password reset session has expired or is invalid. Please request a new reset link.';
   }
   return rawError;
 }
@@ -160,27 +164,44 @@ export async function logoutAction(): Promise<{ success: boolean }> {
  * Server action to trigger password recovery emails.
  */
 export async function forgotPasswordAction(formData: FormData): Promise<{ success: boolean; error?: string }> {
-  const email = formData.get('email') as string;
+  const email = (formData.get('email') as string || '').trim().toLowerCase();
   if (!email) {
     return { success: false, error: 'Email address is required.' };
   }
 
+  if (!EMAIL_REGEX.test(email)) {
+    return { success: false, error: 'Please enter a valid email address.' };
+  }
+
   try {
     const supabase = await createClient();
-    const origin = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     
+    // Dynamically resolve request origin
+    let origin = process.env.NEXT_PUBLIC_APP_URL?.trim();
+    if (!origin) {
+      try {
+        const headerList = await headers();
+        const host = headerList.get('x-forwarded-host') || headerList.get('host') || 'localhost:3000';
+        const proto = headerList.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
+        origin = `${proto}://${host}`;
+      } catch {
+        origin = 'http://localhost:3000';
+      }
+    }
+    origin = origin.replace(/\/+$/, '');
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${origin}/auth/callback?next=/reset-password`,
     });
 
     if (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: mapAuthError(error.message) };
     }
 
     return { success: true };
-  } catch (err) {
+  } catch (err: any) {
     console.error('Forgot password action failure:', err);
-    return { success: false, error: 'An unexpected connection error occurred.' };
+    return { success: false, error: err?.message || 'An unexpected connection error occurred.' };
   }
 }
 
@@ -210,12 +231,12 @@ export async function resetPasswordAction(formData: FormData): Promise<{ success
     });
 
     if (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: mapAuthError(error.message) };
     }
 
     return { success: true };
-  } catch (err) {
+  } catch (err: any) {
     console.error('Reset password action failure:', err);
-    return { success: false, error: 'An unexpected error occurred during password update.' };
+    return { success: false, error: err?.message || 'An unexpected error occurred during password update.' };
   }
 }

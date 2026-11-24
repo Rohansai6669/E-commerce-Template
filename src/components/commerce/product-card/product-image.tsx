@@ -137,7 +137,7 @@ export function ProductCardImage({
             {showQuickView && (
               <button
                 onClick={handleQuickView}
-                className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 py-2.5 px-3 text-xs font-semibold text-slate-900 dark:text-white hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 shadow-md transition-all cursor-pointer"
+                className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-card/95 backdrop-blur-md border border-border py-2.5 px-3 text-xs font-semibold text-card-foreground hover:bg-foreground hover:text-background shadow-md transition-all cursor-pointer"
               >
                 <Eye className="h-3.5 w-3.5" />
                 Quick View

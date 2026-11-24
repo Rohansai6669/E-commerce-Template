@@ -83,15 +83,15 @@ export function ProductGallery({ images, alt, className }: ProductGalleryProps) 
                   onMouseEnter={() => setActiveIndex(idx)}
                   onClick={() => setActiveIndex(idx)}
                   className={cn(
-                    'relative h-16 w-16 md:h-20 md:w-20 shrink-0 rounded-none overflow-hidden border transition-all duration-150 cursor-pointer focus:outline-none bg-neutral-100 dark:bg-neutral-900 p-1 flex items-center justify-center',
+                    'relative h-16 w-16 md:h-20 md:w-20 shrink-0 rounded-none overflow-hidden border transition-all duration-150 cursor-pointer focus:outline-none bg-muted p-1 flex items-center justify-center',
                     isActive
-                      ? 'border-black dark:border-white ring-1 ring-black dark:ring-white shadow-sm'
-                      : 'border-neutral-200 dark:border-neutral-800 opacity-60 hover:opacity-100 hover:border-neutral-400'
+                      ? 'border-foreground ring-1 ring-foreground shadow-sm'
+                      : 'border-border opacity-60 hover:opacity-100 hover:border-foreground/50'
                   )}
                   aria-label={`View image ${idx + 1}`}
                 >
                   {isBroken ? (
-                    <div className="w-full h-full flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 text-neutral-400 text-[10px] font-bold uppercase tracking-widest font-mono">
+                    <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground text-[10px] font-bold uppercase tracking-widest font-mono">
                       No Img
                     </div>
                   ) : (
@@ -109,7 +109,7 @@ export function ProductGallery({ images, alt, className }: ProductGalleryProps) 
         )}
 
         {/* Main Hero Viewport */}
-        <div className="relative flex-1 w-full aspect-[4/5] sm:aspect-[1/1] md:aspect-[4/5] max-h-[640px] rounded-none overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 group">
+        <div className="relative flex-1 w-full aspect-[4/5] sm:aspect-[1/1] md:aspect-[4/5] max-h-[640px] rounded-none overflow-hidden border border-border bg-background group">
           {!hasImages || isCurrentBroken ? (
             <NoImageFallback
               message="No Image Found"

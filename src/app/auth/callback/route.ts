@@ -13,15 +13,17 @@ export async function GET(request: Request) {
   const code = searchParams.get('code');
   const errorParam = searchParams.get('error') || searchParams.get('error_description');
 
-  // Handle direct OAuth error callback
-  if (errorParam) {
-    console.error('OAuth callback error reported from provider:', errorParam);
-    return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(errorParam)}`);
-  }
-
   const rawNext = searchParams.get('next') || '/account';
   // Prevent open redirect attacks: ensure next is a relative URL
   const safeNext = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/account';
+  const isResetFlow = safeNext.includes('reset-password');
+
+  // Handle direct OAuth error callback
+  if (errorParam) {
+    console.error('OAuth callback error reported from provider:', errorParam);
+    const dest = isResetFlow ? '/forgot-password' : '/login';
+    return NextResponse.redirect(`${origin}${dest}?error=${encodeURIComponent(errorParam)}`);
+  }
 
   if (code) {
     const supabase = await createClient();
@@ -78,10 +80,18 @@ export async function GET(request: Request) {
       }
     } else if (error) {
       console.error('Failed to exchange code for session:', error.message);
-      return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message)}`);
+      const dest = isResetFlow ? '/forgot-password' : '/login';
+      const msg = isResetFlow
+        ? 'Your password reset link has expired or is invalid. Please request a new link.'
+        : error.message;
+      return NextResponse.redirect(`${origin}${dest}?error=${encodeURIComponent(msg)}`);
     }
   }
 
-  // Return to login with error indication on failure
-  return NextResponse.redirect(`${origin}/login?error=auth-callback-failed`);
+  // Return to login or forgot-password with error indication on failure
+  const dest = isResetFlow ? '/forgot-password' : '/login';
+  const msg = isResetFlow
+    ? 'Unable to verify reset link. Please request a new password reset.'
+    : 'auth-callback-failed';
+  return NextResponse.redirect(`${origin}${dest}?error=${encodeURIComponent(msg)}`);
 }

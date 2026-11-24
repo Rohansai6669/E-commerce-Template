@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/providers/ThemeProvider";
 import { SupabaseProvider } from "@/providers/SupabaseProvider";
 import { ThemeVariableProvider } from "@/providers/ThemeVariableProvider";
 import { CartProvider } from "@/components/commerce/cart-context";
 import { NetworkStatusIndicator } from "@/components/common/network-status-indicator";
 import { ToastProvider } from "@/providers/ToastProvider";
+import { getSiteDesignTokensServer } from "@/lib/cms/cms-server";
 import * as React from 'react';
 
 const geistSans = Geist({
@@ -25,36 +25,35 @@ export const metadata: Metadata = {
   colorScheme: "light",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const initialTokens = await getSiteDesignTokensServer();
+  const isDark = initialTokens?.themeMode === 'dark';
+  const isSystem = initialTokens?.themeMode === 'system';
+
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${isDark ? 'dark' : ''} h-full antialiased`}
+      data-theme={isDark ? 'dark' : undefined}
+      style={{ colorScheme: isDark ? 'dark' : isSystem ? undefined : 'light' }}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <ThemeVariableProvider>
-            <SupabaseProvider>
-              <CartProvider>
-                <React.Suspense fallback={null}>
-                  {children}
-                </React.Suspense>
-                <NetworkStatusIndicator />
-                <ToastProvider />
-              </CartProvider>
-            </SupabaseProvider>
-          </ThemeVariableProvider>
-        </ThemeProvider>
+      <body className="min-h-full flex flex-col bg-background text-foreground" suppressHydrationWarning>
+        <ThemeVariableProvider initialTokens={initialTokens}>
+          <SupabaseProvider>
+            <CartProvider>
+              <React.Suspense fallback={null}>
+                {children}
+              </React.Suspense>
+              <NetworkStatusIndicator />
+              <ToastProvider />
+            </CartProvider>
+          </SupabaseProvider>
+        </ThemeVariableProvider>
       </body>
     </html>
   );

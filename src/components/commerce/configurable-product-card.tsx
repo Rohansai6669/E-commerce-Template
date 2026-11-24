@@ -203,12 +203,12 @@ export function ConfigurableProductCard({
               suppressHydrationWarning
               onClick={handleWishlistToggle}
               disabled={isTogglingWishlist}
-              className={`absolute ${discountPercent ? 'top-10' : 'top-2.5'} right-2.5 h-8 w-8 rounded-none bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xs border border-neutral-200 dark:border-neutral-800 flex items-center justify-center text-neutral-800 dark:text-neutral-200 hover:text-black dark:hover:text-white transition-all duration-200 z-20 cursor-pointer shadow-xs ${
+              className={`absolute ${discountPercent ? 'top-10' : 'top-2.5'} right-2.5 h-8 w-8 rounded-none bg-background/90 backdrop-blur-xs border border-border flex items-center justify-center text-foreground transition-all duration-200 z-20 cursor-pointer shadow-xs ${
                 isHovered || isWishlisted ? 'opacity-100' : 'opacity-0 sm:group-hover:opacity-100'
               }`}
               aria-label="Add to wishlist"
             >
-              <Heart className={`h-3.5 w-3.5 transition-colors ${isWishlisted ? 'fill-black dark:fill-white text-black dark:text-white' : 'text-neutral-700 dark:text-neutral-300'}`} />
+              <Heart className={`h-3.5 w-3.5 transition-colors ${isWishlisted ? 'fill-foreground text-foreground' : 'text-muted-foreground'}`} />
             </button>
           )}
 
@@ -219,7 +219,7 @@ export function ConfigurableProductCard({
                 type="button"
                 suppressHydrationWarning
                 onClick={handleQuickView}
-                className="flex-1 inline-flex items-center justify-center gap-1 rounded-none bg-white/95 text-black border border-neutral-200 py-2 px-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider hover:bg-neutral-100 shadow-xs transition-all cursor-pointer"
+                className="flex-1 inline-flex items-center justify-center gap-1 rounded-none bg-background/95 text-foreground border border-border py-2 px-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider hover:bg-muted shadow-xs transition-all cursor-pointer"
               >
                 <Eye className="h-3 w-3" />
                 Quick View
@@ -231,7 +231,7 @@ export function ConfigurableProductCard({
                 suppressHydrationWarning
                 onClick={handleQuickAdd}
                 disabled={isAddingToCart || !product.inStock}
-                className="flex-1 inline-flex items-center justify-center gap-1 rounded-none bg-black hover:bg-neutral-900 text-white py-2 px-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider shadow-xs hover:shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 inline-flex items-center justify-center gap-1 rounded-none bg-foreground text-background hover:opacity-90 py-2 px-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider shadow-xs hover:shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ShoppingCart className="h-3 w-3" />
                 {isAddingToCart ? '...' : product.inStock ? 'Quick Add' : 'Out'}
@@ -247,14 +247,14 @@ export function ConfigurableProductCard({
             {config.showName && (
               <Link
                 href={`/products/${product.slug}`}
-                className="text-neutral-900 dark:text-neutral-100 font-sans font-medium text-[13px] sm:text-[14px] tracking-[0.02em] uppercase leading-snug hover:opacity-75 transition-opacity line-clamp-1 flex-1 pr-2"
+                className="text-foreground hover:opacity-75 font-sans font-medium text-[13px] sm:text-[14px] tracking-[0.02em] uppercase leading-snug transition-opacity line-clamp-1 flex-1 pr-2"
                 title={product.name}
               >
                 {product.name}
               </Link>
             )}
             {config.showPrice && (
-              <span className="font-sans font-medium text-[13px] sm:text-[14px] tracking-tight text-neutral-900 dark:text-neutral-100 shrink-0 text-right">
+              <span className="font-sans font-medium text-[13px] sm:text-[14px] tracking-tight text-foreground shrink-0 text-right">
                 {formatPrice(product.price)}
               </span>
             )}
@@ -263,12 +263,12 @@ export function ConfigurableProductCard({
           {/* Row 2: Fit / Subcategory (Left) + Compare-at Price (Right) */}
           <div className="flex items-baseline justify-between gap-2">
             {config.showCategory && (
-              <span className="text-[11px] sm:text-[11.5px] font-normal tracking-[0.16em] sm:tracking-[0.18em] text-neutral-400 dark:text-neutral-500 uppercase line-clamp-1">
+              <span className="text-[11px] sm:text-[11.5px] font-normal tracking-[0.16em] sm:tracking-[0.18em] text-muted-foreground uppercase line-clamp-1">
                 {product.fit || product.category || 'OVERSIZED'}
               </span>
             )}
             {config.showCompareAtPrice && product.compareAtPrice && product.compareAtPrice > product.price ? (
-              <span className="text-[11px] sm:text-[11.5px] text-neutral-400 dark:text-neutral-500 line-through font-normal shrink-0 text-right">
+              <span className="text-[11px] sm:text-[11.5px] text-muted-foreground line-through font-normal shrink-0 text-right">
                 {formatPrice(product.compareAtPrice)}
               </span>
             ) : null}
@@ -288,7 +288,7 @@ export function ConfigurableProductCard({
 
           {/* Row 4: Brand / Studio Attribution */}
           <div className="flex items-center">
-            <span className="text-[10px] sm:text-[10.5px] font-normal tracking-[0.16em] sm:tracking-[0.18em] text-neutral-400 dark:text-neutral-500 uppercase">
+            <span className="text-[10px] sm:text-[10.5px] font-normal tracking-[0.16em] sm:tracking-[0.18em] text-muted-foreground uppercase">
               BY {brandName}
             </span>
           </div>

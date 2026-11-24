@@ -135,7 +135,7 @@ export function ProductInfo({ product, initialIsSaved = false }: ProductInfoProp
 
   // Accordion open states (multiple or single)
   const [openAccordions, setOpenAccordions] = React.useState<Record<string, boolean>>({
-    overview: true,
+    overview: false,
     care: false,
     shipping: false,
   });
@@ -240,19 +240,19 @@ export function ProductInfo({ product, initialIsSaved = false }: ProductInfoProp
   };
 
   return (
-    <div className="flex flex-col gap-6 w-full select-none">
+    <div className="flex flex-col gap-4 sm:gap-5 w-full select-none">
       {/* 1. Variant selectors (Size / Color) matching reference PDP */}
       {resolvedOptions.map((opt) => (
-        <div key={opt.id} className="flex flex-col gap-3">
+        <div key={opt.id} className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase tracking-wider text-neutral-950 dark:text-white font-heading">
+            <span className="text-xs font-black uppercase tracking-wider text-foreground font-heading">
               {opt.name.toUpperCase()}
             </span>
             {opt.name.toLowerCase().includes('size') && (
               <button
                 type="button"
                 onClick={() => toast.info('True to size tailored fit. Model is 6\'1" wearing size M.')}
-                className="text-xs font-bold uppercase tracking-wider text-neutral-500 hover:text-black dark:hover:text-white underline cursor-pointer"
+                className="text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground underline cursor-pointer"
               >
                 SIZE GUIDE
               </button>
@@ -273,8 +273,8 @@ export function ProductInfo({ product, initialIsSaved = false }: ProductInfoProp
                   disabled={!isAvailable && !isActive}
                   className={`h-11 min-w-[52px] px-4 font-heading font-bold text-xs uppercase tracking-wider transition-all cursor-pointer border rounded-none flex items-center justify-center ${
                     isActive
-                      ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white font-black shadow-xs'
-                      : 'bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 border-neutral-300 dark:border-neutral-700 hover:border-black dark:hover:border-white'
+                      ? 'bg-foreground text-background border-foreground font-black shadow-xs'
+                      : 'bg-background text-foreground border-border hover:border-foreground'
                   }`}
                 >
                   {val.value}
@@ -299,7 +299,7 @@ export function ProductInfo({ product, initialIsSaved = false }: ProductInfoProp
           type="button"
           disabled={isAdding || isOutOfStock}
           onClick={handleAddToCart}
-          className="flex-1 h-13 bg-black hover:bg-neutral-900 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-black font-heading font-black text-xs sm:text-sm uppercase tracking-[0.2em] rounded-none shadow-md transition-all flex items-center justify-center cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 h-13 bg-foreground hover:opacity-90 text-background font-heading font-black text-xs sm:text-sm uppercase tracking-[0.2em] rounded-none shadow-md transition-all flex items-center justify-center cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isAdding ? 'ADDING TO BAG...' : isOutOfStock ? 'OUT OF STOCK' : `ADD TO BAG • ${formatPrice(currentPrice)}`}
         </button>
@@ -308,32 +308,32 @@ export function ProductInfo({ product, initialIsSaved = false }: ProductInfoProp
           type="button"
           disabled={isToggling}
           onClick={handleWishlist}
-          className="h-13 w-13 rounded-none border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 flex items-center justify-center text-neutral-800 dark:text-neutral-200 hover:text-black dark:hover:text-white hover:border-black dark:hover:border-white transition-all cursor-pointer shrink-0 shadow-xs"
+          className="h-13 w-13 rounded-none border border-border bg-background flex items-center justify-center text-foreground hover:border-foreground transition-all cursor-pointer shrink-0 shadow-xs"
           aria-label="Add to Wishlist"
         >
-          <Heart className={`h-5 w-5 transition-colors ${isFavorited ? 'fill-black dark:fill-white text-black dark:text-white' : ''}`} />
+          <Heart className={`h-5 w-5 transition-colors ${isFavorited ? 'fill-foreground text-foreground' : ''}`} />
         </button>
       </div>
 
       {/* 4. Three-Column Value Perks Bar (Free Ship, Returns, Authentic) */}
-      <div className="grid grid-cols-3 border border-neutral-200 dark:border-neutral-800 rounded-none text-center divide-x divide-neutral-200 dark:divide-neutral-800 py-3.5 px-2 bg-neutral-50/50 dark:bg-neutral-900/40 select-none">
+      <div className="grid grid-cols-3 border border-border rounded-none text-center divide-x divide-border py-3.5 px-2 bg-muted/40 select-none">
         <div className="flex flex-col items-center justify-center gap-1.5 px-1">
-          <Truck className="w-4 h-4 text-neutral-800 dark:text-neutral-200" />
-          <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-neutral-900 dark:text-neutral-100 font-mono">
+          <Truck className="w-4 h-4 text-foreground" />
+          <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-foreground font-mono">
             FREE SHIP ₹2K+
           </span>
         </div>
 
         <div className="flex flex-col items-center justify-center gap-1.5 px-1">
-          <RotateCcw className="w-4 h-4 text-neutral-800 dark:text-neutral-200" />
-          <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-neutral-900 dark:text-neutral-100 font-mono">
+          <RotateCcw className="w-4 h-4 text-foreground" />
+          <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-foreground font-mono">
             15-DAY RETURNS
           </span>
         </div>
 
         <div className="flex flex-col items-center justify-center gap-1.5 px-1">
-          <ShieldCheck className="w-4 h-4 text-neutral-800 dark:text-neutral-200" />
-          <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-neutral-900 dark:text-neutral-100 font-mono">
+          <ShieldCheck className="w-4 h-4 text-foreground" />
+          <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-foreground font-mono">
             AUTHENTIC
           </span>
         </div>

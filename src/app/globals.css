@@ -2,6 +2,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,400..800;1,9..40,400..800&family=Inter:wght@400;500;600;700;800;900&family=Italiana&family=JetBrains+Mono:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800;900&family=Oswald:wght@500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=Syne:wght@600;700;800&display=swap');
 @import "tailwindcss";
 
+/* Strict Selector-Based Dark Mode Variant:
+ * Binds Tailwind dark:* utilities exclusively to the presence of the .dark class on an ancestor (e.g. <html class="dark">).
+ * Prevents visitor/device OS dark mode (@media prefers-color-scheme: dark) from triggering dark:* classes unless
+ * the admin explicitly enables dark or system mode in CMS Site Settings.
+ */
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
+/* Luxury Monochrome Editorial Display Typography */
+.font-display {
+  font-family: 'Clash Display', 'Helvetica Now Display', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.tracking-tight {
+  letter-spacing: -0.025em;
+}
+
+.text-3xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+}
+
 @font-face {
   font-family: 'Helvetica Now Display';
   src: local('Helvetica Now Display'), local('Helvetica Now'), local('Helvetica Neue'), local('Arial');
@@ -150,7 +172,7 @@
 }
 
 /* Dark Theme Overrides - Linked to CMS Tokens so OS Dark Mode does NOT override storefront palette */
-.dark {
+.dark, [data-theme="dark"] {
   color-scheme: dark;
   --background: var(--cms-bg, #09090b);
   --foreground: var(--cms-text, #ffffff);
