@@ -18,15 +18,14 @@ const globalForCache = globalThis as unknown as {
 const memoryCache = globalForCache.memoryCache || new Map<string, CacheEntry<unknown>>();
 const inFlight = globalForCache.inFlight || new Map<string, Promise<unknown>>();
 
-if (process.env.NODE_ENV !== 'production') {
-  globalForCache.memoryCache = memoryCache;
-  globalForCache.inFlight = inFlight;
-}
+// Always persist memory cache and in-flight map on globalThis across all environments (dev & prod)
+globalForCache.memoryCache = memoryCache;
+globalForCache.inFlight = inFlight;
 
 /**
  * High-speed cached fetcher with in-flight request deduplication and memory TTL.
  */
-async function getOrSetCached<T>(
+export async function getOrSetCached<T>(
   key: string,
   ttlMs: number,
   tags: string[],

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { SupabaseClient, Session, User } from '@supabase/supabase-js';
+import { SupabaseClient, Session, User, AuthChangeEvent } from '@supabase/supabase-js';
 import { createClient, SupabaseNetworkError } from '@/lib/supabase/client';
 
 export interface SupabaseContextValue {
@@ -82,35 +82,82 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
   }, [checkConnectionAndSession]);
 
   useEffect(() => {
-    checkConnectionAndSession();
+    let isMounted = true;
 
+    // Listen for auth state changes once on mount
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, newSession: Session | null) => {
+      if (!isMounted) return;
       setSession(newSession);
       setUser(newSession?.user ?? null);
       setIsLoading(false);
       setIsSupabaseUnreachable(false);
     });
 
+    // Check initial session
+    supabase.auth
+      .getSession()
+      .then(({ data, error }: { data: { session: Session | null }; error: any }) => {
+        if (!isMounted) return;
+        if (error) {
+          setAuthError(error);
+          if (error.message?.includes('Failed to fetch') || error.name === 'SupabaseNetworkError') {
+            setIsSupabaseUnreachable(true);
+          }
+        } else {
+          setSession(data.session);
+          setUser(data.session?.user ?? null);
+          setIsSupabaseUnreachable(false);
+        }
+      })
+      .catch((err: any) => {
+        if (!isMounted) return;
+        if (err instanceof SupabaseNetworkError || (err instanceof Error && err.message?.includes('Failed to fetch'))) {
+          setIsSupabaseUnreachable(true);
+          setAuthError(err instanceof Error ? err : new Error('Supabase network error'));
+        } else {
+          setAuthError(err instanceof Error ? err : new Error('Unknown auth initialization error'));
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
-  }, [supabase, checkConnectionAndSession]);
+  }, [supabase]);
 
   const isOffline = isBrowserOffline || isSupabaseUnreachable;
 
-  const value: SupabaseContextValue = {
-    supabase,
-    session,
-    user,
-    isLoading,
-    isOffline,
-    isBrowserOffline,
-    isSupabaseUnreachable,
-    authError,
-    retryConnection,
-  };
+  const value = React.useMemo<SupabaseContextValue>(
+    () => ({
+      supabase,
+      session,
+      user,
+      isLoading,
+      isOffline,
+      isBrowserOffline,
+      isSupabaseUnreachable,
+      authError,
+      retryConnection,
+    }),
+    [
+      supabase,
+      session,
+      user,
+      isLoading,
+      isOffline,
+      isBrowserOffline,
+      isSupabaseUnreachable,
+      authError,
+      retryConnection,
+    ]
+  );
 
   return (
     <SupabaseContext.Provider value={value}>

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { resetPasswordAction } from '@/app/actions/auth-actions';
 import { createClient } from '@/lib/supabase/client';
+import { type AuthChangeEvent, type Session } from '@supabase/supabase-js';
 import { Eye, EyeOff, Check, AlertCircle, CheckCircle2, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -27,6 +28,8 @@ function ResetPasswordContent() {
   // Verify that an active session or recovery token exists
   React.useEffect(() => {
     const supabase = createClient();
+    let subscription: { unsubscribe: () => void } | null = null;
+    let timeoutId: NodeJS.Timeout | null = null;
 
     async function checkAuthSession() {
       try {
@@ -46,22 +49,18 @@ function ResetPasswordContent() {
         }
 
         // 3. Listen for asynchronous auth event (PASSWORD_RECOVERY)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        const res = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
           if (event === 'PASSWORD_RECOVERY' || session) {
             setHasValidSession(true);
             setCheckingSession(false);
           }
         });
+        subscription = res.data.subscription;
 
         // 4. Grace period timeout before flagging expired link
-        const timeoutId = setTimeout(() => {
+        timeoutId = setTimeout(() => {
           setCheckingSession(false);
         }, 1200);
-
-        return () => {
-          subscription.unsubscribe();
-          clearTimeout(timeoutId);
-        };
       } catch (err) {
         console.error('Session check error:', err);
         setCheckingSession(false);
@@ -69,6 +68,11 @@ function ResetPasswordContent() {
     }
 
     checkAuthSession();
+
+    return () => {
+      subscription?.unsubscribe();
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, []);
 
   const validateForm = (): boolean => {

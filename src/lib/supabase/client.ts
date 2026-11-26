@@ -27,17 +27,35 @@ export const resilientFetch: typeof fetch = async (input, init) => {
   }
 };
 
+let browserClient: ReturnType<typeof createBrowserClient> | null = null;
+
 /**
  * Creates a browser-side Supabase client for client-side React components with network resilience.
+ * Uses a browser-level singleton to avoid creating multiple Supabase clients and leaking event listeners.
  */
 export function createClient() {
-  return createBrowserClient(
-    authConfig.supabase.url,
-    authConfig.supabase.anonKey,
-    {
-      global: {
-        fetch: resilientFetch,
-      },
-    }
-  );
+  if (typeof window === 'undefined') {
+    return createBrowserClient(
+      authConfig.supabase.url,
+      authConfig.supabase.anonKey,
+      {
+        global: {
+          fetch: resilientFetch,
+        },
+      }
+    );
+  }
+
+  if (!browserClient) {
+    browserClient = createBrowserClient(
+      authConfig.supabase.url,
+      authConfig.supabase.anonKey,
+      {
+        global: {
+          fetch: resilientFetch,
+        },
+      }
+    );
+  }
+  return browserClient;
 }

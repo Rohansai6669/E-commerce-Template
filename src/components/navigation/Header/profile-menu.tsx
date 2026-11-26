@@ -3,8 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { Icon } from '@/components/ui/icon';
-import { createClient } from '@/lib/supabase/client';
-import { type User, type AuthChangeEvent, type Session } from '@supabase/supabase-js';
+import { useSupabase } from '@/providers/SupabaseProvider';
 import { cn } from '@/core/utils/cn';
 
 export interface ProfileMenuProps {
@@ -22,26 +21,9 @@ export function ProfileMenu({
   iconStyleClass = 'hover:bg-current/10',
   className = '',
 }: ProfileMenuProps) {
-  const supabase = createClient();
-  const [user, setUser] = React.useState<User | null>(null);
+  const { user, supabase } = useSupabase();
   const [isOpen, setIsOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    supabase.auth.getUser().then((res) => {
-      setUser(res.data.user);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
-      setUser(session?.user || null);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [supabase]);
 
   // Close dropdown on click outside
   React.useEffect(() => {

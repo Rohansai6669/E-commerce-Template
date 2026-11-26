@@ -11,6 +11,7 @@ import { type ProductData } from '@/components/commerce/configurable-product-car
 import { type BreadcrumbItem } from '@/components/navigation/Breadcrumb/breadcrumb';
 
 import { DEPARTMENTS } from './departments';
+import { getOrSetCached } from '@/core/performance/cache';
 
 export const KNOWN_AUDIENCES = new Set(['men', 'women', 'kids', 'unisex', 'baby']);
 
@@ -54,12 +55,25 @@ export function formatTaxonomyTitle(slugOrName: string): string {
  * - ['streetwear', 'hoodies']
  * - ['men', 'streetwear']
  * - ['streetwear']
+ *
+ * High-speed cached with in-flight deduplication across concurrent requests (Metadata + Page).
  */
 export async function resolveHierarchicalCatalog(
   segments: string[],
   sort: string = 'newest'
 ): Promise<HierarchicalCatalogResult> {
   const cleanSegments = segments.map((s) => decodeURIComponent(s).toLowerCase().trim());
+  const cacheKey = `hierarchical_catalog_${cleanSegments.join('/')}_${sort}`;
+
+  return getOrSetCached(cacheKey, 60 * 1000, ['catalog', 'categories', 'products'], () =>
+    resolveHierarchicalCatalogInternal(cleanSegments, sort)
+  );
+}
+
+async function resolveHierarchicalCatalogInternal(
+  cleanSegments: string[],
+  sort: string = 'newest'
+): Promise<HierarchicalCatalogResult> {
   if (cleanSegments.length === 0) {
     return {
       resolution: {

@@ -94,14 +94,15 @@ const isServerless = Boolean(
   process.env.NODE_ENV === 'production'
 );
 
-// Adaptive connection pool sizing: 2-3 per serverless instance to prevent Supabase pooler exhaustion, 10 in dev/VPS
+// Adaptive connection pool sizing: 3 per serverless instance to prevent Supabase pooler exhaustion, 10 in dev/VPS
 const maxConnections = process.env.DATABASE_POOL_MAX
   ? parseInt(process.env.DATABASE_POOL_MAX, 10)
   : isServerless
   ? 3
   : 10;
 
-const idleTimeout = isServerless ? 15 : 120; // Swiftly release idle connections back to Supabase pooler
+// Maintain warm connection pool for 120s across requests to eliminate TLS roundtrip latency
+const idleTimeout = 120;
 
 // Establish a singleton connection pool optimized for low-latency with Supabase Transaction pooler
 const globalForDb = globalThis as unknown as { client: ReturnType<typeof postgres> | undefined };
@@ -111,12 +112,11 @@ const client =
     max: maxConnections,
     idle_timeout: idleTimeout,
     max_lifetime: 1800,
-    connect_timeout: 10,
+    connect_timeout: 15,
     prepare: false, // Mandatory for Supabase PGBouncer transaction pooler (port 6543)
   });
 
-if (process.env.NODE_ENV !== 'production') {
-  globalForDb.client = client;
-}
+// Always retain database client singleton on globalThis across all environments (dev & prod)
+globalForDb.client = client;
 
 export const db = drizzle(client, { schema });
