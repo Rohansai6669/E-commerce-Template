@@ -71,19 +71,33 @@ export async function POST(req: NextRequest) {
     const currentAddress = (matchedOrder.shippingAddress || {}) as Record<string, any>;
     const currentTracking = currentAddress.tracking || {};
 
+    const rawActivities = body.scans || body.activities || body.shipment_track_activities || [];
+    const formattedActivities = Array.isArray(rawActivities)
+      ? rawActivities.map((s: any) => ({
+          date: s.date || s.timestamp || new Date().toISOString(),
+          status: s.status || currentStatus,
+          activity: s.activity || s.status || currentStatus,
+          location: s.location || '',
+        }))
+      : currentTracking.activities || [];
+
+    const latestScan = formattedActivities[0] || {
+      status: currentStatus,
+      location: body.scans?.[0]?.location || body.location || '',
+      activity: body.scans?.[0]?.activity || body.activity || currentStatus,
+      timestamp: new Date().toISOString(),
+    };
+
     const updatedTracking = {
       ...currentTracking,
       shippingProvider: 'shiprocket',
       awb: awb || currentTracking.awb,
       courierName: courierName || currentTracking.courierName,
       lastStatus: currentStatus,
+      estimatedDelivery: body.edd || body.expected_date || body.expected_delivery_date || currentTracking.estimatedDelivery,
+      activities: formattedActivities.length > 0 ? formattedActivities : currentTracking.activities || [],
+      latestScan,
       updatedAt: new Date().toISOString(),
-      latestScan: {
-        status: currentStatus,
-        location: body.scans?.[0]?.location || body.location || '',
-        activity: body.scans?.[0]?.activity || body.activity || currentStatus,
-        timestamp: new Date().toISOString(),
-      },
     };
 
     const updatePayload: Record<string, any> = {

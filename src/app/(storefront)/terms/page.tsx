@@ -13,7 +13,7 @@ export default function TermsPage() {
 
       <h3 className="text-lg font-bold text-neutral-900 dark:text-white mt-6 mb-2">1. Purchases & Pricing</h3>
       <p>
-        All prices are listed in USD. We reserve the right to correct pricing errors, modify item availability, or cancel suspicious orders.
+        All prices are listed in INR (₹). We reserve the right to correct pricing errors, modify item availability, or cancel suspicious orders.
       </p>
 
       <h3 className="text-lg font-bold text-neutral-900 dark:text-white mt-6 mb-2">2. User Accounts</h3>

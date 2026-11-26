@@ -72,6 +72,7 @@ export interface ProductCardModel {
   fit: string | null;
   season: string | null;
   attributes?: Array<{ name: string; value: string }>;
+  colors?: string[];
 }
 
 export interface StorefrontVariant {

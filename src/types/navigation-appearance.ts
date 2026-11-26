@@ -259,7 +259,7 @@ export const defaultNavAppearanceConfig: NavAppearanceConfig = {
 
   // 7. Announcement Bar
   showAnnouncementBar: false,
-  announcementMessage: 'FREE EXPRESS SHIPPING ON ALL ORDERS OVER $100',
+  announcementMessage: 'FREE EXPRESS SHIPPING ON ALL ORDERS OVER ₹2,000',
   announcementCtaText: 'SHOP NOW',
   announcementCtaUrl: '/products',
   announcementBgColor: '#000000',

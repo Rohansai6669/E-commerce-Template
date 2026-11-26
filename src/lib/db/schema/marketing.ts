@@ -7,7 +7,7 @@ export const coupons = pgTable('coupons', {
   code: text('code').unique().notNull(),
   discountType: text('discount_type', { enum: ['percentage', 'fixed'] }).notNull(),
   discountValue: decimal('discount_value', { precision: 12, scale: 2 }).notNull(),
-  currency: text('currency').default('USD').notNull(), // Multi-currency constraint support
+  currency: text('currency').default('INR').notNull(), // Multi-currency constraint support
   minOrderValue: decimal('min_order_value', { precision: 12, scale: 2 }),
   maxDiscountValue: decimal('max_discount_value', { precision: 12, scale: 2 }),
   usageLimit: integer('usage_limit'),

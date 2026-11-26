@@ -413,11 +413,12 @@ export class OrderRepository {
   }
 
   /**
-   * Finds an order matching the orderNumber and customer email (supporting column & JSONB fallback).
+   * Finds an order matching the orderNumber / AWB and customer email / phone (supporting column & JSONB fallback).
    */
-  async findForTracking(orderNumber: string, email: string) {
+  async findForTracking(orderNumber: string, emailOrPhone: string) {
     const cleanNum = orderNumber.trim().toUpperCase();
-    const cleanEmail = email.trim().toLowerCase();
+    const cleanEmail = emailOrPhone.trim().toLowerCase();
+    const phoneDigits = emailOrPhone.replace(/\D/g, '');
 
     const [row] = await db
       .select()
@@ -426,9 +427,17 @@ export class OrderRepository {
         and(
           or(
             sql`UPPER(${orders.orderNumber}) = ${cleanNum}`,
-            sql`UPPER(${orders.shippingAddress}->>'orderNumber') = ${cleanNum}`
+            sql`UPPER(${orders.shippingAddress}->>'orderNumber') = ${cleanNum}`,
+            sql`UPPER(${orders.shippingAddress}->'tracking'->>'awb') = ${cleanNum}`,
+            sql`UPPER(CAST(${orders.id} AS TEXT)) = ${cleanNum}`
           ),
-          sql`lower(${orders.shippingAddress}->>'email') = ${cleanEmail}`
+          or(
+            sql`lower(${orders.shippingAddress}->>'email') = ${cleanEmail}`,
+            sql`lower(${orders.billingAddress}->>'email') = ${cleanEmail}`,
+            ...(phoneDigits.length >= 10
+              ? [sql`${orders.shippingAddress}->>'phone' LIKE ${'%' + phoneDigits.slice(-10)}`]
+              : [])
+          )
         )
       )
       .limit(1);
@@ -443,10 +452,46 @@ export class OrderRepository {
       limit: 50,
       orderBy: (orders, { desc }) => [desc(orders.createdAt)],
       with: {
-        items: true,
+        items: {
+          with: {
+            variant: true,
+          },
+        },
       },
     });
     return rows;
+  }
+
+  /**
+   * Fetches full order details including line items for admin operations by UUID, orderNumber, or JSONB orderNumber.
+   */
+  async getOrderWithDetailsForAdmin(idOrNumber: string) {
+    const clean = idOrNumber.trim();
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clean);
+
+    const row = await db.query.orders.findFirst({
+      where: isUuid
+        ? or(
+            eq(orders.id, clean),
+            eq(orders.orderNumber, clean),
+            sql`UPPER(${orders.shippingAddress}->>'orderNumber') = UPPER(${clean})`
+          )
+        : or(
+            eq(orders.orderNumber, clean),
+            sql`UPPER(${orders.shippingAddress}->>'orderNumber') = UPPER(${clean})`
+          ),
+      with: {
+        items: {
+          with: {
+            variant: true,
+          },
+        },
+        shippingMethod: true,
+        payments: true,
+        coupon: true,
+      },
+    });
+    return row ?? null;
   }
 
   /**

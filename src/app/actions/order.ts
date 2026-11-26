@@ -172,26 +172,37 @@ export async function placeOrderAction(params: {
   }
 }
 
+import { rateLimiter } from '@/core/security/rate-limit';
+import { securityConfig } from '@/core/config/security';
+import { headers } from 'next/headers';
+import { shiprocketClient } from '@/lib/shipping/shiprocket';
+import { orders } from '@/lib/db/schema/order';
+import { eq } from 'drizzle-orm';
+
 /**
- * Public guest order tracking action.
+ * Public guest and customer order tracking action.
+ * Synchronizes in real time with Shiprocket courier telemetry when an AWB is present.
  * Leverages RateLimiter boundaries to prevent enumeration lookups.
  */
 export async function trackOrderAction(
   orderNumber: string,
-  email: string
+  emailOrPhone: string
 ): Promise<{
   success: boolean;
   status?: string;
   createdAt?: Date;
+  orderNumber?: string | null;
+  destinationCity?: string | null;
   awb?: string | null;
   courierName?: string | null;
   trackingUrl?: string | null;
   estimatedDelivery?: string | null;
   latestScan?: { status: string; location: string; activity: string; timestamp: string } | null;
+  activities?: Array<{ date: string; status: string; activity: string; location: string }>;
   error?: string;
 }> {
-  if (!orderNumber || !email) {
-    return { success: false, error: 'Order number and billing email address are required.' };
+  if (!orderNumber || !emailOrPhone) {
+    return { success: false, error: 'Order reference / AWB and billing email or phone are required.' };
   }
 
   try {
@@ -212,33 +223,100 @@ export async function trackOrderAction(
       };
     }
 
-    const order = await orderRepository.findForTracking(orderNumber, email);
+    const order = await orderRepository.findForTracking(orderNumber, emailOrPhone);
     if (!order) {
       // Generic error response to mitigate information leakage
       return {
         success: false,
-        error: 'No order found matching the provided reference and email.',
+        error: 'No order found matching the provided reference and email / phone.',
       };
     }
 
-    const tracking = (order.shippingAddress as any)?.tracking;
+    const currentAddr = (order.shippingAddress || {}) as Record<string, any>;
+    let tracking = (currentAddr.tracking || {}) as Record<string, any>;
+    let currentStatus = order.status;
+
+    // Real-time synchronization with Shiprocket if AWB exists
+    if (tracking.awb) {
+      try {
+        const liveTracking = await shiprocketClient.trackAwb(tracking.awb);
+        if (liveTracking.success) {
+          const rawStatus = (liveTracking.currentStatus || '').toUpperCase();
+          let newOrderStatus = order.status;
+
+          if (rawStatus.includes('DELIVERED')) {
+            newOrderStatus = 'delivered';
+          } else if (
+            rawStatus.includes('IN TRANSIT') ||
+            rawStatus.includes('OUT FOR DELIVERY') ||
+            rawStatus.includes('PICKED UP') ||
+            rawStatus.includes('SHIPPED') ||
+            rawStatus.includes('AWB ASSIGNED')
+          ) {
+            newOrderStatus = 'shipped';
+          } else if (rawStatus.includes('CANCELED') || rawStatus.includes('CANCELLED')) {
+            newOrderStatus = 'cancelled';
+          }
+
+          const liveActivities = liveTracking.activities || [];
+          const latestActivity = liveActivities[0];
+
+          const updatedTracking = {
+            ...tracking,
+            shippingProvider: 'shiprocket',
+            courierName: liveTracking.courierName || tracking.courierName,
+            trackingUrl: liveTracking.trackingUrl || tracking.trackingUrl,
+            estimatedDelivery: liveTracking.etd || tracking.estimatedDelivery,
+            lastStatus: liveTracking.currentStatus || tracking.lastStatus,
+            activities: liveActivities.length > 0 ? liveActivities : tracking.activities || [],
+            latestScan: latestActivity
+              ? {
+                  status: latestActivity.status,
+                  location: latestActivity.location,
+                  activity: latestActivity.activity,
+                  timestamp: latestActivity.date || new Date().toISOString(),
+                }
+              : tracking.latestScan,
+            syncedAt: new Date().toISOString(),
+          };
+
+          // Cache updated tracking & status back to PostgreSQL database
+          await db
+            .update(orders)
+            .set({
+              status: newOrderStatus,
+              shippingAddress: {
+                ...currentAddr,
+                tracking: updatedTracking,
+              },
+              updatedAt: new Date(),
+            })
+            .where(eq(orders.id, order.id))
+            .catch((err) => console.warn('Failed to cache live Shiprocket tracking in DB:', err));
+
+          tracking = updatedTracking;
+          currentStatus = newOrderStatus;
+        }
+      } catch (syncErr) {
+        console.warn('[Shiprocket Tracking Sync Warning]:', syncErr);
+      }
+    }
 
     return {
       success: true,
-      status: order.status,
+      status: currentStatus,
       createdAt: order.createdAt,
+      orderNumber: order.orderNumber,
+      destinationCity: currentAddr.city || null,
       awb: tracking?.awb || null,
       courierName: tracking?.courierName || null,
       trackingUrl: tracking?.trackingUrl || null,
       estimatedDelivery: tracking?.estimatedDelivery || null,
       latestScan: tracking?.latestScan || null,
+      activities: tracking?.activities || [],
     };
   } catch (err) {
     console.error('Track order action failure:', err);
     return { success: false, error: 'An unexpected error occurred. Please try again later.' };
   }
 }
-
-import { rateLimiter } from '@/core/security/rate-limit';
-import { securityConfig } from '@/core/config/security';
-import { headers } from 'next/headers';

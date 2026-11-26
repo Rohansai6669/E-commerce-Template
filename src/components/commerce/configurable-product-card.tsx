@@ -24,33 +24,60 @@ export interface ConfigurableProductCardProps {
 }
 
 const COLOR_SWATCH_MAP: Record<string, string> = {
+  black: '#171717',
+  noir: '#111111',
+  white: '#ffffff',
+  red: '#dc2626',
+  crimson: '#991b1b',
+  ruby: '#9b111e',
+  maroon: '#800000',
+  burgundy: '#800020',
+  gold: '#d4af37',
+  yellow: '#eab308',
+  amber: '#f59e0b',
+  orange: '#f97316',
+  rust: '#b45309',
+  coral: '#fb7185',
+  pink: '#ec4899',
+  rose: '#f43f5e',
+  blue: '#2563eb',
+  navy: '#1e293b',
+  denim: '#3b82f6',
+  sky: '#0ea5e9',
+  cyan: '#06b6d4',
+  teal: '#0d9488',
+  green: '#16a34a',
+  emerald: '#059669',
+  forest: '#14532d',
+  olive: '#556b2f',
+  sage: '#84a98c',
+  purple: '#9333ea',
+  violet: '#7c3aed',
+  indigo: '#4f46e5',
+  lavender: '#c084fc',
   beige: '#ece6db',
   cream: '#f5f0e6',
   sand: '#e8dcce',
   ecru: '#f2eee9',
-  white: '#ffffff',
-  black: '#171717',
-  noir: '#111111',
-  navy: '#1e293b',
-  blue: '#3b82f6',
-  grey: '#9ca3af',
-  gray: '#9ca3af',
-  charcoal: '#374151',
-  olive: '#556b2f',
   khaki: '#c3b091',
-  brown: '#6e473b',
   tan: '#d2b48c',
-  denim: '#4b6584',
-  sage: '#9caf88',
+  camel: '#c19a6b',
+  brown: '#6e473b',
+  chocolate: '#3e2723',
+  mocha: '#5d4037',
+  grey: '#71717a',
+  gray: '#71717a',
+  charcoal: '#374151',
+  silver: '#cbd5e1',
   oatmeal: '#ede6d6',
 };
 
 function resolveColorSwatch(colorVal?: string): string {
-  if (!colorVal) return '#ede6d6';
+  if (!colorVal) return '#171717';
   const clean = colorVal.toLowerCase().trim();
   if (COLOR_SWATCH_MAP[clean]) return COLOR_SWATCH_MAP[clean];
-  if (clean.startsWith('#')) return clean;
-  return '#ede6d6';
+  if (clean.startsWith('#') || clean.startsWith('rgb') || clean.startsWith('hsl')) return clean;
+  return clean;
 }
 
 export function ConfigurableProductCard({
@@ -83,8 +110,8 @@ export function ConfigurableProductCard({
   const hoverImage = product.images[1] || primaryImage;
 
   const displayColors = product.colors && product.colors.length > 0
-    ? product.colors.slice(0, 4)
-    : ['#ede6d6'];
+    ? Array.from(new Set(product.colors)).slice(0, 5)
+    : [];
 
   const brandName = product.brand || 'ATELIER BOMBAY';
 
@@ -247,14 +274,14 @@ export function ConfigurableProductCard({
             {config.showName && (
               <Link
                 href={`/products/${product.slug}`}
-                className="text-foreground hover:opacity-75 font-sans font-medium text-[13px] sm:text-[14px] tracking-[0.02em] uppercase leading-snug transition-opacity line-clamp-1 flex-1 pr-2"
+                className="text-neutral-950 dark:text-white hover:opacity-75 font-sans font-medium text-[13px] sm:text-[14px] tracking-[0.02em] uppercase leading-snug transition-opacity line-clamp-1 flex-1 pr-2"
                 title={product.name}
               >
                 {product.name}
               </Link>
             )}
             {config.showPrice && (
-              <span className="font-sans font-medium text-[13px] sm:text-[14px] tracking-tight text-foreground shrink-0 text-right">
+              <span className="font-sans font-medium text-[13px] sm:text-[14px] tracking-tight text-neutral-950 dark:text-white shrink-0 text-right">
                 {formatPrice(product.price)}
               </span>
             )}
@@ -263,32 +290,34 @@ export function ConfigurableProductCard({
           {/* Row 2: Fit / Subcategory (Left) + Compare-at Price (Right) */}
           <div className="flex items-baseline justify-between gap-2">
             {config.showCategory && (
-              <span className="text-[11px] sm:text-[11.5px] font-normal tracking-[0.16em] sm:tracking-[0.18em] text-muted-foreground uppercase line-clamp-1">
+              <span className="text-[11px] sm:text-[11.5px] font-normal tracking-[0.16em] sm:tracking-[0.18em] text-neutral-600 dark:text-neutral-400 uppercase line-clamp-1">
                 {product.fit || product.category || 'OVERSIZED'}
               </span>
             )}
             {config.showCompareAtPrice && product.compareAtPrice && product.compareAtPrice > product.price ? (
-              <span className="text-[11px] sm:text-[11.5px] text-muted-foreground line-through font-normal shrink-0 text-right">
+              <span className="text-[11px] sm:text-[11.5px] text-neutral-500 dark:text-neutral-400 line-through font-normal shrink-0 text-right">
                 {formatPrice(product.compareAtPrice)}
               </span>
             ) : null}
           </div>
 
           {/* Row 3: Color Swatch Dot */}
-          <div className="flex items-center gap-1.5 pt-1 pb-0.5">
-            {displayColors.map((color, idx) => (
-              <span
-                key={idx}
-                className="w-2.5 h-2.5 rounded-full border border-neutral-300/80 dark:border-neutral-600 shrink-0 transition-transform hover:scale-125"
-                style={{ backgroundColor: resolveColorSwatch(color) }}
-                title={color}
-              />
-            ))}
-          </div>
+          {displayColors.length > 0 && (
+            <div className="flex items-center gap-1.5 pt-1 pb-0.5">
+              {displayColors.map((color, idx) => (
+                <span
+                  key={idx}
+                  className="w-2.5 h-2.5 rounded-full border border-neutral-300/80 dark:border-neutral-600 shrink-0 transition-transform hover:scale-125"
+                  style={{ backgroundColor: resolveColorSwatch(color) }}
+                  title={color}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Row 4: Brand / Studio Attribution */}
           <div className="flex items-center">
-            <span className="text-[10px] sm:text-[10.5px] font-normal tracking-[0.16em] sm:tracking-[0.18em] text-muted-foreground uppercase">
+            <span className="text-[10px] sm:text-[10.5px] font-normal tracking-[0.16em] sm:tracking-[0.18em] text-neutral-600 dark:text-neutral-400 uppercase">
               BY {brandName}
             </span>
           </div>

@@ -2,8 +2,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,400..800;1,9..40,400..800&family=Inter:wght@400;500;600;700;800;900&family=Italiana&family=JetBrains+Mono:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800;900&family=Oswald:wght@500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=Syne:wght@600;700;800&display=swap');
 @import "tailwindcss";
 
-/* Strict Selector-Based Dark Mode Variant:
- * Binds Tailwind dark:* utilities exclusively to the presence of the .dark class on an ancestor (e.g. <html class="dark">).
+/* Strict Selector-Based Dark Mode Variant (Tailwind CSS v4 syntax):
+ * Binds Tailwind dark:* utilities exclusively to the presence of the .dark class or [data-theme="dark"] on an ancestor.
  * Prevents visitor/device OS dark mode (@media prefers-color-scheme: dark) from triggering dark:* classes unless
  * the admin explicitly enables dark or system mode in CMS Site Settings.
  */
@@ -11,7 +11,7 @@
 
 /* Luxury Monochrome Editorial Display Typography */
 .font-display {
-  font-family: 'Clash Display', 'Helvetica Now Display', sans-serif;
+  font-family: 'Clash Display', 'Helvetica Now Display', -apple-system, BlinkMacSystemFont, sans-serif;
   letter-spacing: -0.02em;
 }
 
@@ -210,6 +210,54 @@
   --stock-out-foreground: #ffffff;
   --cart-alert: var(--cms-primary, #ffffff);
   --checkout-alert: #10b981;
+}
+
+/* Explicit Light Mode Protection (Shields against visitor device OS Dark Mode when storefront is Light) */
+html:not(.dark), [data-theme="light"] {
+  color-scheme: light !important;
+  --background: var(--cms-bg, #ffffff) !important;
+  --foreground: var(--cms-text, #09090b) !important;
+  --color-background: var(--cms-bg, #ffffff) !important;
+  --color-foreground: var(--cms-text, #09090b) !important;
+  --card: var(--cms-surface, #ffffff) !important;
+  --card-foreground: var(--cms-text, #09090b) !important;
+  --popover: var(--cms-surface, #ffffff) !important;
+  --popover-foreground: var(--cms-text, #09090b) !important;
+  --primary: var(--cms-primary, #09090b) !important;
+  --primary-foreground: #ffffff !important;
+  --secondary: var(--cms-secondary, #f4f4f5) !important;
+  --secondary-foreground: var(--cms-text, #09090b) !important;
+  --muted: var(--cms-surface, #f4f4f5) !important;
+  --muted-foreground: var(--cms-muted-text, #71717a) !important;
+  --accent: var(--cms-accent, #09090b) !important;
+  --accent-foreground: #ffffff !important;
+  --border: var(--cms-border, #e4e4e7) !important;
+  --input: var(--cms-border, #e4e4e7) !important;
+  --ring: var(--cms-primary, #09090b) !important;
+  --price: var(--cms-text, #09090b) !important;
+}
+
+/* Explicit Light Mode Safeguard against white text leakages when OS is dark */
+html:not(.dark) .dark\:text-white,
+html:not(.dark) .dark\:text-slate-100,
+html:not(.dark) .dark\:text-slate-200,
+html:not(.dark) .dark\:text-neutral-100,
+html:not(.dark) .dark\:text-neutral-200,
+html:not(.dark) .dark\:text-zinc-100,
+html:not(.dark) .dark\:text-zinc-200,
+[data-theme="light"] .dark\:text-white,
+[data-theme="light"] .dark\:text-slate-100,
+[data-theme="light"] .dark\:text-slate-200,
+[data-theme="light"] .dark\:text-neutral-100,
+[data-theme="light"] .dark\:text-neutral-200,
+[data-theme="light"] .dark\:text-zinc-100,
+[data-theme="light"] .dark\:text-zinc-200 {
+  color: var(--cms-text, #09090b) !important;
+}
+
+html:not(.dark) .dark\:hover\:text-white:hover,
+[data-theme="light"] .dark\:hover\:text-white:hover {
+  color: #000000 !important;
 }
 
 /* Brand Theme Overrides (White-label Brand A) */

@@ -24,6 +24,246 @@ export interface ShiprocketOrderItem {
   hsn?: number | string;
 }
 
+export const INDIAN_STATES = [
+  'Andhra Pradesh',
+  'Arunachal Pradesh',
+  'Assam',
+  'Bihar',
+  'Chhattisgarh',
+  'Goa',
+  'Gujarat',
+  'Haryana',
+  'Himachal Pradesh',
+  'Jharkhand',
+  'Karnataka',
+  'Kerala',
+  'Madhya Pradesh',
+  'Maharashtra',
+  'Manipur',
+  'Meghalaya',
+  'Mizoram',
+  'Nagaland',
+  'Odisha',
+  'Punjab',
+  'Rajasthan',
+  'Sikkim',
+  'Tamil Nadu',
+  'Telangana',
+  'Tripura',
+  'Uttar Pradesh',
+  'Uttarakhand',
+  'West Bengal',
+  'Andaman and Nicobar Islands',
+  'Chandigarh',
+  'Dadra and Nagar Haveli and Daman and Diu',
+  'Delhi',
+  'Jammu and Kashmir',
+  'Ladakh',
+  'Lakshadweep',
+  'Puducherry',
+] as const;
+
+export type IndianState = (typeof INDIAN_STATES)[number];
+
+export const STATE_CODE_MAP: Record<string, IndianState> = {
+  AP: 'Andhra Pradesh',
+  AR: 'Arunachal Pradesh',
+  AS: 'Assam',
+  BR: 'Bihar',
+  CG: 'Chhattisgarh',
+  CT: 'Chhattisgarh',
+  GA: 'Goa',
+  GJ: 'Gujarat',
+  HR: 'Haryana',
+  HP: 'Himachal Pradesh',
+  JH: 'Jharkhand',
+  KA: 'Karnataka',
+  KL: 'Kerala',
+  MP: 'Madhya Pradesh',
+  MH: 'Maharashtra',
+  MN: 'Manipur',
+  ML: 'Meghalaya',
+  MZ: 'Mizoram',
+  NL: 'Nagaland',
+  OD: 'Odisha',
+  OR: 'Odisha',
+  PB: 'Punjab',
+  RJ: 'Rajasthan',
+  SK: 'Sikkim',
+  TN: 'Tamil Nadu',
+  TS: 'Telangana',
+  TG: 'Telangana',
+  TR: 'Tripura',
+  UP: 'Uttar Pradesh',
+  UK: 'Uttarakhand',
+  UA: 'Uttarakhand',
+  WB: 'West Bengal',
+  AN: 'Andaman and Nicobar Islands',
+  CH: 'Chandigarh',
+  DN: 'Dadra and Nagar Haveli and Daman and Diu',
+  DD: 'Dadra and Nagar Haveli and Daman and Diu',
+  DL: 'Delhi',
+  JK: 'Jammu and Kashmir',
+  LA: 'Ladakh',
+  LD: 'Lakshadweep',
+  PY: 'Puducherry',
+};
+
+export interface QualifiedShiprocketAddress {
+  customerName: string;
+  customerLastName: string;
+  address: string;
+  address2: string;
+  city: string;
+  pincode: string;
+  state: string;
+  country: string;
+  email: string;
+  phone: string;
+  latitude?: string | number | null;
+  longitude?: string | number | null;
+}
+
+export interface AddressQualificationResult {
+  qualified: boolean;
+  errors: string[];
+  data?: QualifiedShiprocketAddress;
+}
+
+/**
+ * Validates and normalizes any raw customer/order address against Shiprocket API requirements.
+ * Ensures the order qualifies for Shiprocket AWB generation and courier partner pickup.
+ */
+export function qualifyShiprocketAddress(raw: Record<string, any>): AddressQualificationResult {
+  const errors: string[] = [];
+
+  // 1. Customer Name qualification
+  const rawFirst = (raw.firstName || raw.billing_customer_name || raw.customerName || '').trim();
+  const rawLast = (raw.lastName || raw.billing_last_name || raw.customerLastName || '').trim();
+  let firstName = rawFirst;
+  let lastName = rawLast;
+
+  if (!firstName && !lastName && raw.name) {
+    const parts = String(raw.name).trim().split(/\s+/);
+    firstName = parts[0] || '';
+    lastName = parts.slice(1).join(' ') || '';
+  }
+
+  if (!firstName) {
+    errors.push('Customer First Name is required for courier label.');
+  }
+
+  // 2. Phone Number qualification (Strict 10-digit Indian Mobile)
+  const phoneDigits = String(raw.phone || raw.billing_phone || '').replace(/\D/g, '');
+  let normalizedPhone = '';
+  if (phoneDigits.length === 12 && phoneDigits.startsWith('91')) {
+    normalizedPhone = phoneDigits.slice(2);
+  } else if (phoneDigits.length === 11 && phoneDigits.startsWith('0')) {
+    normalizedPhone = phoneDigits.slice(1);
+  } else if (phoneDigits.length === 10) {
+    normalizedPhone = phoneDigits;
+  }
+
+  if (!normalizedPhone || !/^[6-9]\d{9}$/.test(normalizedPhone)) {
+    errors.push('Phone number must be a valid 10-digit Indian mobile number (starting with 6, 7, 8, or 9).');
+  }
+
+  // 3. PIN Code qualification (Strict 6 digits)
+  const rawPincode = String(raw.pincode || raw.postalCode || raw.billing_pincode || '').replace(/\D/g, '');
+  if (!/^[1-9][0-9]{5}$/.test(rawPincode)) {
+    errors.push('PIN code must be a valid 6-digit Indian postal code (e.g. 400001).');
+  }
+
+  // 4. Street Address qualification (Min 10 chars, split into Line 1 & Line 2)
+  const line1 = (raw.addressLine1 || raw.address1 || raw.street || raw.address || raw.billing_address || '').trim();
+  const line2 = (raw.addressLine2 || raw.address2 || raw.landmark || raw.billing_address_2 || '').trim();
+
+  let combinedAddress = line1;
+  let secondaryAddress = line2;
+
+  if (combinedAddress.length < 10) {
+    if (line2 && `${line1}, ${line2}`.length >= 10) {
+      combinedAddress = `${line1}, ${line2}`.trim();
+      secondaryAddress = '';
+    } else {
+      errors.push('Street address must be at least 10 characters long (including House/Flat No, Building, Street).');
+    }
+  }
+
+  // Shiprocket allows max 100 chars per address line
+  if (combinedAddress.length > 100) {
+    const splitIndex = combinedAddress.lastIndexOf(' ', 95);
+    if (splitIndex > 20) {
+      const part1 = combinedAddress.slice(0, splitIndex).trim();
+      const part2 = combinedAddress.slice(splitIndex).trim();
+      combinedAddress = part1;
+      secondaryAddress = secondaryAddress ? `${part2}, ${secondaryAddress}`.slice(0, 100) : part2.slice(0, 100);
+    } else {
+      combinedAddress = combinedAddress.slice(0, 100);
+    }
+  }
+
+  // 5. City qualification
+  const city = (raw.city || raw.billing_city || '').trim();
+  if (!city || city.length < 2) {
+    errors.push('City name is required (minimum 2 characters).');
+  }
+
+  // 6. State qualification & normalization
+  const rawState = (raw.state || raw.billing_state || '').trim();
+  let normalizedState = rawState;
+  const upperState = rawState.toUpperCase();
+
+  if (STATE_CODE_MAP[upperState]) {
+    normalizedState = STATE_CODE_MAP[upperState];
+  } else {
+    // Fuzzy matching against official Indian States list
+    const matchedState = INDIAN_STATES.find(
+      (s) => s.toLowerCase() === rawState.toLowerCase() || s.toLowerCase().startsWith(rawState.toLowerCase())
+    );
+    if (matchedState) {
+      normalizedState = matchedState;
+    }
+  }
+
+  if (!normalizedState) {
+    errors.push('State / Province is required.');
+  }
+
+  // 7. Email qualification
+  const email = (raw.email || raw.billing_email || '').trim().toLowerCase();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errors.push('A valid customer billing email is required for dispatch notifications.');
+  }
+
+  // 8. Country normalization
+  const rawCountry = (raw.country || raw.billing_country || 'India').trim();
+  const country = rawCountry.toUpperCase() === 'IN' || rawCountry.toLowerCase() === 'india' ? 'India' : rawCountry;
+
+  if (errors.length > 0) {
+    return { qualified: false, errors };
+  }
+
+  return {
+    qualified: true,
+    errors: [],
+    data: {
+      customerName: firstName.slice(0, 30),
+      customerLastName: lastName.slice(0, 30),
+      address: combinedAddress.slice(0, 100),
+      address2: secondaryAddress.slice(0, 100),
+      city: city.slice(0, 50),
+      pincode: rawPincode,
+      state: normalizedState.slice(0, 50),
+      country,
+      email,
+      phone: normalizedPhone,
+      latitude: raw.latitude !== undefined ? raw.latitude : null,
+      longitude: raw.longitude !== undefined ? raw.longitude : null,
+    },
+  };
+}
+
 export interface CreateShiprocketOrderParams {
   orderId: string;
   orderDate?: string; // YYYY-MM-DD HH:mm
@@ -91,8 +331,26 @@ export interface ShiprocketTrackingResponse {
   error?: string;
 }
 
+export interface ShiprocketCourierServiceability {
+  courierCompanyId: number;
+  courierName: string;
+  rate: number;
+  etd: string;
+  estimatedDeliveryDays: number;
+  cod: boolean;
+  minWeight: number;
+}
+
+export interface ShiprocketServiceabilityResponse {
+  success: boolean;
+  recommendedCourier?: ShiprocketCourierServiceability;
+  availableCouriers?: ShiprocketCourierServiceability[];
+  error?: string;
+  raw?: any;
+}
+
 class ShiprocketClient {
-  private baseUrl = 'https://apiv2.shiprocket.in/v2/console';
+  private baseUrl = 'https://apiv2.shiprocket.in/v1/external';
   private cachedToken: string | null = null;
   private tokenExpiresAt: number = 0;
 
@@ -150,10 +408,10 @@ class ShiprocketClient {
   getBrandedTrackingUrl(awbOrOrderId: string): string {
     const brandDomain = process.env.SHIPROCKET_BRAND_DOMAIN?.trim();
     if (brandDomain) {
-      const cleanDomain = brandDomain.replace(/^https?:\/\//, '').replace(/\/$/, '');
-      return `https://${cleanDomain}/${awbOrOrderId}`;
+      const cleanDomain = brandDomain.replace(/^https?:\/\//, '').replace(/\/+$/, '');
+      return `https://${cleanDomain}/${encodeURIComponent(awbOrOrderId)}`;
     }
-    return `https://shiprocket.co//tracking/${awbOrOrderId}`;
+    return `https://shiprocket.co/tracking/${encodeURIComponent(awbOrOrderId)}`;
   }
 
   /**
@@ -163,7 +421,7 @@ class ShiprocketClient {
     try {
       const token = await this.getAuthToken();
       const pickupLocation =
-        params.pickupLocation || process.env.SHIPROCKET_PICKUP_LOCATION || 'Primary';
+        params.pickupLocation || process.env.SHIPROCKET_PICKUP_LOCATION || 'Shop';
 
       const now = new Date();
       const defaultOrderDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
@@ -211,7 +469,7 @@ class ShiprocketClient {
         weight: params.weight ?? 0.5,
       };
 
-      const response = await fetch(`${this.baseUrl}/data/orders/create/adhoc`, {
+      const response = await fetch(`${this.baseUrl}/orders/create/adhoc`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -387,6 +645,84 @@ class ShiprocketClient {
       return {
         success: false,
         error: err.message || 'Failed to schedule courier pickup.',
+      };
+    }
+  }
+
+  /**
+   * Queries real-time courier serviceability and dynamic shipping rate estimates.
+   * Leverages Shiprocket's courier serviceability engine across delivery PIN codes.
+   */
+  async checkServiceabilityAndRates(params: {
+    deliveryPincode: string;
+    pickupPincode?: string;
+    weightKg?: number;
+    isCod?: boolean;
+    orderValue?: number;
+  }): Promise<ShiprocketServiceabilityResponse> {
+    try {
+      const token = await this.getAuthToken();
+      const pickup = params.pickupPincode || process.env.SHIPROCKET_PICKUP_PINCODE || '500060';
+      const delivery = params.deliveryPincode.replace(/\D/g, '');
+      const weight = params.weightKg || 0.5;
+      const cod = params.isCod ? 1 : 0;
+      const orderValue = params.orderValue || 1000;
+
+      const url = `${this.baseUrl}/courier/serviceability/?pickup_postcode=${encodeURIComponent(pickup)}&delivery_postcode=${encodeURIComponent(delivery)}&weight=${weight}&cod=${cod}&declared_value=${orderValue}`;
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        cache: 'no-store',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || data.status !== 200 || !data.data) {
+        return {
+          success: false,
+          error: data.message || 'No serviceable couriers found for this delivery pincode.',
+          raw: data,
+        };
+      }
+
+      const rawCompanies: any[] = data.data.available_courier_companies || [];
+      if (rawCompanies.length === 0) {
+        return {
+          success: false,
+          error: 'Delivery destination is currently not serviceable.',
+          raw: data,
+        };
+      }
+
+      const availableCouriers: ShiprocketCourierServiceability[] = rawCompanies.map((c) => ({
+        courierCompanyId: c.courier_company_id,
+        courierName: c.courier_name,
+        rate: typeof c.rate === 'number' ? c.rate : parseFloat(c.rate) || 99,
+        etd: c.etd || `${c.estimated_delivery_days || 3} days`,
+        estimatedDeliveryDays: parseInt(c.estimated_delivery_days, 10) || 3,
+        cod: Boolean(c.cod),
+        minWeight: typeof c.min_weight === 'number' ? c.min_weight : parseFloat(c.min_weight) || 0.5,
+      }));
+
+      // Sort by rate ascending to find the most cost-effective courier
+      availableCouriers.sort((a, b) => a.rate - b.rate);
+      const recommendedCourier = availableCouriers[0];
+
+      return {
+        success: true,
+        recommendedCourier,
+        availableCouriers,
+        raw: data,
+      };
+    } catch (err: any) {
+      console.error('[Shiprocket Serviceability Rate Error]:', err.message || err);
+      return {
+        success: false,
+        error: err.message || 'Failed to calculate dynamic shipping rate.',
       };
     }
   }

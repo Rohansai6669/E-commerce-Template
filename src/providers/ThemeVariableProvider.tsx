@@ -30,31 +30,27 @@ export function ThemeVariableProvider({ children, initialTokens }: ThemeVariable
       try {
         localStorage.removeItem('theme');
         localStorage.removeItem('next-themes');
+        localStorage.removeItem('themeMode');
       } catch {}
     }
 
     // 0. Theme Mode Enforcement (Strictly Admin-Controlled; ignores visitor device OS theme unless explicitly set to 'system')
     const themeMode = t.themeMode || 'light';
-    if (themeMode === 'dark') {
+    const isDark =
+      themeMode === 'dark' ||
+      (themeMode === 'system' &&
+        typeof window !== 'undefined' &&
+        window.matchMedia &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+    if (isDark) {
       root.classList.add('dark');
       root.setAttribute('data-theme', 'dark');
       root.style.colorScheme = 'dark';
-    } else if (themeMode === 'system') {
-      // Admin explicitly allowed system adaptive mode
-      const prefersDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (prefersDark) {
-        root.classList.add('dark');
-        root.setAttribute('data-theme', 'dark');
-        root.style.colorScheme = 'dark';
-      } else {
-        root.classList.remove('dark');
-        root.removeAttribute('data-theme');
-        root.style.colorScheme = 'light';
-      }
     } else {
       // Strict Light Mode (Default) - Visitor phone/desktop dark mode is 100% ignored
       root.classList.remove('dark');
-      root.removeAttribute('data-theme');
+      root.setAttribute('data-theme', 'light');
       root.style.colorScheme = 'light';
     }
 
@@ -81,11 +77,12 @@ export function ThemeVariableProvider({ children, initialTokens }: ThemeVariable
 
     if (document.body) {
       document.body.style.fontFamily = bodyFontVal;
-      if (t.backgroundColor) {
-        document.body.style.backgroundColor = t.backgroundColor;
-      }
-      if (t.textColor) {
-        document.body.style.color = t.textColor;
+      if (isDark) {
+        document.body.style.backgroundColor = t.backgroundColor && t.backgroundColor !== '#ffffff' ? t.backgroundColor : '#09090b';
+        document.body.style.color = t.textColor && t.textColor !== '#000000' ? t.textColor : '#ffffff';
+      } else {
+        document.body.style.backgroundColor = t.backgroundColor || '#ffffff';
+        document.body.style.color = t.textColor || '#09090b';
       }
     }
     const trackingMap: Record<string, string> = {
@@ -123,24 +120,36 @@ export function ThemeVariableProvider({ children, initialTokens }: ThemeVariable
       root.style.setProperty('--accent', t.accentColor);
       root.style.setProperty('--cms-accent', t.accentColor);
     }
-    if (t.backgroundColor) {
-      root.style.setProperty('--background', t.backgroundColor);
-      root.style.setProperty('--cms-bg', t.backgroundColor);
-    }
-    if (t.surfaceColor) {
-      root.style.setProperty('--card', t.surfaceColor);
-      root.style.setProperty('--popover', t.surfaceColor);
-      root.style.setProperty('--cms-surface', t.surfaceColor);
-    }
-    if (t.textColor) {
-      root.style.setProperty('--foreground', t.textColor);
-      root.style.setProperty('--card-foreground', t.textColor);
-      root.style.setProperty('--popover-foreground', t.textColor);
-      root.style.setProperty('--cms-text', t.textColor);
-    }
-    if (t.mutedTextColor) {
-      root.style.setProperty('--muted-foreground', t.mutedTextColor);
-      root.style.setProperty('--cms-muted-text', t.mutedTextColor);
+    if (isDark) {
+      root.style.setProperty('--background', '#09090b');
+      root.style.setProperty('--cms-bg', '#09090b');
+      root.style.setProperty('--foreground', '#ffffff');
+      root.style.setProperty('--card-foreground', '#ffffff');
+      root.style.setProperty('--popover-foreground', '#ffffff');
+      root.style.setProperty('--cms-text', '#ffffff');
+      root.style.setProperty('--price', '#ffffff');
+      root.style.setProperty('--muted-foreground', '#a1a1aa');
+      root.style.setProperty('--cms-muted-text', '#a1a1aa');
+      root.style.setProperty('--card', '#18181b');
+      root.style.setProperty('--popover', '#18181b');
+      root.style.setProperty('--cms-surface', '#18181b');
+      root.style.setProperty('--border', '#27272a');
+      root.style.setProperty('--input', '#27272a');
+    } else {
+      root.style.setProperty('--background', t.backgroundColor || '#ffffff');
+      root.style.setProperty('--cms-bg', t.backgroundColor || '#ffffff');
+      root.style.setProperty('--foreground', t.textColor || '#09090b');
+      root.style.setProperty('--card-foreground', t.textColor || '#09090b');
+      root.style.setProperty('--popover-foreground', t.textColor || '#09090b');
+      root.style.setProperty('--cms-text', t.textColor || '#09090b');
+      root.style.setProperty('--price', t.textColor || '#09090b');
+      root.style.setProperty('--muted-foreground', t.mutedTextColor || '#71717a');
+      root.style.setProperty('--cms-muted-text', t.mutedTextColor || '#71717a');
+      root.style.setProperty('--card', t.surfaceColor || '#ffffff');
+      root.style.setProperty('--popover', t.surfaceColor || '#ffffff');
+      root.style.setProperty('--cms-surface', t.surfaceColor || '#ffffff');
+      root.style.setProperty('--border', t.borderColor || '#e4e4e7');
+      root.style.setProperty('--input', t.borderColor || '#e4e4e7');
     }
     // Apply Global Border Line Tokens
     const borderWidthMap: Record<string, string> = {

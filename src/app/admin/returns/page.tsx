@@ -5,7 +5,7 @@ import { Heading, Text } from '@/components/ui/typography';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { connection } from 'next/server';
 import { desc } from 'drizzle-orm';
-import { RotateCcw, ShieldCheck, DollarSign } from 'lucide-react';
+import { RotateCcw, ShieldCheck, IndianRupee } from 'lucide-react';
 import { ReturnsList } from '@/components/admin/returns-list';
 
 interface ReturnItem {
@@ -73,7 +73,7 @@ export default async function AdminReturnsPage() {
               <span className="text-2xl font-extrabold text-slate-950 font-heading">{refundedCount}</span>
             </div>
             <div className="p-2.5 rounded bg-slate-50 text-slate-900 border border-slate-100">
-              <DollarSign className="h-4 w-4" />
+              <IndianRupee className="h-4 w-4" />
             </div>
           </CardContent>
         </Card>

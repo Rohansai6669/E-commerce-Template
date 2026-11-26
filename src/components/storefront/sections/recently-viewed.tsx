@@ -69,10 +69,10 @@ export function RecentlyViewedSection() {
     <Container className="py-8 border-t border-border mt-12 w-full">
       <div className="flex flex-row items-center justify-between gap-4 mb-6">
         <div>
-          <Heading level={2} className="text-base sm:text-lg font-bold tracking-tight font-heading">
+          <Heading level={2} className="text-base sm:text-lg font-bold tracking-tight font-heading text-foreground">
             Recently Viewed
           </Heading>
-          <Text className="text-xs text-muted-foreground mt-0.5 font-sans">
+          <Text className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5 font-sans">
             Products you recently browsed.
           </Text>
         </div>
@@ -114,6 +114,9 @@ export function RecentlyViewedSection() {
                 images: item.product.imageUrl ? [item.product.imageUrl] : [],
                 badges: item.product.isNew ? ['NEW'] : [],
                 inStock: item.product.quantity > 0,
+                colors: item.product.colors || [],
+                fit: item.product.fit,
+                brand: item.product.brandName,
               }}
             />
           </div>

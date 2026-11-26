@@ -25,50 +25,63 @@ const SheetOverlay = React.forwardRef<
 ));
 SheetOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
+export interface SheetContentProps
+  extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
+  side?: 'top' | 'bottom' | 'left' | 'right';
+}
+
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, onPointerDownOutside, onInteractOutside, ...props }, ref) => (
-  <SheetPortal>
-    <SheetOverlay />
-    <DialogPrimitive.Content
-      ref={ref}
-      className={cn(
-        'fixed inset-y-0 left-0 z-[1110] h-full w-full max-w-md border-r border-slate-200 bg-white p-6 shadow-xl transition-transform duration-300 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
-        className
-      )}
-      onPointerDownOutside={(e) => {
-        const target = e.target as HTMLElement | null;
-        if (
-          target?.closest?.('[data-media-picker-modal]') ||
-          document.querySelector('[data-media-picker-modal]')
-        ) {
-          e.preventDefault();
-          return;
-        }
-        onPointerDownOutside?.(e);
-      }}
-      onInteractOutside={(e) => {
-        const target = e.target as HTMLElement | null;
-        if (
-          target?.closest?.('[data-media-picker-modal]') ||
-          document.querySelector('[data-media-picker-modal]')
-        ) {
-          e.preventDefault();
-          return;
-        }
-        onInteractOutside?.(e);
-      }}
-      {...props}
-    >
-      {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded opacity-75 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none cursor-pointer">
-        <X className="h-4 w-4 text-slate-500" />
-        <span className="sr-only">Close</span>
-      </DialogPrimitive.Close>
-    </DialogPrimitive.Content>
-  </SheetPortal>
-));
+  SheetContentProps
+>(({ className, children, side = 'left', onPointerDownOutside, onInteractOutside, ...props }, ref) => {
+  const sideClass =
+    side === 'right'
+      ? 'fixed inset-y-0 right-0 z-[1110] h-full w-full max-w-2xl border-l border-slate-200 bg-white p-6 shadow-xl transition-transform duration-300 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right'
+      : side === 'top'
+      ? 'fixed inset-x-0 top-0 z-[1110] border-b border-slate-200 bg-white p-6 shadow-xl transition-transform duration-300 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top'
+      : side === 'bottom'
+      ? 'fixed inset-x-0 bottom-0 z-[1110] border-t border-slate-200 bg-white p-6 shadow-xl transition-transform duration-300 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom'
+      : 'fixed inset-y-0 left-0 z-[1110] h-full w-full max-w-md border-r border-slate-200 bg-white p-6 shadow-xl transition-transform duration-300 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left';
+
+  return (
+    <SheetPortal>
+      <SheetOverlay />
+      <DialogPrimitive.Content
+        ref={ref}
+        className={cn(sideClass, className)}
+        onPointerDownOutside={(e) => {
+          const target = e.target as HTMLElement | null;
+          if (
+            target?.closest?.('[data-media-picker-modal]') ||
+            document.querySelector('[data-media-picker-modal]')
+          ) {
+            e.preventDefault();
+            return;
+          }
+          onPointerDownOutside?.(e);
+        }}
+        onInteractOutside={(e) => {
+          const target = e.target as HTMLElement | null;
+          if (
+            target?.closest?.('[data-media-picker-modal]') ||
+            document.querySelector('[data-media-picker-modal]')
+          ) {
+            e.preventDefault();
+            return;
+          }
+          onInteractOutside?.(e);
+        }}
+        {...props}
+      >
+        {children}
+        <DialogPrimitive.Close className="absolute right-4 top-4 rounded opacity-75 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none cursor-pointer">
+          <X className="h-4 w-4 text-slate-500" />
+          <span className="sr-only">Close</span>
+        </DialogPrimitive.Close>
+      </DialogPrimitive.Content>
+    </SheetPortal>
+  );
+});
 SheetContent.displayName = DialogPrimitive.Content.displayName;
 
 const SheetHeader = ({

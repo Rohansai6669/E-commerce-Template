@@ -151,30 +151,83 @@ export async function resolveHierarchicalCatalog(
 
   try {
     if (db) {
-      if (categorySlug) {
-        // Find primary or sub-category
-        const cleanNoHyphen = categorySlug.replace(/[-_]/g, '');
-        const cleanWithHyphen = categorySlug.replace(/[-_]/g, '-');
-        const cleanWithSpace = categorySlug.replace(/[-_]/g, ' ');
-
-        const [cat] = await db
-          .select()
+      // 3a. Resolve audience category id if audience is provided
+      let audienceCatId: string | null = null;
+      if (audience) {
+        const [audCat] = await db
+          .select({ id: categories.id })
           .from(categories)
           .where(
             and(
               or(
-                eq(categories.slug, categorySlug),
-                eq(categories.slug, cleanNoHyphen),
-                eq(categories.slug, cleanWithHyphen),
-                ilike(categories.slug, `%${cleanNoHyphen}%`),
-                ilike(categories.slug, `%${cleanWithHyphen}%`),
-                ilike(categories.name, `%${cleanWithSpace}%`)
+                eq(categories.slug, audience),
+                eq(categories.name, audience),
+                ilike(categories.name, audience)
               ),
               sql`${categories.deletedAt} IS NULL`,
               eq(categories.isActive, true)
             )
           )
           .limit(1);
+        if (audCat) {
+          audienceCatId = audCat.id;
+        }
+      }
+
+      if (categorySlug) {
+        // Find primary or sub-category
+        const cleanNoHyphen = categorySlug.replace(/[-_]/g, '');
+        const cleanWithHyphen = categorySlug.replace(/[-_]/g, '-');
+        const cleanWithSpace = categorySlug.replace(/[-_]/g, ' ');
+
+        let cat: typeof categories.$inferSelect | undefined;
+
+        // If audience was specified, prioritize category under this audience parent
+        if (audienceCatId) {
+          const [audChild] = await db
+            .select()
+            .from(categories)
+            .where(
+              and(
+                eq(categories.parentId, audienceCatId),
+                or(
+                  eq(categories.slug, categorySlug),
+                  eq(categories.slug, cleanNoHyphen),
+                  eq(categories.slug, cleanWithHyphen),
+                  ilike(categories.slug, `%${cleanNoHyphen}%`),
+                  ilike(categories.slug, `%${cleanWithHyphen}%`),
+                  ilike(categories.name, `%${cleanWithSpace}%`)
+                ),
+                sql`${categories.deletedAt} IS NULL`,
+                eq(categories.isActive, true)
+              )
+            )
+            .limit(1);
+          cat = audChild;
+        }
+
+        // Fallback to global category match if not found under specific audience
+        if (!cat) {
+          const [globalCat] = await db
+            .select()
+            .from(categories)
+            .where(
+              and(
+                or(
+                  eq(categories.slug, categorySlug),
+                  eq(categories.slug, cleanNoHyphen),
+                  eq(categories.slug, cleanWithHyphen),
+                  ilike(categories.slug, `%${cleanNoHyphen}%`),
+                  ilike(categories.slug, `%${cleanWithHyphen}%`),
+                  ilike(categories.name, `%${cleanWithSpace}%`)
+                ),
+                sql`${categories.deletedAt} IS NULL`,
+                eq(categories.isActive, true)
+              )
+            )
+            .limit(1);
+          cat = globalCat;
+        }
 
         if (cat) {
           matchedCategory = cat;
@@ -199,23 +252,51 @@ export async function resolveHierarchicalCatalog(
           const childWithHyphen = childSlug.replace(/[-_]/g, '-');
           const childWithSpace = childSlug.replace(/[-_]/g, ' ');
 
-          const [childCat] = await db
-            .select()
-            .from(categories)
-            .where(
-              and(
-                or(
-                  eq(categories.slug, childSlug),
-                  eq(categories.slug, childNoHyphen),
-                  eq(categories.slug, childWithHyphen),
-                  ilike(categories.slug, `%${childNoHyphen}%`),
-                  ilike(categories.name, `%${childWithSpace}%`)
-                ),
-                sql`${categories.deletedAt} IS NULL`,
-                eq(categories.isActive, true)
+          let childCat: typeof categories.$inferSelect | undefined;
+
+          // If matchedCategory is found, prioritize child categories under it
+          if (matchedCategory) {
+            const [matchedChild] = await db
+              .select()
+              .from(categories)
+              .where(
+                and(
+                  eq(categories.parentId, matchedCategory.id),
+                  or(
+                    eq(categories.slug, childSlug),
+                    eq(categories.slug, childNoHyphen),
+                    eq(categories.slug, childWithHyphen),
+                    ilike(categories.slug, `%${childNoHyphen}%`),
+                    ilike(categories.name, `%${childWithSpace}%`)
+                  ),
+                  sql`${categories.deletedAt} IS NULL`,
+                  eq(categories.isActive, true)
+                )
               )
-            )
-            .limit(1);
+              .limit(1);
+            childCat = matchedChild;
+          }
+
+          if (!childCat) {
+            const [globalChild] = await db
+              .select()
+              .from(categories)
+              .where(
+                and(
+                  or(
+                    eq(categories.slug, childSlug),
+                    eq(categories.slug, childNoHyphen),
+                    eq(categories.slug, childWithHyphen),
+                    ilike(categories.slug, `%${childNoHyphen}%`),
+                    ilike(categories.name, `%${childWithSpace}%`)
+                  ),
+                  sql`${categories.deletedAt} IS NULL`,
+                  eq(categories.isActive, true)
+                )
+              )
+              .limit(1);
+            childCat = globalChild;
+          }
 
           if (childCat) {
             matchedChildCategory = childCat;

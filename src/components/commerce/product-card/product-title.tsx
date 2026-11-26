@@ -21,7 +21,7 @@ export function ProductCardTitle({ className, showCategory = true, ...props }: P
       )}
       <Link
         href={`/products/${product.slug}`}
-        className="text-xs sm:text-sm font-semibold tracking-tight text-foreground hover:text-primary transition-colors line-clamp-2 leading-snug block font-sans"
+        className="text-xs sm:text-sm font-semibold tracking-tight text-neutral-950 dark:text-white hover:opacity-75 transition-colors line-clamp-2 leading-snug block font-sans"
       >
         {product.name}
       </Link>

@@ -275,6 +275,14 @@ export async function createProductAction(productData: {
       })
       .returning();
 
+    if (categoryId) {
+      await db.insert(productCategories).values({
+        productId: newProduct.id,
+        categoryId,
+        isPrimary: true,
+      });
+    }
+
     if (imageUrl && imageUrl.trim()) {
       await db.insert(productImages).values({
         productId: newProduct.id,
@@ -404,6 +412,20 @@ export async function updateProductAction(
           sizeChart: sizeChart || {},
         })
         .where(eq(products.id, productId));
+
+      if (categoryId !== undefined) {
+        await tx
+          .delete(productCategories)
+          .where(and(eq(productCategories.productId, productId), eq(productCategories.isPrimary, true)));
+
+        if (categoryId) {
+          await tx.insert(productCategories).values({
+            productId,
+            categoryId,
+            isPrimary: true,
+          });
+        }
+      }
 
       if (imageUrl !== undefined || galleryUrls !== undefined) {
         await tx.delete(productImages).where(eq(productImages.productId, productId));

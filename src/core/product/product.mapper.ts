@@ -29,6 +29,7 @@ export class ProductMapper {
     primaryImage?: string | null;
     images?: string[];
     attributes?: Array<{ name: string; value: string }>;
+    colors?: string[];
   }): ProductCardModel {
     const { product, category, brand, quantity, rating, reviewsCount, attributes } = row;
 
@@ -42,6 +43,11 @@ export class ProductMapper {
         : primaryImg
         ? [primaryImg]
         : [];
+
+    const resolvedColors: string[] =
+      (row as any).colors && Array.isArray((row as any).colors) && (row as any).colors.length > 0
+        ? (row as any).colors
+        : attributes?.filter((a) => a.name?.toLowerCase() === 'color')?.map((a) => a.value) || [];
 
     return {
       id: product.id,
@@ -62,6 +68,7 @@ export class ProductMapper {
       fit: product.fit || null,
       season: product.season || null,
       attributes: attributes || [],
+      colors: resolvedColors,
     };
   }
 

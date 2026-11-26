@@ -3,8 +3,10 @@
 import * as React from 'react';
 import { updateOrderStatusAction, shipOrderWithShiprocketAction } from '@/app/actions/admin-actions';
 import { DataTable, type ColumnDef, type FilterConfig } from '@/components/admin/data-table';
-import { Truck, ExternalLink } from 'lucide-react';
+import { Truck, ExternalLink, Eye, Barcode } from 'lucide-react';
 import { toast } from 'sonner';
+import { OrderDetailSheet } from '@/components/admin/order-detail-sheet';
+import { BarcodeScannerModal } from '@/components/admin/barcode-scanner-modal';
 
 interface OrderItem {
   id: string;
@@ -41,10 +43,44 @@ export function OrdersList({
   const [orders, setOrders] = React.useState(initialOrders);
   const [isPending, startTransition] = React.useTransition();
   const [shippingOrderId, setShippingOrderId] = React.useState<string | null>(null);
+  const [selectedOrder, setSelectedOrder] = React.useState<any | null>(null);
+  const [globalScannerOpen, setGlobalScannerOpen] = React.useState(false);
 
   React.useEffect(() => {
     setOrders(initialOrders);
   }, [initialOrders]);
+
+  const currentSelectedOrder = React.useMemo(() => {
+    if (!selectedOrder) return null;
+    return orders.find((o) => o.id === selectedOrder.id) || selectedOrder;
+  }, [orders, selectedOrder]);
+
+  const handleGlobalBarcodeScan = (scannedCode: string) => {
+    const clean = scannedCode.trim().toLowerCase();
+    if (!clean) return;
+
+    const matched = tableData.find((o) => {
+      const orderNum = (o.orderNumber || '').toLowerCase();
+      const id = (o.id || '').toLowerCase();
+      const awb = ((o.shippingAddress as any)?.tracking?.awb || '').toLowerCase();
+      const email = (o.email || '').toLowerCase();
+      const hasItem = (o.items || []).some((item: any) => {
+        const sku = (item.sku || '').toLowerCase();
+        const barcode = (item.variant?.barcode || '').toLowerCase();
+        return sku === clean || barcode === clean;
+      });
+
+      return orderNum === clean || id === clean || awb === clean || email === clean || hasItem;
+    });
+
+    if (matched) {
+      setSelectedOrder(matched);
+      setGlobalScannerOpen(false);
+      toast.success(`Found Order ${matched.orderNumber}`);
+    } else {
+      toast.error(`No order found matching barcode "${scannedCode}".`);
+    }
+  };
 
   const handleShiprocketDispatch = (orderId: string) => {
     setShippingOrderId(orderId);
@@ -231,9 +267,15 @@ export function OrdersList({
         cell: (row) => (
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-slate-900 tracking-wide text-xs font-mono uppercase">
-                {row.orderNumber}
-              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedOrder(row)}
+                className="font-extrabold text-slate-900 hover:text-blue-600 hover:underline tracking-wide text-xs font-mono uppercase text-left cursor-pointer flex items-center gap-1 group"
+                title="View full order details"
+              >
+                <span>{row.orderNumber}</span>
+                <ExternalLink className="w-2.5 h-2.5 text-slate-400 group-hover:text-blue-600 opacity-60 group-hover:opacity-100 transition-opacity" />
+              </button>
               {row.isSplit && (
                 <span className="bg-slate-950 text-white text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm select-none">
                   SPLIT - {row.subOrdersList.length}
@@ -368,6 +410,22 @@ export function OrdersList({
           </div>
         ),
       },
+      {
+        header: 'Actions',
+        sortable: false,
+        className: 'text-right',
+        cell: (row) => (
+          <button
+            type="button"
+            onClick={() => setSelectedOrder(row)}
+            className="px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-slate-900 border border-slate-200 rounded text-[10px] font-bold uppercase tracking-wider transition inline-flex items-center gap-1 cursor-pointer shadow-2xs"
+            title="View order details"
+          >
+            <Eye className="w-3 h-3 text-slate-600" />
+            <span>Details</span>
+          </button>
+        ),
+      },
     ],
     [isPending]
   );
@@ -406,6 +464,18 @@ export function OrdersList({
         </div>
       </div>
 
+      {/* Toolbar Barcode Scanner Action */}
+      <div className="flex items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={() => setGlobalScannerOpen(true)}
+          className="px-3.5 py-2 bg-slate-950 hover:bg-slate-800 text-white rounded text-xs font-bold uppercase tracking-wider transition inline-flex items-center gap-2 cursor-pointer shadow-xs"
+        >
+          <Barcode className="w-4 h-4 text-emerald-400" />
+          <span>Scan Order / AWB Barcode</span>
+        </button>
+      </div>
+
       {/* Standardized DataTable Engine */}
       <DataTable
         columns={columns}
@@ -414,6 +484,7 @@ export function OrdersList({
         searchPlaceholder="Search orders by number, email, or city..."
         searchableKeys={(item) => [item.orderNumber, item.email, item.city]}
         getItemKey={(item) => item.id}
+        onRowClick={(item) => setSelectedOrder(item)}
         bulkActions={(keys, selectedItems, clearSelection) => (
           <select
             onChange={(e) => {
@@ -445,6 +516,31 @@ export function OrdersList({
             <option value="cancelled">Mark Cancelled</option>
           </select>
         )}
+      />
+
+      {/* Slide-Over Drawer for Detailed Order View */}
+      <OrderDetailSheet
+        order={currentSelectedOrder}
+        open={!!selectedOrder}
+        onOpenChange={(open) => {
+          if (!open) setSelectedOrder(null);
+        }}
+        activeSuppliers={activeSuppliers}
+        mappedLinks={mappedLinks}
+        onStatusChange={handleStatusChange}
+        onShiprocketDispatch={handleShiprocketDispatch}
+        isShipping={shippingOrderId === selectedOrder?.id}
+        isPending={isPending}
+      />
+
+      {/* Global Order / AWB Barcode Scanner Modal */}
+      <BarcodeScannerModal
+        open={globalScannerOpen}
+        onOpenChange={setGlobalScannerOpen}
+        onScan={handleGlobalBarcodeScan}
+        title="Order & Consignment Scanner"
+        description="Scan an Order barcode (ORD-... or LX...), Shiprocket AWB, or product SKU to instantly open the order."
+        placeholder="Scan or type Order # / AWB / SKU..."
       />
     </div>
   );

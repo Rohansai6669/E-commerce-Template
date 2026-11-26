@@ -15,6 +15,7 @@ interface DataTableBodyProps<T> {
   emptyStateAction?: React.ReactNode;
   isLoading?: boolean;
   storeMode?: 'standalone' | 'marketplace';
+  onRowClick?: (item: T) => void;
 }
 
 export function DataTableBody<T>({
@@ -28,6 +29,7 @@ export function DataTableBody<T>({
   emptyStateAction,
   isLoading = false,
   storeMode = 'standalone',
+  onRowClick,
 }: DataTableBodyProps<T>) {
   const visibleColumns = columns.filter(
     (col) => !col.requiresMarketplace || storeMode === 'marketplace'
@@ -64,9 +66,17 @@ export function DataTableBody<T>({
         return (
           <tr
             key={key}
+            onClick={(e) => {
+              const target = e.target as HTMLElement | null;
+              if (target?.closest('input, button, select, a, [role="button"]')) {
+                return;
+              }
+              onRowClick?.(item);
+            }}
             className={cn(
               "transition-colors",
-              isSelected ? "bg-slate-100/60 font-medium" : "hover:bg-slate-50/40"
+              onRowClick && "cursor-pointer",
+              isSelected ? "bg-slate-100/60 font-medium" : "hover:bg-slate-50/70"
             )}
           >
             {selectable && (

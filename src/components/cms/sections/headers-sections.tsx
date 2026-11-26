@@ -56,7 +56,7 @@ export function TopUtilityBarSection({ config }: { config: BaseSectionConfig & a
         </span>
       </div>
       <div className="flex items-center gap-4">
-        <span className="cursor-pointer hover:text-[var(--primary,#0f172a)] font-medium">USD ($)</span>
+        <span className="cursor-pointer hover:text-[var(--primary,#0f172a)] font-medium">INR (₹)</span>
         <span>|</span>
         <span className="cursor-pointer hover:text-[var(--primary,#0f172a)] font-medium">English</span>
         <span>|</span>

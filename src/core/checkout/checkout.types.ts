@@ -17,6 +17,8 @@ export interface CheckoutAddress {
   state: string;
   postalCode: string;
   country: string;
+  latitude?: string | number | null;
+  longitude?: string | number | null;
 }
 
 /**

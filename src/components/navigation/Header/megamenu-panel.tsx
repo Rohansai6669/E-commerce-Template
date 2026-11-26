@@ -35,15 +35,11 @@ export const FALLBACK_MEGAMENU_DATA: Record<string, MegamenuCollection[]> = {
       name: 'STREETWEAR',
       href: '/women/streetwear',
       subitems: [
-        { label: 'Oversized T-Shirts', href: '/women/streetwear', columnNumber: 1 },
-        { label: 'Cropped Tees', href: '/women/streetwear', columnNumber: 2 },
-        { label: 'Baggy Jeans', href: '/women/streetwear', columnNumber: 1 },
-        { label: 'Cargo Pants', href: '/women/streetwear', columnNumber: 2 },
-        { label: 'Oversized Hoodies', href: '/women/streetwear', columnNumber: 1 },
-        { label: 'Sweatshirts', href: '/women/streetwear', columnNumber: 2 },
-        { label: 'Bomber Jackets', href: '/women/streetwear', columnNumber: 1 },
-        { label: 'Denim Jackets', href: '/women/streetwear', columnNumber: 2 },
-        { label: 'Shorts', href: '/women/streetwear', columnNumber: 1 },
+        { label: 'Boxy Graphic Tees', href: '/women/streetwear/boxy-graphic-tees', columnNumber: 1 },
+        { label: 'Crop Hoodies', href: '/women/streetwear/crop-hoodies', columnNumber: 2 },
+        { label: 'Wide Leg Cargo', href: '/women/streetwear/wide-leg-cargo', columnNumber: 1 },
+        { label: 'Denim Jackets', href: '/women/streetwear/denim-jackets', columnNumber: 2 },
+        { label: 'Varsity Jackets', href: '/women/streetwear/varsity-jackets', columnNumber: 1 },
       ],
       featured: {
         title: 'STREETWEAR',
@@ -57,12 +53,11 @@ export const FALLBACK_MEGAMENU_DATA: Record<string, MegamenuCollection[]> = {
       name: 'GYM WEAR',
       href: '/women/gymwear',
       subitems: [
-        { label: 'Biker Shorts', href: '/women/gymwear', columnNumber: 1 },
-        { label: 'Pilates Sets', href: '/women/gymwear', columnNumber: 2 },
-        { label: 'Running Jackets', href: '/women/gymwear', columnNumber: 1 },
-        { label: 'Seamless Leggings', href: '/women/gymwear', columnNumber: 2 },
-        { label: 'Sports Bras', href: '/women/gymwear', columnNumber: 1 },
-        { label: 'Training Tanks', href: '/women/gymwear', columnNumber: 2 },
+        { label: 'Biker Shorts', href: '/women/gymwear/biker-shorts', columnNumber: 1 },
+        { label: 'Pilates Sets', href: '/women/gymwear/pilates-sets', columnNumber: 2 },
+        { label: 'Running Jackets', href: '/women/gymwear/running-jackets', columnNumber: 1 },
+        { label: 'Seamless Leggings', href: '/women/gymwear/seamless-leggings', columnNumber: 2 },
+        { label: 'Sports Bras', href: '/women/gymwear/sports-bras', columnNumber: 1 },
       ],
       featured: {
         title: 'GYM WEAR',
@@ -76,12 +71,12 @@ export const FALLBACK_MEGAMENU_DATA: Record<string, MegamenuCollection[]> = {
       name: 'OLD MONEY',
       href: '/women/luxury',
       subitems: [
-        { label: 'Cashmere Sweaters', href: '/women/luxury', columnNumber: 1 },
-        { label: 'Tailored Blazers', href: '/women/luxury', columnNumber: 2 },
-        { label: 'Silk Slip Dresses', href: '/women/luxury', columnNumber: 1 },
-        { label: 'Linen Shirts', href: '/women/luxury', columnNumber: 2 },
-        { label: 'Pleated Trousers', href: '/women/luxury', columnNumber: 1 },
-        { label: 'Tweed Jackets', href: '/women/luxury', columnNumber: 2 },
+        { label: 'Silk Slip Dresses', href: '/women/luxury/silk-slip-dresses', columnNumber: 1 },
+        { label: 'Ribbed Maxi Dresses', href: '/women/luxury/ribbed-maxi-dresses', columnNumber: 2 },
+        { label: 'Linen Co-ord Sets', href: '/women/luxury/linen-coord-sets', columnNumber: 1 },
+        { label: 'Knit Cardigans', href: '/women/luxury/knit-cardigans', columnNumber: 2 },
+        { label: 'Tailored Blazers', href: '/women/luxury/tailored-blazers', columnNumber: 1 },
+        { label: 'Cashmere Sweaters', href: '/women/luxury/cashmere-sweaters', columnNumber: 2 },
       ],
       featured: {
         title: 'OLD MONEY LUXURY',
@@ -526,33 +521,33 @@ export function MegamenuPanel({ category, onClose, appearance, headerHeight }: M
 
               if (tabStyle === 'pill') {
                 return (
-                  <button
-                    type="button"
+                  <Link
+                    href={col.href}
+                    onClick={onClose}
                     suppressHydrationWarning
                     key={col.id}
                     onMouseEnter={() => setActiveCollectionId(col.id)}
-                    onClick={() => setActiveCollectionId(col.id)}
                     style={{
                       backgroundColor: isActive ? activeTabColor : 'transparent',
                       color: isActive ? '#ffffff' : mutedColor,
                     }}
-                    className={`text-left text-lg sm:text-xl tracking-tight cursor-pointer px-4 py-2 rounded-xl uppercase transition-all ${
+                    className={`text-left text-lg sm:text-xl tracking-tight cursor-pointer px-4 py-2 rounded-xl uppercase transition-all block ${
                       isActive ? 'font-bold' : 'font-medium hover:text-slate-900 dark:hover:text-white'
                     } ${hoverClass}`}
                   >
                     {col.name}
-                  </button>
+                  </Link>
                 );
               }
 
               if (tabStyle === 'underline') {
                 return (
-                  <button
-                    type="button"
+                  <Link
+                    href={col.href}
+                    onClick={onClose}
                     suppressHydrationWarning
                     key={col.id}
                     onMouseEnter={() => setActiveCollectionId(col.id)}
-                    onClick={() => setActiveCollectionId(col.id)}
                     style={{
                       color: isActive ? activeTabColor : mutedColor,
                       borderBottom: isActive ? `2px solid ${activeTabColor}` : '2px solid transparent',
@@ -564,65 +559,68 @@ export function MegamenuPanel({ category, onClose, appearance, headerHeight }: M
                     } ${hoverClass}`}
                   >
                     {col.name}
-                  </button>
+                  </Link>
                 );
               }
 
               if (tabStyle === 'bold-only') {
                 return (
-                  <button
-                    type="button"
+                  <Link
+                    href={col.href}
+                    onClick={onClose}
                     suppressHydrationWarning
                     key={col.id}
                     onMouseEnter={() => setActiveCollectionId(col.id)}
-                    onClick={() => setActiveCollectionId(col.id)}
                     style={{
                       color: isActive ? activeTabColor : mutedColor,
                     }}
-                    className={`text-left text-fluid-nav text-[22px] sm:text-[26px] lg:text-[30px] font-nav-title tracking-tight cursor-pointer uppercase transition-colors ${
+                    className={`text-left text-fluid-nav text-[22px] sm:text-[26px] lg:text-[30px] font-nav-title tracking-tight cursor-pointer uppercase transition-colors block ${
                       isActive
                         ? 'font-medium text-slate-950 dark:text-white'
                         : 'font-light text-neutral-400 dark:text-neutral-500 hover:text-slate-950 dark:hover:text-white'
                     } ${hoverClass}`}
                   >
                     {col.name}
-                  </button>
+                  </Link>
                 );
               }
 
               // Default 'border-left'
               return (
-                <button
-                  type="button"
+                <Link
+                  href={col.href}
+                  onClick={onClose}
                   suppressHydrationWarning
                   key={col.id}
                   onMouseEnter={() => setActiveCollectionId(col.id)}
-                  onClick={() => setActiveCollectionId(col.id)}
                   style={{
                     color: isActive ? activeTabColor : mutedColor,
                     borderLeft: isActive ? `2px solid ${activeTabColor}` : '2px solid transparent',
                     paddingLeft: '0.75rem',
                     marginLeft: '-0.75rem',
                   }}
-                  className={`text-left text-fluid-nav text-[22px] sm:text-[26px] lg:text-[30px] font-nav-title tracking-tight cursor-pointer transition-colors ${
+                  className={`text-left text-fluid-nav text-[22px] sm:text-[26px] lg:text-[30px] font-nav-title tracking-tight cursor-pointer transition-colors block ${
                     isActive
                       ? 'font-medium uppercase text-slate-950 dark:text-white'
                       : 'font-light uppercase text-neutral-400 dark:text-neutral-500 hover:text-slate-950 dark:hover:text-white'
                   } ${hoverClass}`}
                 >
                   {col.name}
-                </button>
+                </Link>
               );
             })}
           </div>
 
           {/* Middle Column: Subitem Grid */}
           <div className="flex-1 min-w-0 pl-10 sm:pl-16 lg:pl-20 pr-6 flex flex-col h-full overflow-y-auto no-scrollbar">
-            <p
-              className="text-[10px] sm:text-[11px] font-normal tracking-[0.25em] text-neutral-400 dark:text-neutral-500 uppercase mb-7 sm:mb-8 shrink-0"
+            <Link
+              href={activeCollection?.href || '/products'}
+              onClick={onClose}
+              className="text-[10px] sm:text-[11px] font-bold tracking-[0.25em] text-neutral-500 hover:text-foreground uppercase mb-7 sm:mb-8 shrink-0 flex items-center gap-1.5 transition-colors group/viewall w-fit cursor-pointer"
             >
-              {activeCollection?.name}
-            </p>
+              <span>VIEW ALL {activeCollection?.name}</span>
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/viewall:translate-x-1" />
+            </Link>
 
             {hasSplitColumns ? (
               <div className="grid grid-cols-2 gap-x-12 sm:gap-x-16 lg:gap-x-20">

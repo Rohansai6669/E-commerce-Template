@@ -11,6 +11,8 @@ import { redirect } from 'next/navigation';
 import { getCurrentUser, getCurrentProfile } from '@/core/auth/session';
 import { connection } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 export interface AdminLayoutProps {
   children: React.ReactNode;
 }

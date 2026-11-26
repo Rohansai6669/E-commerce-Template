@@ -99,10 +99,11 @@ export function normalizeProduct(product: any): UnifiedProduct {
     imageUrl: images[0],
     fit: product.fit || undefined,
     brand: product.brand || product.brandName || product.vendor || undefined,
-    colors: Array.isArray(product.colors)
+    colors: Array.isArray(product.colors) && product.colors.length > 0
       ? product.colors
-      : product.options?.find((o: any) => o.name?.toLowerCase() === 'color')?.values?.map((v: any) => typeof v === 'string' ? v : v.value) ||
-        (product.attributes?.find((a: any) => a.name?.toLowerCase() === 'color')?.value ? [product.attributes.find((a: any) => a.name?.toLowerCase() === 'color')?.value] : undefined),
+      : product.options?.find((o: any) => o.name?.toLowerCase() === 'color')?.values?.map((v: any) => typeof v === 'string' ? v : v.value || v.colorHex) ||
+        product.attributes?.filter((a: any) => a.name?.toLowerCase() === 'color')?.map((a: any) => a.value) ||
+        [],
     attributes: product.attributes || [],
   };
 }

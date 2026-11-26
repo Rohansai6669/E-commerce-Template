@@ -4,7 +4,7 @@ import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-import { Sliders, Settings2, Sparkles, Box, DollarSign, Image as ImageIcon } from 'lucide-react';
+import { Sliders, Settings2, Sparkles, Box, IndianRupee, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { MediaPickerModal } from '@/components/admin/media/media-picker-modal';
 
@@ -235,7 +235,7 @@ export function VariantMatrix({
             step="0.01"
             value={bulkPrice}
             onChange={(e) => setBulkPrice(e.target.value)}
-            placeholder="Price"
+            placeholder="Price (₹)"
             className="w-24 h-9 bg-white text-xs"
           />
           <Input
@@ -243,7 +243,7 @@ export function VariantMatrix({
             step="0.01"
             value={bulkCost}
             onChange={(e) => setBulkCost(e.target.value)}
-            placeholder="Cost"
+            placeholder="Cost (₹)"
             className="w-24 h-9 bg-white text-xs"
           />
           <Input
@@ -281,9 +281,9 @@ export function VariantMatrix({
                 <th className="px-3 w-16 text-center">Image</th>
                 <th className="px-4 w-36">SKU Code</th>
                 <th className="px-4 w-32">Barcode</th>
-                <th className="px-4 w-24">Price</th>
-                <th className="px-4 w-24">Compare At</th>
-                <th className="px-4 w-24">Cost</th>
+                <th className="px-4 w-24">Price (₹)</th>
+                <th className="px-4 w-24">Compare At (₹)</th>
+                <th className="px-4 w-24">Cost (₹)</th>
                 <th className="px-4 w-20">Stock</th>
                 <th className="px-4 w-20">Track Inv</th>
                 <th className="px-4 w-24">Status</th>
@@ -357,7 +357,7 @@ export function VariantMatrix({
                     </td>
                     <td className="px-2">
                       <div className="relative">
-                        <DollarSign className="absolute left-1.5 top-2.5 w-3 h-3 text-slate-400" />
+                        <IndianRupee className="absolute left-1.5 top-2.5 w-3 h-3 text-slate-400" />
                         <Input
                           type="number"
                           step="0.01"
@@ -370,7 +370,7 @@ export function VariantMatrix({
                     </td>
                     <td className="px-2">
                       <div className="relative">
-                        <DollarSign className="absolute left-1.5 top-2.5 w-3 h-3 text-slate-400" />
+                        <IndianRupee className="absolute left-1.5 top-2.5 w-3 h-3 text-slate-400" />
                         <Input
                           type="number"
                           step="0.01"
@@ -382,7 +382,7 @@ export function VariantMatrix({
                     </td>
                     <td className="px-2">
                       <div className="relative">
-                        <DollarSign className="absolute left-1.5 top-2.5 w-3 h-3 text-slate-400" />
+                        <IndianRupee className="absolute left-1.5 top-2.5 w-3 h-3 text-slate-400" />
                         <Input
                           type="number"
                           step="0.01"

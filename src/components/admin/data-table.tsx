@@ -35,6 +35,7 @@ export function DataTable<T>({
   totalRecords: customTotalRecords,
   serverSide = false,
   onStateChange,
+  onRowClick,
 }: DataTableProps<T>) {
   const [storeMode, setStoreMode] = React.useState<StoreMode>('standalone');
 
@@ -311,6 +312,7 @@ export function DataTable<T>({
             emptyStateAction={emptyStateAction}
             isLoading={isLoading}
             storeMode={storeMode}
+            onRowClick={onRowClick}
           />
         </table>
       </div>

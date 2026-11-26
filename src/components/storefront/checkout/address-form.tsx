@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { createAddressAction } from '@/app/actions/account';
 import { toast } from 'sonner';
+import { INDIAN_STATES } from '@/lib/shipping/shiprocket';
 
 export interface AddressFormProps {
   defaultValues?: CheckoutAddress | null;
@@ -374,7 +375,8 @@ export function AddressForm({
                   <Input
                     id="phone"
                     type="tel"
-                    placeholder="+91 98765 43210"
+                    maxLength={15}
+                    placeholder="10-digit mobile number (e.g. 9876543210)"
                     {...register('phone')}
                     className={errors.phone ? 'border-destructive' : ''}
                   />
@@ -385,7 +387,7 @@ export function AddressForm({
               <FormField label="Street Address / Flat / Building" error={errors.addressLine1?.message} id="addressLine1">
                 <Input
                   id="addressLine1"
-                  placeholder="House/Flat number, Street name, Area"
+                  placeholder="House/Flat number, Building name, Street (min 10 characters)"
                   {...register('addressLine1')}
                   className={errors.addressLine1 ? 'border-destructive' : ''}
                 />
@@ -404,7 +406,7 @@ export function AddressForm({
                 <FormField label="City" error={errors.city?.message} id="city">
                   <Input
                     id="city"
-                    placeholder="City"
+                    placeholder="City (e.g. Mumbai)"
                     {...register('city')}
                     className={errors.city ? 'border-destructive' : ''}
                   />
@@ -412,15 +414,22 @@ export function AddressForm({
                 <FormField label="State / Province" error={errors.state?.message} id="state">
                   <Input
                     id="state"
-                    placeholder="State"
+                    list="indian-states-list"
+                    placeholder="State (e.g. Maharashtra)"
                     {...register('state')}
                     className={errors.state ? 'border-destructive' : ''}
                   />
+                  <datalist id="indian-states-list">
+                    {INDIAN_STATES.map((s) => (
+                      <option key={s} value={s} />
+                    ))}
+                  </datalist>
                 </FormField>
-                <FormField label="PIN / Postal Code" error={errors.postalCode?.message} id="postalCode">
+                <FormField label="PIN Code" error={errors.postalCode?.message} id="postalCode">
                   <Input
                     id="postalCode"
-                    placeholder="Postal Code"
+                    maxLength={6}
+                    placeholder="6-digit PIN (e.g. 400001)"
                     {...register('postalCode')}
                     className={errors.postalCode ? 'border-destructive' : ''}
                   />

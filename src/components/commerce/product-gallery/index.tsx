@@ -109,7 +109,7 @@ export function ProductGallery({ images, alt, className }: ProductGalleryProps) 
         )}
 
         {/* Main Hero Viewport */}
-        <div className="relative flex-1 w-full aspect-[4/5] sm:aspect-[1/1] md:aspect-[4/5] max-h-[640px] rounded-none overflow-hidden border border-border bg-background group">
+        <div className="relative flex-1 w-full aspect-[3/4] sm:aspect-[4/5] max-h-[700px] lg:max-h-[740px] rounded-none overflow-hidden border border-border bg-background group">
           {!hasImages || isCurrentBroken ? (
             <NoImageFallback
               message="No Image Found"
@@ -132,7 +132,7 @@ export function ProductGallery({ images, alt, className }: ProductGalleryProps) 
                   transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
                   transform: isZoomed ? 'scale(1.75)' : 'scale(1)',
                 }}
-                className="w-full h-full object-contain p-4 sm:p-6 md:p-8 select-none transition-transform duration-150 ease-out will-change-transform"
+                className="w-full h-full object-contain p-1 sm:p-2 select-none transition-transform duration-150 ease-out will-change-transform"
               />
 
               {/* Prev / Next Navigation Arrows */}

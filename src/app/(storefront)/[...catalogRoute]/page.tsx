@@ -118,11 +118,11 @@ export default async function HierarchicalCatalogPage({
 
           {/* Top visual detail grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start w-full">
-            <div className="w-full lg:col-span-7">
+            <div className="w-full lg:col-span-7 lg:sticky lg:top-24 self-start">
               <ProductGallery images={product.images} alt={product.name} />
             </div>
 
-            <div className="w-full lg:col-span-5 lg:sticky lg:top-24 lg:self-start space-y-6">
+            <div className="w-full lg:col-span-5 space-y-6">
               <ProductSummary product={product} />
               <ProductInfo product={product} initialIsSaved={initialIsSaved} />
             </div>

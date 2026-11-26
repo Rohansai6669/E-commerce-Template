@@ -28,14 +28,14 @@ export function ProductSummary({ product }: ProductSummaryProps) {
     `${product.name} — part of the LEXIDO Atelier Collection. Permanent. Refined every season.`;
 
   return (
-    <div className="flex flex-col gap-3 w-full select-none">
+    <div className="flex flex-col gap-2.5 sm:gap-3 w-full select-none">
       {/* 1. Category • Audience Eyebrow */}
-      <div className="text-[11px] font-mono font-bold uppercase tracking-[0.25em] text-muted-foreground">
+      <div className="text-[11px] font-mono font-bold uppercase tracking-[0.25em] text-neutral-600 dark:text-neutral-400">
         {eyebrowParts.join(' • ')}
       </div>
 
       {/* 2. Luxury Monochrome Display Title (Clash Display / Helvetica Now Display) */}
-      <h1 className="font-display text-3xl font-black uppercase tracking-tight text-foreground leading-snug">
+      <h1 className="font-display text-2xl sm:text-3xl font-black uppercase tracking-tight text-neutral-950 dark:text-white leading-snug">
         {product.name}
       </h1>
 
@@ -45,26 +45,26 @@ export function ProductSummary({ product }: ProductSummaryProps) {
         className="flex items-center gap-2 w-fit cursor-pointer hover:opacity-85 transition-opacity pt-0.5"
       >
         <Rating value={product.rating || 5.0} count={product.reviewsCount || 124} size="sm" />
-        <span className="text-xs font-semibold text-neutral-500 hover:text-foreground transition-colors">
+        <span className="text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-foreground transition-colors">
           ({product.reviewsCount && product.reviewsCount > 0 ? product.reviewsCount : 124} reviews)
         </span>
       </a>
 
       {/* 4. Large Price Row */}
-      <div className="pt-2">
+      <div className="pt-1.5">
         <Price
           amount={product.price}
           compareAtAmount={product.compareAtPrice || undefined}
           showDiscountBadge
           className="text-2xl sm:text-3xl font-black font-heading tracking-tight text-foreground"
         />
-        <p className="text-[11px] text-muted-foreground font-medium mt-1">
+        <p className="text-[11px] text-neutral-600 dark:text-neutral-400 font-medium mt-1">
           Inclusive of all taxes (GST) • Complimentary shipping available
         </p>
       </div>
 
       {/* 5. Editorial Subtitle Line */}
-      <p className="text-xs sm:text-sm text-muted-foreground font-normal leading-relaxed pt-1 max-w-xl">
+      <p className="text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 font-normal leading-relaxed pt-0.5 max-w-xl">
         {editorialSubtitle}
       </p>
     </div>

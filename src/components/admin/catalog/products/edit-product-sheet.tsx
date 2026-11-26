@@ -19,7 +19,7 @@ import { VariantMatrix } from './variant-matrix';
 import { toast } from 'sonner';
 import { createCategoryAction } from '@/app/actions/category-actions';
 import { createBrandAction } from '@/app/actions/brand-actions';
-import { Edit2, Sparkles, Box, DollarSign, Sliders, Layers, CheckSquare, Plus, X } from 'lucide-react';
+import { Edit2, Sparkles, Box, IndianRupee, Sliders, Layers, CheckSquare, Plus, X } from 'lucide-react';
 import { ImagePreviewInput } from '@/components/ui/image-preview-input';
 import { ProductGalleryManager } from '@/components/admin/media/product-gallery-manager';
 
@@ -358,9 +358,9 @@ export function EditProductSheet({
               </FormField>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <FormField label="Selling Price ($)">
+                <FormField label="Selling Price (₹)">
                   <div className="relative">
-                    <DollarSign className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                    <IndianRupee className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
                     <Input
                       type="number"
                       step="0.01"
@@ -374,9 +374,9 @@ export function EditProductSheet({
                   </div>
                 </FormField>
 
-                <FormField label="Cost Price ($)">
+                <FormField label="Cost Price (₹)">
                   <div className="relative">
-                    <DollarSign className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                    <IndianRupee className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
                     <Input
                       type="number"
                       step="0.01"
@@ -408,7 +408,7 @@ export function EditProductSheet({
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-emerald-950">Unit Margin:</span>
                     <span className="text-emerald-800 font-medium">
-                      Profit ${(Number(price) - Number(costPrice)).toFixed(2)} per item
+                      Profit ₹{(Number(price) - Number(costPrice)).toFixed(2)} per item
                     </span>
                   </div>
                   <span className="font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px]">

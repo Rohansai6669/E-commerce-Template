@@ -10,7 +10,7 @@ export const payments = pgTable('payments', {
   amount: decimal('amount', { precision: 12, scale: 2 }).notNull(),
   status: paymentStatusEnum('status').default('pending').notNull(),
   idempotencyKey: text('idempotency_key').unique(),
-  currency: text('currency').default('USD').notNull(),
+  currency: text('currency').default('INR').notNull(),
   providerFee: decimal('provider_fee', { precision: 12, scale: 2 }),
   providerPayload: jsonb('provider_payload').default({}).notNull(),
   providerResponse: jsonb('provider_response').default({}).notNull(),

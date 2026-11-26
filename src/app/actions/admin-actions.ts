@@ -119,7 +119,7 @@ export async function deleteReviewAction(reviewId: string): Promise<{ success: b
   }
 }
 
-import { shiprocketClient } from '@/lib/shipping/shiprocket';
+import { shiprocketClient, qualifyShiprocketAddress } from '@/lib/shipping/shiprocket';
 import { orders, orderItems } from '@/lib/db/schema/order';
 
 /**
@@ -146,63 +146,116 @@ export async function shipOrderWithShiprocketAction(orderId: string): Promise<{
     }
 
     const shippingAddr = (order.shippingAddress || {}) as Record<string, any>;
-    const customerName = `${shippingAddr.firstName || 'Customer'} ${shippingAddr.lastName || ''}`.trim();
-    const phone = shippingAddr.phone || '9999999999';
-    const email = shippingAddr.email || 'customer@lexido.in';
-    const street = shippingAddr.address1 || shippingAddr.street || shippingAddr.address || 'Address line';
-    const city = shippingAddr.city || 'Mumbai';
-    const state = shippingAddr.state || 'Maharashtra';
-    const pincode = shippingAddr.pincode || shippingAddr.postalCode || '400001';
 
-    // 2. Call Shiprocket Create Order API
-    const createRes = await shiprocketClient.createOrder({
-      orderId: order.orderNumber || order.id,
-      customerName,
-      address: street,
-      address2: shippingAddr.address2 || '',
-      city,
-      pincode,
-      state,
-      country: shippingAddr.country || 'India',
-      email,
-      phone,
-      paymentMethod: (order as any).paymentMethod?.type === 'cod' ? 'COD' : 'Prepaid',
-      subtotal: parseFloat(order.totalAmount || order.subtotal || '0'),
-      items: items.map((i) => ({
-        name: i.name,
-        sku: i.sku || `SKU-${i.productId?.slice(0, 6)}`,
-        units: i.quantity,
-        selling_price: parseFloat(i.price || '0'),
-      })),
-      length: 15,
-      breadth: 15,
-      height: 5,
-      weight: 0.5,
-    });
-
-    if (!createRes.success || !createRes.shipmentId) {
+    // 2. Validate and Qualify address against Shiprocket requirements
+    const qualification = qualifyShiprocketAddress(shippingAddr);
+    if (!qualification.qualified || !qualification.data) {
       return {
         success: false,
-        error: createRes.error || 'Failed to create order on Shiprocket.',
+        error: `Address does not qualify for Shiprocket dispatch:\n• ${qualification.errors.join('\n• ')}`,
       };
     }
 
-    // 3. Assign Courier Partner and Generate AWB
-    const awbRes = await shiprocketClient.generateAwb(createRes.shipmentId);
+    const qualified = qualification.data;
 
-    const awbCode = awbRes.awbCode || `AWB-${createRes.shipmentId}`;
+    // Detect payment method (Prepaid vs COD)
+    const isCod =
+      (order as any).paymentMethod?.type === 'cod' ||
+      shippingAddr.paymentMethod?.type === 'cod' ||
+      (order.billingAddress as any)?.paymentMethod?.type === 'cod';
+
+    // 3. Resolve existing or new Shiprocket Order & Shipment ID
+    let shipmentId =
+      shippingAddr.tracking?.shipmentId ||
+      shippingAddr.shiprocketShipmentId ||
+      null;
+    let shiprocketOrderId =
+      shippingAddr.tracking?.shiprocketOrderId ||
+      shippingAddr.shiprocketOrderId ||
+      null;
+
+    if (!shipmentId) {
+      const createRes = await shiprocketClient.createOrder({
+        orderId: order.orderNumber || order.id,
+        customerName: qualified.customerName,
+        customerLastName: qualified.customerLastName,
+        address: qualified.address,
+        address2: qualified.address2,
+        city: qualified.city,
+        pincode: qualified.pincode,
+        state: qualified.state,
+        country: qualified.country,
+        email: qualified.email,
+        phone: qualified.phone,
+        paymentMethod: isCod ? 'COD' : 'Prepaid',
+        subtotal: parseFloat(order.totalAmount || order.subtotal || '0'),
+        items: items.map((i) => ({
+          name: i.name.slice(0, 100),
+          sku: i.sku || `SKU-${i.productId?.slice(0, 6) || 'DEFAULT'}`,
+          units: i.quantity,
+          selling_price: parseFloat(i.price || '0'),
+        })),
+        length: 15,
+        breadth: 15,
+        height: 5,
+        weight: 0.5,
+      });
+
+      if (!createRes.success || !createRes.shipmentId) {
+        return {
+          success: false,
+          error: createRes.error || 'Failed to create order on Shiprocket.',
+        };
+      }
+
+      shipmentId = createRes.shipmentId;
+      shiprocketOrderId = createRes.orderId;
+    }
+
+    // 4. Assign Courier Partner and Generate AWB
+    const awbRes = await shiprocketClient.generateAwb(shipmentId);
+
+    if (!awbRes.success || !awbRes.awbCode) {
+      await db
+        .update(orders)
+        .set({
+          shippingAddress: {
+            ...shippingAddr,
+            ...qualified,
+            shiprocketShipmentId: shipmentId,
+            shiprocketOrderId,
+          },
+          updatedAt: new Date(),
+        })
+        .where(eq(orders.id, order.id));
+
+      return {
+        success: false,
+        error: `Shiprocket Order created (Shipment ID: ${shipmentId}), but courier AWB generation failed: ${
+          awbRes.error || 'KYC verification or wallet balance required on Shiprocket.'
+        }`,
+      };
+    }
+
+    const awbCode = awbRes.awbCode;
     const courierName = awbRes.courierName || 'Shiprocket Express';
     const trackingUrl = awbRes.trackingUrl || shiprocketClient.getBrandedTrackingUrl(awbCode);
 
-    // 4. Update order in database with tracking metadata
+    // 5. Update order in database with tracking metadata
     const updatedTracking = {
       shippingProvider: 'shiprocket',
-      shiprocketOrderId: createRes.orderId,
-      shipmentId: createRes.shipmentId,
+      shiprocketOrderId,
+      shipmentId,
       awb: awbCode,
       courierName,
       trackingUrl,
       shippedAt: new Date().toISOString(),
+      latestScan: {
+        status: 'SHIPPED',
+        location: qualified.city,
+        activity: 'Airway Bill generated and courier assigned for atelier dispatch',
+        timestamp: new Date().toISOString(),
+      },
     };
 
     await db
@@ -211,6 +264,7 @@ export async function shipOrderWithShiprocketAction(orderId: string): Promise<{
         status: 'shipped',
         shippingAddress: {
           ...shippingAddr,
+          ...qualified,
           tracking: updatedTracking,
         },
         updatedAt: new Date(),

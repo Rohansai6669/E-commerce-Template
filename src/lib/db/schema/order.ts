@@ -9,7 +9,7 @@ export const shippingMethods = pgTable('shipping_methods', {
   id: uuid('id').defaultRandom().primaryKey(),
   name: text('name').notNull(),
   price: decimal('price', { precision: 12, scale: 2 }).notNull(),
-  currency: text('currency').default('USD').notNull(), // Multi-currency mapping
+  currency: text('currency').default('INR').notNull(), // Multi-currency mapping
   estimatedDelivery: text('estimated_delivery'),
   isActive: boolean('is_active').default(true).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
@@ -32,7 +32,7 @@ export const orders = pgTable('orders', {
   shippingAmount: decimal('shipping_amount', { precision: 12, scale: 2 }).default('0.00').notNull(),
   discountAmount: decimal('discount_amount', { precision: 12, scale: 2 }).default('0.00').notNull(),
   totalAmount: decimal('total_amount', { precision: 12, scale: 2 }).notNull(),
-  currency: text('currency').default('USD').notNull(), // Core currency mapping
+  currency: text('currency').default('INR').notNull(), // Core currency mapping
   couponId: uuid('coupon_id').references(() => coupons.id, { onDelete: 'set null' }),
   shippingAddress: jsonb('shipping_address').notNull(), // Snapshotted address details
   billingAddress: jsonb('billing_address'), // Snapshotted billing address details

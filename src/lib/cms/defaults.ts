@@ -41,7 +41,7 @@ export const defaultAnnouncementBar: AnnouncementBarConfig = {
   desktopVisible: true,
   tabletVisible: true,
   mobileVisible: true,
-  message: 'FREE EXPRESS SHIPPING ON ALL ORDERS OVER $100',
+  message: 'FREE EXPRESS SHIPPING ON ALL ORDERS OVER ₹2,000',
   ctaText: 'SHOP NOW',
   linkUrl: '/products',
   backgroundColor: '#000000',

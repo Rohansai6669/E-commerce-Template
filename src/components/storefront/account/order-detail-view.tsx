@@ -29,8 +29,18 @@ const STATUS_TIMELINE: { status: OrderStatus; label: string; desc: string }[] = 
  * Detailed order invoice status tracking view.
  */
 export function OrderDetailView({ order }: OrderDetailViewProps) {
-  const orderNumber = order.shippingAddress?.orderNumber || order.id.slice(0, 8).toUpperCase();
+  const orderNumber = order.orderNumber || order.shippingAddress?.orderNumber || order.id.slice(0, 8).toUpperCase();
   const activeStatusIndex = STATUS_TIMELINE.findIndex((t) => t.status === order.status);
+  const tracking = order.shippingAddress?.tracking;
+  const [isCopied, setIsCopied] = React.useState(false);
+
+  const handleCopyAwb = (awbCode: string) => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(awbCode);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    }
+  };
 
   return (
     <Stack gap="5" className="w-full">
@@ -44,13 +54,81 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
             Tracking updates for invoice {OrderPresenter.formatOrderNumber(orderNumber)}.
           </Text>
         </div>
-        <Button asChild variant="outline" size="sm" className="font-bold text-xs uppercase cursor-pointer shrink-0 sm:self-start">
-          <Link href="/account/orders">
-            <Icon name="ArrowLeft" className="h-4 w-4 mr-1.5" />
-            Back to Orders
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2 sm:self-start">
+          <Button asChild variant="outline" size="sm" className="font-bold text-xs uppercase cursor-pointer shrink-0">
+            <Link href={`/track-order?orderNumber=${encodeURIComponent(orderNumber)}`}>
+              <Icon name="Search" className="h-4 w-4 mr-1.5" />
+              Live Tracker
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm" className="font-bold text-xs uppercase cursor-pointer shrink-0">
+            <Link href="/account/orders">
+              <Icon name="ArrowLeft" className="h-4 w-4 mr-1.5" />
+              Back to Orders
+            </Link>
+          </Button>
+        </div>
       </div>
+
+      {/* Shiprocket Carrier & Tracking Snapshot */}
+      {tracking?.awb && (
+        <Card className="border-border bg-card shadow-xs overflow-hidden">
+          <CardHeader className="p-4 border-b border-border bg-muted/20 flex flex-row items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Icon name="Truck" className="h-4 w-4 text-foreground" />
+              <Heading level={3} className="text-xs font-bold uppercase tracking-wider font-heading">
+                Logistics & Carrier Dispatch
+              </Heading>
+            </div>
+            <span className="text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold">
+              {tracking.lastStatus || 'Shipped'}
+            </span>
+          </CardHeader>
+          <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-foreground">
+                  {tracking.courierName || 'Shiprocket Partner'}
+                </span>
+                <span className="text-muted-foreground">·</span>
+                <span className="font-mono text-xs font-bold text-muted-foreground">
+                  AWB: {tracking.awb}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleCopyAwb(tracking.awb)}
+                  className="text-[11px] text-muted-foreground hover:text-foreground font-medium underline cursor-pointer ml-1"
+                >
+                  {isCopied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+
+              {tracking.latestScan?.activity && (
+                <Text className="text-xs text-muted-foreground mt-0.5">
+                  Latest: {tracking.latestScan.activity} {tracking.latestScan.location ? `(${tracking.latestScan.location})` : ''}
+                </Text>
+              )}
+
+              {tracking.estimatedDelivery && (
+                <Text className="text-xs text-foreground font-semibold mt-0.5">
+                  Expected Delivery: {tracking.estimatedDelivery}
+                </Text>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              {tracking.trackingUrl && (
+                <Button asChild size="sm" variant="default" className="w-full sm:w-auto text-xs font-bold uppercase tracking-wider cursor-pointer">
+                  <a href={tracking.trackingUrl} target="_blank" rel="noopener noreferrer">
+                    <Icon name="ExternalLink" className="h-3.5 w-3.5 mr-1.5" />
+                    Carrier Map
+                  </a>
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Progress Timeline card */}
       {order.status !== 'cancelled' && (

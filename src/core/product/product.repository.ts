@@ -224,6 +224,25 @@ export class ProductRepository {
         reviewsCount: sql<number>`cast(coalesce((select count(id) from ${reviews} where ${reviews.productId} = ${products.id} and ${reviews.status} = 'approved' and ${reviews.deletedAt} is null), 0) as integer)`,
         primaryImage: sql<string | null>`(select url from ${productImages} where ${productImages.productId} = ${products.id} order by ${productImages.sortOrder} asc limit 1)`,
         images: sql<string[]>`coalesce((select array_agg(url order by sort_order asc) from ${productImages} where ${productImages.productId} = ${products.id}), array[]::text[])`,
+        colors: sql<string[]>`coalesce(
+          (
+            select array_agg(distinct gav.value)
+            from ${variantAttributeValues} vav
+            join ${globalAttributeValues} gav on gav.id = vav.attribute_value_id
+            join ${globalAttributes} ga on ga.id = gav.attribute_id
+            join ${productVariants} pv on pv.id = vav.variant_id
+            where pv.product_id = ${products.id} and lower(ga.name) = 'color'
+          ),
+          (
+            select array_agg(distinct gav.value)
+            from ${productAttributeValues} pav
+            join ${globalAttributeValues} gav on gav.id = pav.attribute_value_id
+            join ${globalAttributes} ga on ga.id = gav.attribute_id
+            join ${productAttributes} pa on pa.id = pav.product_attribute_id
+            where pa.product_id = ${products.id} and lower(ga.name) = 'color'
+          ),
+          array[]::text[]
+        )`,
       })
       .from(products)
       .leftJoin(categories, eq(products.categoryId, categories.id))
@@ -295,6 +314,25 @@ export class ProductRepository {
         reviewsCount: sql<number>`cast(coalesce((select count(id) from ${reviews} where ${reviews.productId} = ${products.id} and ${reviews.status} = 'approved' and ${reviews.deletedAt} is null), 0) as integer)`,
         primaryImage: sql<string | null>`(select url from ${productImages} where ${productImages.productId} = ${products.id} order by ${productImages.sortOrder} asc limit 1)`,
         images: sql<string[]>`coalesce((select array_agg(url order by sort_order asc) from ${productImages} where ${productImages.productId} = ${products.id}), array[]::text[])`,
+        colors: sql<string[]>`coalesce(
+          (
+            select array_agg(distinct gav.value)
+            from ${variantAttributeValues} vav
+            join ${globalAttributeValues} gav on gav.id = vav.attribute_value_id
+            join ${globalAttributes} ga on ga.id = gav.attribute_id
+            join ${productVariants} pv on pv.id = vav.variant_id
+            where pv.product_id = ${products.id} and lower(ga.name) = 'color'
+          ),
+          (
+            select array_agg(distinct gav.value)
+            from ${productAttributeValues} pav
+            join ${globalAttributeValues} gav on gav.id = pav.attribute_value_id
+            join ${globalAttributes} ga on ga.id = gav.attribute_id
+            join ${productAttributes} pa on pa.id = pav.product_attribute_id
+            where pa.product_id = ${products.id} and lower(ga.name) = 'color'
+          ),
+          array[]::text[]
+        )`,
       })
       .from(products)
       .leftJoin(categories, eq(products.categoryId, categories.id))
@@ -490,6 +528,27 @@ export class ProductRepository {
         quantity: sql<number>`cast(coalesce((select sum(quantity) from ${inventory} where ${inventory.productId} = ${products.id}), 0) as integer)`,
         rating: sql<number | null>`cast((select avg(rating) from ${reviews} where ${reviews.productId} = ${products.id}) as double precision)`,
         reviewsCount: sql<number>`cast(coalesce((select count(id) from ${reviews} where ${reviews.productId} = ${products.id}), 0) as integer)`,
+        primaryImage: sql<string | null>`(select url from ${productImages} where ${productImages.productId} = ${products.id} order by ${productImages.sortOrder} asc limit 1)`,
+        images: sql<string[]>`coalesce((select array_agg(url order by sort_order asc) from ${productImages} where ${productImages.productId} = ${products.id}), array[]::text[])`,
+        colors: sql<string[]>`coalesce(
+          (
+            select array_agg(distinct gav.value)
+            from ${variantAttributeValues} vav
+            join ${globalAttributeValues} gav on gav.id = vav.attribute_value_id
+            join ${globalAttributes} ga on ga.id = gav.attribute_id
+            join ${productVariants} pv on pv.id = vav.variant_id
+            where pv.product_id = ${products.id} and lower(ga.name) = 'color'
+          ),
+          (
+            select array_agg(distinct gav.value)
+            from ${productAttributeValues} pav
+            join ${globalAttributeValues} gav on gav.id = pav.attribute_value_id
+            join ${globalAttributes} ga on ga.id = gav.attribute_id
+            join ${productAttributes} pa on pa.id = pav.product_attribute_id
+            where pa.product_id = ${products.id} and lower(ga.name) = 'color'
+          ),
+          array[]::text[]
+        )`,
       })
       .from(products)
       .leftJoin(categories, eq(products.categoryId, categories.id))

@@ -148,10 +148,17 @@ export function ProductInfo({ product, initialIsSaved = false }: ProductInfoProp
   };
 
   const handleOptionChange = (optionName: string, value: string) => {
-    setSelectedOptions((prev) => ({
-      ...prev,
-      [optionName]: value,
-    }));
+    setSelectedOptions((prev) => {
+      const updated = { ...prev };
+      // Remove any existing key matching case-insensitively to avoid duplicates
+      Object.keys(updated).forEach((k) => {
+        if (k.trim().toLowerCase() === optionName.trim().toLowerCase()) {
+          delete updated[k];
+        }
+      });
+      updated[optionName] = value;
+      return updated;
+    });
     setQuantity(1); // Reset quantity stepper to 1
   };
 
@@ -260,7 +267,11 @@ export function ProductInfo({ product, initialIsSaved = false }: ProductInfoProp
           </div>
           <div className="flex flex-wrap gap-2">
             {opt.values.map((val) => {
-              const isActive = selectedOptions[opt.name] === val.value;
+              const isActive = Object.entries(selectedOptions).some(
+                ([k, v]) =>
+                  k.trim().toLowerCase() === opt.name.trim().toLowerCase() &&
+                  v.trim().toLowerCase() === val.value.trim().toLowerCase()
+              );
               const isAvailable = product.variants && product.variants.length > 0
                 ? isOptionCombinationAvailable(product.variants, opt.name, val.value, selectedOptions)
                 : true;
@@ -270,14 +281,18 @@ export function ProductInfo({ product, initialIsSaved = false }: ProductInfoProp
                   key={val.id}
                   type="button"
                   onClick={() => handleOptionChange(opt.name, val.value)}
-                  disabled={!isAvailable && !isActive}
-                  className={`h-11 min-w-[52px] px-4 font-heading font-bold text-xs uppercase tracking-wider transition-all cursor-pointer border rounded-none flex items-center justify-center ${
+                  className={`h-11 min-w-[52px] px-4 font-heading font-bold text-xs uppercase tracking-wider transition-all cursor-pointer border rounded-none flex items-center justify-center select-none relative ${
                     isActive
-                      ? 'bg-foreground text-background border-foreground font-black shadow-xs'
-                      : 'bg-background text-foreground border-border hover:border-foreground'
+                      ? 'bg-neutral-950 text-white border-neutral-950 font-black shadow-xs dark:bg-white dark:text-neutral-950 dark:border-white'
+                      : isAvailable
+                      ? 'bg-white text-neutral-950 border-neutral-300 hover:border-neutral-950 dark:bg-neutral-900 dark:text-white dark:border-neutral-700'
+                      : 'bg-neutral-50 text-neutral-400 border-neutral-200 hover:border-neutral-400 dark:bg-neutral-950 dark:text-neutral-500 dark:border-neutral-800'
                   }`}
                 >
                   {val.value}
+                  {!isAvailable && !isActive && (
+                    <span className="sr-only">(Out of stock)</span>
+                  )}
                 </button>
               );
             })}

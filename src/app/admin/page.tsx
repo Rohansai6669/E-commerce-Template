@@ -4,7 +4,7 @@ import { connection } from 'next/server';
 import { 
   ShoppingBag, 
   Users, 
-  DollarSign, 
+  IndianRupee, 
   FolderIcon
 } from 'lucide-react';
 import { StatsCard } from '@/components/admin/dashboard/stats-card';
@@ -35,7 +35,7 @@ export default async function AdminDashboardOverview() {
         <StatsCard 
           label="revenue" 
           value={formattedRevenue}
-          icon={DollarSign}
+          icon={IndianRupee}
           iconColorClass="text-slate-900"
           iconBgClass="bg-slate-50 border border-slate-200/50"
         />

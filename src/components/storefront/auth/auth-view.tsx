@@ -198,7 +198,7 @@ export function AuthView({
         {/* LEXIDO Wordmark Logo */}
         <Link
           href="/"
-          className="text-center font-display font-black uppercase text-2xl sm:text-[30px] tracking-[0.04em] text-foreground mb-10 sm:mb-12 hover:opacity-85 transition-opacity"
+          className="text-center font-display font-black uppercase text-2xl sm:text-[30px] tracking-[0.04em] text-neutral-950 dark:text-white mb-10 sm:mb-12 hover:opacity-85 transition-opacity"
         >
           LEXIDO
         </Link>
@@ -208,11 +208,11 @@ export function AuthView({
           /* 1. ENTER LEXIDO LANDING VIEW (Options)                   */
           /* ======================================================== */
           <div className="flex flex-col items-center text-center animate-in fade-in duration-200">
-            <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-black font-display uppercase tracking-tight text-foreground leading-none mb-3">
+            <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-black font-display uppercase tracking-tight text-neutral-950 dark:text-white leading-none mb-3">
               ENTER LEXIDO
             </h1>
 
-            <p className="text-xs sm:text-[13px] text-muted-foreground font-sans tracking-normal font-normal max-w-[320px] mb-8 sm:mb-10 leading-relaxed">
+            <p className="text-xs sm:text-[13px] text-neutral-600 dark:text-neutral-400 font-sans tracking-normal font-normal max-w-[320px] mb-8 sm:mb-10 leading-relaxed">
               Sign in to access orders, wishlist and exclusive drops.
             </p>
 
@@ -322,7 +322,7 @@ export function AuthView({
             </button>
 
             {/* Page Title */}
-            <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-black font-display uppercase tracking-tight text-foreground leading-none mb-6">
+            <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-black font-display uppercase tracking-tight text-neutral-950 dark:text-white leading-none mb-6">
               {tab === 'login' ? 'SIGN IN' : 'CREATE ACCOUNT'}
             </h1>
 

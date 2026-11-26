@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SupabaseProvider } from "@/providers/SupabaseProvider";
@@ -19,10 +19,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  colorScheme: "light",
+};
+
 export const metadata: Metadata = {
   title: "Ecommerce Platform",
   description: "Production-ready custom e-commerce storefront template",
-  colorScheme: "light",
 };
 
 export default async function RootLayout({
@@ -38,7 +41,7 @@ export default async function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${isDark ? 'dark' : ''} h-full antialiased`}
-      data-theme={isDark ? 'dark' : undefined}
+      data-theme={isDark ? 'dark' : 'light'}
       style={{ colorScheme: isDark ? 'dark' : isSystem ? undefined : 'light' }}
       suppressHydrationWarning
     >

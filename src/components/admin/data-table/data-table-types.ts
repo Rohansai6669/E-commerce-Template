@@ -58,6 +58,7 @@ export interface DataTableProps<T> {
   onSelectionChange?: (selectedKeys: string[], selectedItems: T[]) => void;
   bulkActions?: (selectedKeys: string[], selectedItems: T[], clearSelection: () => void) => React.ReactNode;
   isLoading?: boolean;
+  onRowClick?: (item: T) => void;
   // Server pagination props for future API extension
   totalRecords?: number;
   serverSide?: boolean;
