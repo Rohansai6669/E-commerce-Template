@@ -89,38 +89,56 @@ export function RecentlyViewedSection() {
       </div>
 
       <div className="flex flex-wrap gap-4 sm:gap-6 items-stretch w-full">
-        {products.map((item) => (
-          <div
-            key={item.product.id}
-            className="w-[calc(50%-8px)] sm:w-[calc(33.333%-16px)] lg:w-[calc(25%-18px)] min-w-[150px] max-w-[280px]"
-          >
-            <ConfigurableProductCard
-              product={{
-                id: item.product.id,
-                name: item.product.name,
-                slug: item.product.slug,
-                price:
-                  typeof item.product.price === 'string'
-                    ? parseFloat(item.product.price)
-                    : item.product.price,
-                compareAtPrice: item.product.compareAtPrice
-                  ? typeof item.product.compareAtPrice === 'string'
-                    ? parseFloat(item.product.compareAtPrice)
-                    : item.product.compareAtPrice
-                  : undefined,
-                category: item.product.categoryName ?? undefined,
-                rating: item.product.rating ?? undefined,
-                reviewCount: item.product.reviewsCount,
-                images: item.product.imageUrl ? [item.product.imageUrl] : [],
-                badges: item.product.isNew ? ['NEW'] : [],
-                inStock: item.product.quantity > 0,
-                colors: item.product.colors || [],
-                fit: item.product.fit,
-                brand: item.product.brandName,
-              }}
-            />
-          </div>
-        ))}
+        {products.map((item) => {
+          const rawImages: string[] =
+            Array.isArray(item.images) && item.images.length > 0
+              ? item.images
+              : item.primaryImage
+              ? [item.primaryImage]
+              : item.product?.imageUrl
+              ? [item.product.imageUrl]
+              : [];
+
+          const categoryName = item.category?.name || item.product?.categoryName || undefined;
+          const brandName = item.brand?.name || item.product?.brandName || undefined;
+          const ratingVal = item.rating ?? item.product?.rating ?? undefined;
+          const reviewCountVal = item.reviewsCount ?? item.product?.reviewsCount ?? 0;
+          const inStockVal = (item.quantity ?? item.product?.quantity ?? 0) > 0;
+          const colorsList = item.colors || item.product?.colors || [];
+
+          return (
+            <div
+              key={item.product.id}
+              className="w-[calc(50%-8px)] sm:w-[calc(33.333%-16px)] lg:w-[calc(25%-18px)] min-w-[150px] max-w-[280px]"
+            >
+              <ConfigurableProductCard
+                product={{
+                  id: item.product.id,
+                  name: item.product.name,
+                  slug: item.product.slug,
+                  price:
+                    typeof item.product.price === 'string'
+                      ? parseFloat(item.product.price)
+                      : item.product.price,
+                  compareAtPrice: item.product.compareAtPrice
+                    ? typeof item.product.compareAtPrice === 'string'
+                      ? parseFloat(item.product.compareAtPrice)
+                      : item.product.compareAtPrice
+                    : undefined,
+                  category: categoryName,
+                  rating: ratingVal,
+                  reviewCount: reviewCountVal,
+                  images: rawImages,
+                  badges: item.product.isNew ? ['NEW'] : [],
+                  inStock: inStockVal,
+                  colors: colorsList,
+                  fit: item.product.fit,
+                  brand: brandName,
+                }}
+              />
+            </div>
+          );
+        })}
       </div>
     </Container>
   );

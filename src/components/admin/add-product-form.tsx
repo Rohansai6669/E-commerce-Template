@@ -185,6 +185,7 @@ export function AddProductForm({ categories, brands, redirectOnSuccess }: AddPro
         categoryId: categoryId || null,
         brandId: brandId || null,
         imageUrl: imageUrl || null,
+        galleryUrls: galleryUrls.filter(Boolean),
         productType,
         status,
         weight: weight || null,

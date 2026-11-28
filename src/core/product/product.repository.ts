@@ -94,7 +94,52 @@ export class ProductRepository {
         or(
           ilike(products.name, pattern),
           ilike(products.description, pattern),
-          ilike(products.slug, pattern)
+          ilike(products.slug, pattern),
+          ilike(products.sku, pattern),
+          ilike(products.material, pattern),
+          ilike(products.fit, pattern),
+          ilike(products.pattern, pattern),
+          ilike(products.occasion, pattern),
+          ilike(products.season, pattern),
+          ilike(products.collection, pattern),
+          ilike(products.gender, pattern),
+          ilike(categories.name, pattern),
+          ilike(categories.slug, pattern),
+          ilike(brands.name, pattern),
+          ilike(brands.slug, pattern),
+          sql`cast(${products.metadata} as text) ILIKE ${pattern}`,
+          sql`exists (
+            select 1 from ${productCategories}
+            inner join ${categories} as sub_cat on sub_cat.id = ${productCategories.categoryId}
+            where ${productCategories.productId} = ${products.id} and (
+              sub_cat.name ILIKE ${pattern} or sub_cat.slug ILIKE ${pattern}
+            )
+          )`,
+          sql`exists (
+            select 1 from ${productAttributeValues} pav
+            join ${globalAttributeValues} gav on gav.id = pav.attribute_value_id
+            join ${productAttributes} pa on pa.id = pav.product_attribute_id
+            left join ${globalAttributes} ga on ga.id = gav.attribute_id
+            where pa.product_id = ${products.id} and (
+              gav.value ILIKE ${pattern} or ga.name ILIKE ${pattern}
+            )
+          )`,
+          sql`exists (
+            select 1 from ${variantAttributeValues} vav
+            join ${globalAttributeValues} gav on gav.id = vav.attribute_value_id
+            join ${productVariants} pv on pv.id = vav.variant_id
+            left join ${globalAttributes} ga on ga.id = gav.attribute_id
+            where pv.product_id = ${products.id} and (
+              gav.value ILIKE ${pattern} or ga.name ILIKE ${pattern}
+            )
+          )`,
+          sql`exists (
+            select 1 from ${productAudiences}
+            inner join ${audiences} on ${audiences.id} = ${productAudiences.audienceId}
+            where ${productAudiences.productId} = ${products.id} and (
+              ${audiences.name} ILIKE ${pattern} or ${audiences.slug} ILIKE ${pattern}
+            )
+          )`
         )
       );
     }
@@ -390,6 +435,23 @@ export class ProductRepository {
           eq(productVariants.status, 'active')
         )
       );
+
+    // Merge distinct variant images into gallery if not already present
+    const existingImageUrls = new Set(images.map((img) => img.url));
+    variants.forEach((v, idx) => {
+      if (v.imageUrl && v.imageUrl.trim() !== '' && !existingImageUrls.has(v.imageUrl)) {
+        images.push({
+          id: `var-img-${v.id}`,
+          productId: match.product.id,
+          url: v.imageUrl,
+          altText: `${match.product.name} - ${v.sku || 'Variant view'}`,
+          sortOrder: 100 + idx,
+          isPrimary: false,
+          createdAt: new Date(),
+        } as any);
+        existingImageUrls.add(v.imageUrl);
+      }
+    });
 
     // Mapped options (global attributes)
     const dbProductAttributes = await db

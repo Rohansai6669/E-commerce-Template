@@ -164,7 +164,7 @@ export function Search({ className }: { className?: string } = {}) {
                 <input
                   ref={inputRef}
                   type="text"
-                  placeholder="Search denim, hoodies, cargo..."
+                  placeholder="Search products, materials, fits, tags, or styles..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   className="w-full bg-transparent text-sm sm:text-base font-normal tracking-wide text-neutral-900 placeholder:text-neutral-400 border-none outline-none ring-0 focus:ring-0 focus:outline-none"
@@ -262,9 +262,9 @@ export function Search({ className }: { className?: string } = {}) {
                                 )}
                               </div>
                               <div className="truncate">
-                                {product.categoryName && (
+                                {(product.brandName || product.categoryName) && (
                                   <span className="text-[9px] uppercase tracking-[0.2em] text-neutral-400 font-semibold block mb-0.5">
-                                    {product.categoryName}
+                                    {[product.brandName, product.categoryName].filter(Boolean).join(' • ')}
                                   </span>
                                 )}
                                 <span className="text-xs sm:text-sm font-semibold tracking-tight text-neutral-900 uppercase group-hover:text-neutral-600 transition-colors block truncate">
