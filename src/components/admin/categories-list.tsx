@@ -6,6 +6,7 @@ import {
   createCategoryAction,
   updateCategoryAction,
   deleteCategoryAction,
+  reassignCategoryParentAction,
 } from '@/app/actions/category-actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +25,9 @@ import {
   X,
   Edit2,
   Trash2,
+  AlertTriangle,
+  Layers,
+  ArrowRight,
 } from 'lucide-react';
 import {
   Dialog,
@@ -54,19 +58,47 @@ interface CategoriesListProps {
 export function CategoriesList({ initialCategories }: CategoriesListProps) {
   const [isPending, startTransition] = React.useTransition();
   const [editingCategory, setEditingCategory] = React.useState<CategoryItem | null>(null);
-  const [deletingId, setDeletingId] = React.useState<string | null>(null);
+  const [deletingCategory, setDeletingCategory] = React.useState<CategoryItem | null>(null);
+  const [deleteMode, setDeleteMode] = React.useState<'cascade' | 'reassign' | 'detach'>('cascade');
+  const [reassignParentId, setReassignParentId] = React.useState<string>('');
+
   const [addingSubcategoryTo, setAddingSubcategoryTo] = React.useState<{
     id: string;
     name: string;
     tier: 'subcategory' | 'child';
   } | null>(null);
   const [editImageUrl, setEditImageUrl] = React.useState('');
+  const [editName, setEditName] = React.useState('');
+  const [editSlug, setEditSlug] = React.useState('');
+  const [isSlugCustomized, setIsSlugCustomized] = React.useState(false);
   const [subImageUrl, setSubImageUrl] = React.useState('');
 
   const openEditModal = (cat: CategoryItem) => {
     setEditingCategory(cat);
+    setEditName(cat.name);
+    setEditSlug(cat.slug);
+    setIsSlugCustomized(false);
     setEditImageUrl(cat.imageUrl || '');
   };
+
+  const openDeleteModal = (cat: CategoryItem) => {
+    setDeletingCategory(cat);
+    setDeleteMode('cascade');
+    setReassignParentId('');
+  };
+
+  // Compute nested descendants for the category currently being deleted
+  const deletingDescendants = React.useMemo(() => {
+    if (!deletingCategory) return { directSubs: [], children: [], total: 0 };
+    const directSubs = initialCategories.filter((c) => c.parentId === deletingCategory.id);
+    const directSubIds = new Set(directSubs.map((s) => s.id));
+    const children = initialCategories.filter((c) => c.parentId && directSubIds.has(c.parentId));
+    return {
+      directSubs,
+      children,
+      total: directSubs.length + children.length,
+    };
+  }, [deletingCategory, initialCategories]);
 
   const openAddSubcategoryModal = (parent: CategoryItem) => {
     setAddingSubcategoryTo({ id: parent.id, name: parent.name, tier: 'subcategory' });
@@ -258,6 +290,8 @@ export function CategoriesList({ initialCategories }: CategoriesListProps) {
     if (!editingCategory) return;
 
     const formData = new FormData(e.currentTarget);
+    formData.set('name', editName.trim());
+    formData.set('slug', editSlug.trim());
     formData.set('imageUrl', editImageUrl);
     startTransition(async () => {
       const res = await updateCategoryAction(editingCategory.id, formData);
@@ -270,14 +304,35 @@ export function CategoriesList({ initialCategories }: CategoriesListProps) {
     });
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (
+    id: string,
+    mode: 'cascade' | 'reassign' | 'detach',
+    reassignToParentId?: string | null
+  ) => {
     startTransition(async () => {
-      const res = await deleteCategoryAction(id);
+      const res = await deleteCategoryAction(id, { mode, reassignToParentId });
       if (res.success) {
-        toast.success('Category deleted successfully');
-        setDeletingId(null);
+        toast.success(
+          mode === 'cascade'
+            ? 'Category and all nested items deleted successfully'
+            : mode === 'reassign'
+            ? 'Category deleted and subcategories reassigned successfully'
+            : 'Category deleted successfully'
+        );
+        setDeletingCategory(null);
       } else {
         toast.error(res.error || 'Failed to delete category');
+      }
+    });
+  };
+
+  const handleReassignParent = (categoryId: string, newParentId: string | null) => {
+    startTransition(async () => {
+      const res = await reassignCategoryParentAction(categoryId, newParentId);
+      if (res.success) {
+        toast.success('Category reassigned successfully');
+      } else {
+        toast.error(res.error || 'Failed to reassign category');
       }
     });
   };
@@ -517,8 +572,9 @@ export function CategoriesList({ initialCategories }: CategoriesListProps) {
                             type="button"
                             size="sm"
                             variant="ghost"
-                            onClick={() => setDeletingId(parent.id)}
+                            onClick={() => openDeleteModal(parent)}
                             className="h-7 px-2 text-[11px] text-rose-500 hover:text-rose-700 hover:bg-rose-50 cursor-pointer"
+                            title={`Delete ${parent.name}`}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </Button>
@@ -616,8 +672,9 @@ export function CategoriesList({ initialCategories }: CategoriesListProps) {
                                     type="button"
                                     size="sm"
                                     variant="ghost"
-                                    onClick={() => setDeletingId(sub.id)}
+                                    onClick={() => openDeleteModal(sub)}
                                     className="h-6 px-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+                                    title={`Delete ${sub.name}`}
                                   >
                                     <Trash2 className="w-3 h-3" />
                                   </Button>
@@ -694,8 +751,9 @@ export function CategoriesList({ initialCategories }: CategoriesListProps) {
                                       type="button"
                                       size="sm"
                                       variant="ghost"
-                                      onClick={() => setDeletingId(child.id)}
+                                      onClick={() => openDeleteModal(child)}
                                       className="h-6 px-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+                                      title={`Delete ${child.name}`}
                                     >
                                       <Trash2 className="w-3 h-3" />
                                     </Button>
@@ -757,14 +815,26 @@ export function CategoriesList({ initialCategories }: CategoriesListProps) {
                       {orphan.isActive ? 'Active' : 'Inactive'}
                     </td>
                     <td className="py-2.5 px-5 text-right">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => openEditModal(orphan)}
-                        className="h-6 px-2 text-[11px] text-indigo-600"
-                      >
-                        Assign Parent
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => openEditModal(orphan)}
+                          className="h-6 px-2 text-[11px] text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 cursor-pointer font-medium"
+                        >
+                          Assign Parent / Edit
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => openDeleteModal(orphan)}
+                          className="h-6 px-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+                          title={`Delete ${orphan.name}`}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -856,7 +926,7 @@ export function CategoriesList({ initialCategories }: CategoriesListProps) {
 
       {/* EDIT MODAL */}
       <Dialog open={!!editingCategory} onOpenChange={(open) => !open && setEditingCategory(null)}>
-        <DialogContent className="sm:max-w-[420px]">
+        <DialogContent className="sm:max-w-[460px]">
           <DialogHeader>
             <DialogTitle className="text-sm font-bold text-slate-900">
               Edit Category / Subcategory / Child
@@ -883,19 +953,75 @@ export function CategoriesList({ initialCategories }: CategoriesListProps) {
                 </select>
               </FormField>
 
-              <FormField label="Name">
+              <FormField label="Category Name">
                 <Input
                   name="name"
-                  defaultValue={editingCategory.name}
+                  value={editName}
+                  onChange={(e) => {
+                    const newName = e.target.value;
+                    setEditName(newName);
+                    if (!isSlugCustomized) {
+                      setEditSlug(
+                        newName
+                          .toLowerCase()
+                          .replace(/\s+/g, '-')
+                          .replace(/[^a-z0-9-]/g, '')
+                      );
+                    }
+                  }}
                   required
+                  placeholder="e.g. Activewear, Streetwear, Gym Wear"
                   className="bg-slate-50 border-slate-200 text-slate-900 h-9 text-xs font-medium"
                 />
+              </FormField>
+
+              <FormField label="URL Slug">
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <span className="absolute left-3 top-2 text-xs text-slate-400 font-mono">/</span>
+                    <Input
+                      name="slug"
+                      value={editSlug}
+                      onChange={(e) => {
+                        setIsSlugCustomized(true);
+                        setEditSlug(
+                          e.target.value
+                            .toLowerCase()
+                            .replace(/\s+/g, '-')
+                            .replace(/[^a-z0-9-]/g, '')
+                        );
+                      }}
+                      required
+                      placeholder="category-slug"
+                      className="bg-slate-50 border-slate-200 text-slate-900 h-9 text-xs font-mono pl-6"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-9 px-2 text-[11px] text-slate-600 hover:text-slate-900"
+                    title="Auto-generate slug from name"
+                    onClick={() => {
+                      setIsSlugCustomized(false);
+                      setEditSlug(
+                        editName
+                          .toLowerCase()
+                          .replace(/\s+/g, '-')
+                          .replace(/[^a-z0-9-]/g, '')
+                      );
+                    }}
+                  >
+                    Auto
+                  </Button>
+                </div>
               </FormField>
 
               <FormField label="Description">
                 <Input
                   name="description"
                   defaultValue={editingCategory.description || ''}
+                  placeholder="Brief description (optional)"
                   className="bg-slate-50 border-slate-200 text-slate-900 h-9 text-xs"
                 />
               </FormField>
@@ -916,7 +1042,7 @@ export function CategoriesList({ initialCategories }: CategoriesListProps) {
                 <select
                   name="isActive"
                   defaultValue={editingCategory.isActive ? 'true' : 'false'}
-                  className="w-full bg-slate-50 border border-slate-200 rounded px-3 h-9 text-xs font-medium"
+                  className="w-full bg-slate-50 border border-slate-200 rounded px-3 h-9 text-xs font-medium text-slate-900 outline-none"
                 >
                   <option value="true">Active (Visible)</option>
                   <option value="false">Inactive (Hidden)</option>
@@ -943,32 +1069,191 @@ export function CategoriesList({ initialCategories }: CategoriesListProps) {
       </Dialog>
 
       {/* DELETE CONFIRMATION MODAL */}
-      <Dialog open={!!deletingId} onOpenChange={(open) => !open && setDeletingId(null)}>
-        <DialogContent className="sm:max-w-[380px]">
+      <Dialog
+        open={!!deletingCategory}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeletingCategory(null);
+            setDeleteMode('cascade');
+            setReassignParentId('');
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
-            <DialogTitle className="text-sm font-bold text-rose-600">
-              Confirm Deletion
+            <DialogTitle className="text-sm font-bold text-rose-600 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+              Delete Category: {deletingCategory?.name}
             </DialogTitle>
           </DialogHeader>
-          <div className="py-2 text-xs text-slate-600">
-            Are you sure you want to delete this category? Active products assigned to it must be reassigned first.
-          </div>
-          <DialogFooter className="mt-3 flex gap-2">
-            <DialogClose asChild>
-              <Button type="button" variant="outline" className="text-xs h-8">
-                Cancel
-              </Button>
-            </DialogClose>
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={isPending}
-              onClick={() => deletingId && handleDelete(deletingId)}
-              className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold h-8"
-            >
-              {isPending ? 'Deleting...' : 'Delete'}
-            </Button>
-          </DialogFooter>
+
+          {deletingCategory && (
+            <div className="flex flex-col gap-4 py-1 text-xs">
+              {deletingDescendants.total > 0 ? (
+                <>
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 space-y-1">
+                    <p className="font-semibold text-xs flex items-center gap-1.5">
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                      This category contains {deletingDescendants.directSubs.length} subcategories and{' '}
+                      {deletingDescendants.children.length} child categories (
+                      {deletingDescendants.total} nested items).
+                    </p>
+                    <p className="text-[11px] text-amber-800">
+                      Choose how you would like to handle the nested subcategories and children before deleting:
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col gap-2.5">
+                    {/* Mode 1: Cascade Delete */}
+                    <label
+                      className={cn(
+                        'flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors',
+                        deleteMode === 'cascade'
+                          ? 'border-rose-300 bg-rose-50/60'
+                          : 'border-slate-200 hover:border-slate-300 bg-white'
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name="deleteMode"
+                        value="cascade"
+                        checked={deleteMode === 'cascade'}
+                        onChange={() => setDeleteMode('cascade')}
+                        className="mt-0.5 text-rose-600 focus:ring-rose-500"
+                      />
+                      <div className="flex-1">
+                        <div className="font-semibold text-slate-900 flex items-center gap-1.5">
+                          <span>Cascade Delete All</span>
+                          <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-rose-100 text-rose-700">
+                            Deletes {deletingDescendants.total + 1} items
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                          Permanently delete <strong>{deletingCategory.name}</strong> along with all of its{' '}
+                          {deletingDescendants.total} subcategories and child categories.
+                        </p>
+                      </div>
+                    </label>
+
+                    {/* Mode 2: Reassign Subcategories */}
+                    <label
+                      className={cn(
+                        'flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors',
+                        deleteMode === 'reassign'
+                          ? 'border-indigo-300 bg-indigo-50/60'
+                          : 'border-slate-200 hover:border-slate-300 bg-white'
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name="deleteMode"
+                        value="reassign"
+                        checked={deleteMode === 'reassign'}
+                        onChange={() => setDeleteMode('reassign')}
+                        className="mt-0.5 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <div className="flex-1">
+                        <div className="font-semibold text-slate-900 flex items-center gap-1.5">
+                          <span>Keep & Reassign Subcategories</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                          Delete only <strong>{deletingCategory.name}</strong>, and move its{' '}
+                          {deletingDescendants.directSubs.length} direct subcategories under a different parent category.
+                        </p>
+                        {deleteMode === 'reassign' && (
+                          <div className="mt-2.5 pt-2 border-t border-indigo-100">
+                            <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                              Select New Parent Category:
+                            </label>
+                            <select
+                              value={reassignParentId}
+                              onChange={(e) => setReassignParentId(e.target.value)}
+                              className="w-full bg-white border border-slate-200 rounded px-2.5 h-8 text-xs font-medium text-slate-900 outline-none"
+                            >
+                              <option value="">-- Choose destination parent --</option>
+                              {availableParents
+                                .filter(
+                                  (p) =>
+                                    p.id !== deletingCategory.id &&
+                                    !deletingDescendants.directSubs.some((s) => s.id === p.id) &&
+                                    !deletingDescendants.children.some((c) => c.id === p.id)
+                                )
+                                .map((parent) => (
+                                  <option key={parent.id} value={parent.id}>
+                                    ↳ {parent.name}
+                                  </option>
+                                ))}
+                            </select>
+                          </div>
+                        )}
+                      </div>
+                    </label>
+
+                    {/* Mode 3: Detach to Top Level */}
+                    <label
+                      className={cn(
+                        'flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors',
+                        deleteMode === 'detach'
+                          ? 'border-slate-400 bg-slate-50'
+                          : 'border-slate-200 hover:border-slate-300 bg-white'
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name="deleteMode"
+                        value="detach"
+                        checked={deleteMode === 'detach'}
+                        onChange={() => setDeleteMode('detach')}
+                        className="mt-0.5 text-slate-900 focus:ring-slate-900"
+                      />
+                      <div className="flex-1">
+                        <div className="font-semibold text-slate-900 flex items-center gap-1.5">
+                          <span>Detach & Promote to Top-Level</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                          Delete only <strong>{deletingCategory.name}</strong>, and convert its direct subcategories into independent top-level categories (no parent).
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                </>
+              ) : (
+                <div className="text-slate-600 text-xs py-1">
+                  Are you sure you want to delete category <strong>&ldquo;{deletingCategory.name}&rdquo;</strong>? Active products assigned to this category must be reassigned first.
+                </div>
+              )}
+
+              <DialogFooter className="mt-3 flex gap-2">
+                <DialogClose asChild>
+                  <Button type="button" variant="outline" className="text-xs h-8">
+                    Cancel
+                  </Button>
+                </DialogClose>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  disabled={
+                    isPending ||
+                    (deletingDescendants.total > 0 && deleteMode === 'reassign' && !reassignParentId)
+                  }
+                  onClick={() =>
+                    handleDelete(
+                      deletingCategory.id,
+                      deleteMode,
+                      deleteMode === 'reassign' ? reassignParentId : null
+                    )
+                  }
+                  className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold h-8"
+                >
+                  {isPending
+                    ? 'Processing...'
+                    : deleteMode === 'cascade' && deletingDescendants.total > 0
+                    ? `Delete All (${deletingDescendants.total + 1} items)`
+                    : 'Confirm Delete'}
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
