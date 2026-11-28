@@ -16,7 +16,6 @@ import { FooterEditorPanel } from './footer-editor-panel';
 import { ThemePreset } from '@/lib/cms/theme/presets';
 import { SectionEditorModal } from './section-editor-modal';
 import { DirectSectionInspector } from './direct-section-inspector';
-import { EditProductSheet } from '@/components/admin/catalog/products/edit-product-sheet';
 import { type SeasonalCampaignData } from '@/core/storefront/homepage.service';
 import { type ProductData } from '@/components/commerce/configurable-product-card';
 import {
@@ -40,9 +39,6 @@ import {
   Copy,
   Layers,
   Maximize2,
-  Box,
-  Image as ImageIcon,
-  SlidersHorizontal,
   PanelLeftClose,
   PanelLeftOpen,
   Split,
@@ -91,7 +87,7 @@ export function VisualBuilderStudio({
   );
   const [previewMegamenuCategory, setPreviewMegamenuCategory] = useState<string | null>(null);
   const [device, setDevice] = useState<DeviceViewport>('desktop');
-  const [activeTab, setActiveTab] = useState<'sections' | 'nav' | 'footer' | 'products' | 'theme'>('sections');
+  const [activeTab, setActiveTab] = useState<'sections' | 'nav' | 'footer' | 'theme'>('sections');
   const [showSectionPicker, setShowSectionPicker] = useState(false);
   const [editingModalSection, setEditingModalSection] = useState<AnySectionConfig | null>(null);
 
@@ -221,19 +217,6 @@ export function VisualBuilderStudio({
 
   const [isSaving, setIsSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
-  const [catalogSearch, setCatalogSearch] = useState('');
-  const [catalogCategoryFilter, setCatalogCategoryFilter] = useState('');
-
-  const filteredCatalogProducts = products.filter((p) => {
-    const matchesSearch =
-      !catalogSearch ||
-      p.name.toLowerCase().includes(catalogSearch.toLowerCase()) ||
-      (p.slug && p.slug.toLowerCase().includes(catalogSearch.toLowerCase()));
-    const matchesCategory =
-      !catalogCategoryFilter ||
-      (p.category && p.category.toLowerCase() === catalogCategoryFilter.toLowerCase());
-    return matchesSearch && matchesCategory;
-  });
 
   const handlePublish = async () => {
     setIsSaving(true);
@@ -780,18 +763,6 @@ export function VisualBuilderStudio({
             </button>
             <button
               type="button"
-              onClick={() => setActiveTab('products')}
-              className={`flex-1 min-w-max px-2.5 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer shrink-0 ${
-                activeTab === 'products'
-                  ? 'bg-slate-950 text-white shadow-xs'
-                  : 'bg-white text-slate-700 hover:text-slate-950 hover:bg-slate-50 border border-slate-200'
-              }`}
-            >
-              <Box className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-              <span>CATALOG</span>
-            </button>
-            <button
-              type="button"
               onClick={() => setActiveTab('theme')}
               className={`flex-1 min-w-max px-2.5 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer shrink-0 ${
                 activeTab === 'theme'
@@ -925,108 +896,6 @@ export function VisualBuilderStudio({
             )}
           </div>
         )}
-
-          {/* Tab 2: Catalog Products Inspector & Detailed Shopify-Style Editor */}
-          {activeTab === 'products' && (
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50">
-              <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-2">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-extrabold text-slate-950 uppercase tracking-tight flex items-center gap-1.5">
-                    <Box className="w-3.5 h-3.5 text-indigo-600" /> Catalog Products ({products.length})
-                  </h3>
-                  <span className="text-[10px] font-bold text-slate-500 uppercase">Live Inspector</span>
-                </div>
-                <p className="text-[11px] text-slate-500">
-                  Search, inspect live media, prices, and open the detailed variant product editor.
-                </p>
-
-                {/* Search & Category Filter Bar */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-slate-100">
-                  <input
-                    type="text"
-                    value={catalogSearch}
-                    onChange={(e) => setCatalogSearch(e.target.value)}
-                    placeholder="Search by name or slug..."
-                    className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-950"
-                  />
-                  <select
-                    value={catalogCategoryFilter}
-                    onChange={(e) => setCatalogCategoryFilter(e.target.value)}
-                    className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-900 focus:outline-none focus:border-slate-950 cursor-pointer"
-                  >
-                    <option value="">All Categories</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.name}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                {filteredCatalogProducts.length === 0 ? (
-                  <div className="p-6 text-center text-slate-400 text-xs bg-white rounded-xl border border-slate-200">
-                    No products match your search query.
-                  </div>
-                ) : (
-                  filteredCatalogProducts.map((product) => {
-                    const prodImg = product.images?.[0];
-                    return (
-                      <div
-                        key={product.id}
-                        className="p-3 rounded-xl border border-slate-200 bg-white shadow-2xs flex items-center justify-between gap-3 hover:border-slate-400 transition"
-                      >
-                        <div className="flex items-center gap-3 overflow-hidden">
-                          <div className="w-12 h-12 rounded-lg border border-slate-200 bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center">
-                            {prodImg ? (
-                              <img
-                                src={prodImg}
-                                alt={product.name}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  (e.target as HTMLElement).style.display = 'none';
-                                }}
-                              />
-                            ) : (
-                              <ImageIcon className="w-4 h-4 text-slate-400" />
-                            )}
-                          </div>
-                          <div className="truncate">
-                            <h4 className="text-xs font-bold text-slate-950 truncate">{product.name}</h4>
-                            <div className="flex items-center gap-2 text-[11px] mt-0.5">
-                              <span className="font-extrabold text-slate-900">${product.price.toFixed(2)}</span>
-                              {product.category && (
-                                <span className="text-slate-400 font-medium truncate">• {product.category}</span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="shrink-0">
-                          <EditProductSheet
-                            productId={product.id}
-                            productName={product.name}
-                            categories={categories}
-                            brands={brands}
-                            trigger={
-                              <button
-                                type="button"
-                                className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-950 hover:text-white text-[11px] font-extrabold uppercase tracking-wider text-slate-800 transition cursor-pointer flex items-center gap-1 shadow-2xs"
-                              >
-                                <SlidersHorizontal className="w-3 h-3" />
-                                <span>Edit</span>
-                              </button>
-                            }
-                          />
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          )}
 
           {/* Tab 2: Navigation Appearance Studio */}
           {activeTab === 'nav' && (

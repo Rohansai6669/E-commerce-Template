@@ -38,14 +38,16 @@ export default function AdminCmsPage() {
       const tbl = await getTableConfig('admin-orders-table');
       setTableConfig(tbl);
 
-      const ann = await getAnnouncementBar();
-      setAnnouncementBarState(ann);
-
-      const tok = await getSiteDesignTokens();
-      setThemeTokens(tok);
-
       const nav = await getNavAppearanceConfig();
       setNavConfig(nav);
+
+      const ann = await getAnnouncementBar();
+      setAnnouncementBarState({
+        ...ann,
+        enabled: typeof nav.showAnnouncementBar === 'boolean' ? nav.showAnnouncementBar : ann.enabled,
+        message: nav.announcementMessage || ann.message,
+        ctaText: nav.announcementCtaText || ann.ctaText,
+      });
 
       const foot = await getFooterConfig();
       setFooterConfig(foot);
@@ -60,16 +62,20 @@ export default function AdminCmsPage() {
     if (tableConfig) {
       await saveTableConfig(tableConfig);
     }
-    if (announcementBar) {
-      await saveAnnouncementBar(announcementBar);
-    }
     if (themeTokens) {
       await saveSiteDesignTokens(themeTokens);
       applyLiveTheme(themeTokens);
     }
-    if (navConfig) {
-      await saveNavAppearanceConfig(navConfig);
+    const updatedNavConfig = {
+      ...navConfig,
+      showAnnouncementBar: announcementBar ? Boolean(announcementBar.enabled) : navConfig.showAnnouncementBar,
+      announcementMessage: announcementBar?.message || navConfig.announcementMessage,
+      announcementCtaText: announcementBar?.ctaText ?? navConfig.announcementCtaText,
+    };
+    if (announcementBar) {
+      await saveAnnouncementBar(announcementBar);
     }
+    await saveNavAppearanceConfig(updatedNavConfig);
     if (footerConfig) {
       await saveFooterConfig(footerConfig);
     }
@@ -647,8 +653,12 @@ export default function AdminCmsPage() {
               <span className="text-xs font-semibold text-foreground">Enable Announcement Bar</span>
               <input
                 type="checkbox"
-                checked={announcementBar.enabled}
-                onChange={(e) => setAnnouncementBarState({ ...announcementBar, enabled: e.target.checked })}
+                checked={Boolean(announcementBar.enabled)}
+                onChange={(e) => {
+                  const isEnabled = e.target.checked;
+                  setAnnouncementBarState({ ...announcementBar, enabled: isEnabled });
+                  setNavConfig((prev) => ({ ...prev, showAnnouncementBar: isEnabled }));
+                }}
                 className="h-4 w-4 rounded border-input text-primary cursor-pointer"
               />
             </label>
@@ -658,7 +668,11 @@ export default function AdminCmsPage() {
               <input
                 type="text"
                 value={announcementBar.message}
-                onChange={(e) => setAnnouncementBarState({ ...announcementBar, message: e.target.value })}
+                onChange={(e) => {
+                  const msg = e.target.value;
+                  setAnnouncementBarState({ ...announcementBar, message: msg });
+                  setNavConfig((prev) => ({ ...prev, announcementMessage: msg }));
+                }}
                 className="w-full rounded-xl border border-input bg-background p-3 text-xs text-foreground"
               />
             </div>
@@ -668,7 +682,11 @@ export default function AdminCmsPage() {
               <input
                 type="text"
                 value={announcementBar.ctaText || ''}
-                onChange={(e) => setAnnouncementBarState({ ...announcementBar, ctaText: e.target.value })}
+                onChange={(e) => {
+                  const cta = e.target.value;
+                  setAnnouncementBarState({ ...announcementBar, ctaText: cta });
+                  setNavConfig((prev) => ({ ...prev, announcementCtaText: cta }));
+                }}
                 className="w-full rounded-xl border border-input bg-background p-3 text-xs text-foreground"
               />
             </div>

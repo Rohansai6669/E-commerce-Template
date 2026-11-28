@@ -332,7 +332,7 @@ export function Header({
       className={`w-full ${containerPositionClass} ${className} transition-all duration-300`}
     >
       {/* 1. Optional Top Announcement Bar Companion */}
-      {config.showAnnouncementBar && (
+      {Boolean(config.showAnnouncementBar) && (config.showAnnouncementBar as any) !== 'false' && (
         <aside
           aria-label="Store Announcement"
           suppressHydrationWarning

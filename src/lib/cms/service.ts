@@ -106,17 +106,22 @@ export async function saveTableConfig(config: TableConfig): Promise<boolean> {
 }
 
 export async function getAnnouncementBar(): Promise<AnnouncementBarConfig> {
-  if (typeof window !== 'undefined') {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY_ANNOUNCEMENT);
-      if (stored) {
-        return JSON.parse(stored);
-      }
-    } catch (e) {
-      console.warn('Failed to read announcement bar config:', e);
-    }
+  let navConfig = defaultNavAppearanceConfig;
+  try {
+    navConfig = await getNavAppearanceConfig();
+  } catch (err) {
+    console.warn('Failed to fetch navConfig in getAnnouncementBar:', err);
   }
-  return defaultAnnouncementBar;
+
+  return {
+    ...defaultAnnouncementBar,
+    enabled: Boolean(navConfig.showAnnouncementBar),
+    message: navConfig.announcementMessage || defaultAnnouncementBar.message,
+    ctaText: navConfig.announcementCtaText || defaultAnnouncementBar.ctaText,
+    linkUrl: navConfig.announcementCtaUrl || defaultAnnouncementBar.linkUrl,
+    backgroundColor: navConfig.announcementBgColor || defaultAnnouncementBar.backgroundColor,
+    textColor: navConfig.announcementTextColor || defaultAnnouncementBar.textColor,
+  };
 }
 
 export async function saveAnnouncementBar(config: AnnouncementBarConfig): Promise<boolean> {
@@ -124,12 +129,27 @@ export async function saveAnnouncementBar(config: AnnouncementBarConfig): Promis
     try {
       localStorage.setItem(STORAGE_KEY_ANNOUNCEMENT, JSON.stringify(config));
       window.dispatchEvent(new Event('cms-announcement-updated'));
-      return true;
     } catch (e) {
       console.error('Failed to save announcement bar:', e);
     }
   }
-  return false;
+
+  try {
+    const currentNav = await getNavAppearanceConfig();
+    const updatedNav = {
+      ...currentNav,
+      showAnnouncementBar: Boolean(config.enabled),
+      announcementMessage: config.message || currentNav.announcementMessage,
+      announcementCtaText: config.ctaText ?? currentNav.announcementCtaText,
+      announcementCtaUrl: config.linkUrl ?? currentNav.announcementCtaUrl,
+      announcementBgColor: config.backgroundColor || currentNav.announcementBgColor,
+      announcementTextColor: config.textColor || currentNav.announcementTextColor,
+    };
+    return await saveNavAppearanceConfig(updatedNav);
+  } catch (err) {
+    console.error('Failed to sync announcement bar with nav appearance:', err);
+    return false;
+  }
 }
 
 export async function getSiteDesignTokens(): Promise<SiteDesignTokens> {
