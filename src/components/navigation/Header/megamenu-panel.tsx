@@ -221,19 +221,17 @@ export function MegamenuPanel({ category, onClose, appearance, headerHeight }: M
 
   useEffect(() => {
     let isMounted = true;
-    const currentFallback = FALLBACK_MEGAMENU_DATA[category.toUpperCase()] || FALLBACK_MEGAMENU_DATA.MEN;
+    const currentCategory = category;
+    const currentFallback = FALLBACK_MEGAMENU_DATA[currentCategory.toUpperCase()] || FALLBACK_MEGAMENU_DATA.MEN;
     setCollections(currentFallback);
     setActiveCollectionId(currentFallback[0]?.id || '');
 
     async function loadDbNavigation() {
       try {
-        const dbNav = await getStorefrontNavigationAction(category);
+        const dbNav = await getStorefrontNavigationAction(currentCategory);
         if (isMounted && dbNav && dbNav.length > 0) {
           setCollections(dbNav as MegamenuCollection[]);
-          setActiveCollectionId((prev) => {
-            const exists = dbNav.some((c) => c.id === prev);
-            return exists ? prev : dbNav[0].id;
-          });
+          setActiveCollectionId(dbNav[0]?.id || '');
         }
       } catch (err) {
         console.warn('Failed to load navigation from DB, using fallback:', err);

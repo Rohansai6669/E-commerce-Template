@@ -23,7 +23,12 @@ export function ProfileMenu({
 }: ProfileMenuProps) {
   const { user, supabase } = useSupabase();
   const [isOpen, setIsOpen] = React.useState(false);
+  const [isMounted, setIsMounted] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Close dropdown on click outside
   React.useEffect(() => {
@@ -42,8 +47,8 @@ export function ProfileMenu({
     setIsOpen(false);
   };
 
-  // 1. GUEST STATE (Not Signed In)
-  if (!user) {
+  // 1. GUEST STATE (Not Signed In or initial render before mount to prevent SSR hydration mismatch)
+  if (!isMounted || !user) {
     if (buttonType === 'pill') {
       return (
         <Link

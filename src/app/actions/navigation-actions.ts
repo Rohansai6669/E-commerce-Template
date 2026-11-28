@@ -62,15 +62,20 @@ export async function getStorefrontNavigationAction(categoryOrSlug: string = 'ME
 
       // 1. Primary source of truth: 3-Tier Categories Taxonomy
       if (dbCategories.length > 0) {
-        // Find parent audience or root category (e.g. 'men', 'women', 'kids')
-        const audienceParent = dbCategories.find(
-          (c) =>
-            !c.parentId &&
-            (c.slug.toLowerCase() === cleanPattern ||
-              c.name.toLowerCase() === cleanPattern ||
-              c.name.toLowerCase().includes(cleanPattern) ||
-              cleanPattern.includes(c.slug.toLowerCase()))
-        );
+        // Find parent audience or root category (e.g. 'men', 'women', 'kids') with strict exact match first
+        const audienceParent =
+          dbCategories.find(
+            (c) =>
+              !c.parentId &&
+              (c.slug.toLowerCase() === cleanPattern ||
+                c.name.toLowerCase() === cleanPattern)
+          ) ||
+          dbCategories.find(
+            (c) =>
+              !c.parentId &&
+              (c.slug.toLowerCase().startsWith(cleanPattern) ||
+                c.name.toLowerCase().startsWith(cleanPattern))
+          );
 
         if (audienceParent) {
           // Find Tier 2 subcategories belonging to this root category

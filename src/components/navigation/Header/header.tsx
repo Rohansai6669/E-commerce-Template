@@ -424,67 +424,30 @@ export function Header({
           </div>
 
           {/* ======================================================== */}
-          {/* Center: Navigation Links OR Active Category Title (when Megamenu open) */}
+          {/* Center: Navigation Links Desktop                         */}
           {/* ======================================================== */}
-          <div className={`hidden lg:flex items-center flex-1 h-full ${isMegamenuOpen ? 'justify-center' : linksAlignClass}`}>
-            {isMegamenuOpen ? (
-              <span className="text-[11px] sm:text-xs font-normal tracking-[0.25em] uppercase text-neutral-800 dark:text-neutral-200 select-none">
-                {activeCategory}
-              </span>
-            ) : (
-              <nav className={`flex items-center h-full ${linksSpacingClass}`} suppressHydrationWarning>
-                {navLinks.map((item) => {
-                  const hoverClasses = getLinkHoverClasses();
-                  const isItemActive = isMegamenuOpen && activeCategory === item.label;
+          <div className={`hidden lg:flex items-center flex-1 h-full ${linksAlignClass}`}>
+            <nav className={`flex items-center h-full ${linksSpacingClass}`} suppressHydrationWarning>
+              {navLinks.map((item) => {
+                const hoverClasses = getLinkHoverClasses();
+                const isItemActive = isMegamenuOpen && activeCategory?.toUpperCase() === item.label?.toUpperCase();
 
-                  if (item.hasMega) {
-                    return (
-                      <button
-                        type="button"
-                        suppressHydrationWarning
-                        key={item.id || item.label}
-                        onMouseEnter={() => handleCategoryChange(item.label)}
-                        onClick={() => handleCategoryChange(item.label)}
-                        style={{
-                          color: isItemActive
-                            ? config.activeTextColor || currentTextColor
-                            : currentTextColor,
-                        }}
-                        className={`${linksFontSizeClass} ${linksFontWeightClass} ${linksTrackingClass} ${linksTransformClass} ${hoverClasses} cursor-pointer flex items-center gap-1 group transition-colors relative py-1 ${
-                          isItemActive ? 'font-black after:w-full opacity-100' : 'opacity-90'
-                        }`}
-                      >
-                        <span>{item.label}</span>
-                        {item.badgeText && (
-                          <span
-                            style={{
-                              backgroundColor: item.badgeColor || '#4f46e5',
-                              color: '#ffffff',
-                            }}
-                            className="text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider ml-1"
-                          >
-                            {item.badgeText}
-                          </span>
-                        )}
-                        <ChevronDown
-                          className={`w-3 h-3 opacity-60 transition-transform ${
-                            isItemActive ? 'rotate-180 opacity-100' : 'group-hover:rotate-180'
-                          }`}
-                        />
-                      </button>
-                    );
-                  }
-
+                if (item.hasMega) {
                   return (
-                    <Link
+                    <button
+                      type="button"
+                      suppressHydrationWarning
                       key={item.id || item.label}
-                      href={item.href}
+                      onMouseEnter={() => handleCategoryChange(item.label)}
+                      onClick={() => handleCategoryChange(item.label)}
                       style={{
-                        color: item.highlight
-                          ? config.activeTextColor || '#4f46e5'
+                        color: isItemActive
+                          ? config.activeTextColor || currentTextColor
                           : currentTextColor,
                       }}
-                      className={`${linksFontSizeClass} ${linksFontWeightClass} ${linksTrackingClass} ${linksTransformClass} ${hoverClasses} flex items-center gap-1.5 transition-colors relative py-1`}
+                      className={`${linksFontSizeClass} ${linksFontWeightClass} ${linksTrackingClass} ${linksTransformClass} ${hoverClasses} cursor-pointer flex items-center gap-1 group transition-colors relative py-1 ${
+                        isItemActive ? 'font-black after:w-full opacity-100' : 'opacity-90'
+                      }`}
                     >
                       <span>{item.label}</span>
                       {item.badgeText && (
@@ -493,23 +456,89 @@ export function Header({
                             backgroundColor: item.badgeColor || '#4f46e5',
                             color: '#ffffff',
                           }}
-                          className="text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider"
+                          className="text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider ml-1"
                         >
                           {item.badgeText}
                         </span>
                       )}
-                    </Link>
+                      <ChevronDown
+                        className={`w-3 h-3 opacity-60 transition-transform ${
+                          isItemActive ? 'rotate-180 opacity-100' : 'group-hover:rotate-180'
+                        }`}
+                      />
+                    </button>
                   );
-                })}
-              </nav>
-            )}
+                }
+
+                return (
+                  <Link
+                    key={item.id || item.label}
+                    href={item.href}
+                    style={{
+                      color: item.highlight
+                        ? config.activeTextColor || '#4f46e5'
+                        : currentTextColor,
+                    }}
+                    className={`${linksFontSizeClass} ${linksFontWeightClass} ${linksTrackingClass} ${linksTransformClass} ${hoverClasses} flex items-center gap-1.5 transition-colors relative py-1`}
+                  >
+                    <span>{item.label}</span>
+                    {item.badgeText && (
+                      <span
+                        style={{
+                          backgroundColor: item.badgeColor || '#4f46e5',
+                          color: '#ffffff',
+                        }}
+                        className="text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider"
+                      >
+                        {item.badgeText}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </nav>
           </div>
 
           {/* ======================================================== */}
           {/* Right: Actions (Search, Account, Wishlist, Cart, Close)   */}
           {/* ======================================================== */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 z-10" style={{ color: currentTextColor }}>
-            {isMegamenuOpen ? (
+            {config.showSearch !== false && (
+              <React.Suspense fallback={null}>
+                <Search className={actionIconClass} />
+              </React.Suspense>
+            )}
+
+            {/* Desktop Only: ProfileMenu and Wishlist */}
+            {config.showAccount !== false && (
+              <div className="hidden lg:flex">
+                <ProfileMenu
+                  buttonType={config.accountButtonType || 'icon'}
+                  iconStyleClass={actionIconClass}
+                />
+              </div>
+            )}
+
+            {config.showWishlist !== false && (
+              <Link
+                href="/account/wishlist"
+                className={`hidden lg:flex ${actionIconClass}`}
+                aria-label="View Wishlist"
+              >
+                <Heart className="h-4 w-4" />
+              </Link>
+            )}
+
+            {/* Cart Button: Visible on mobile and desktop */}
+            {config.showCart !== false && (
+              <CartButton
+                badgeBgColor={config.cartBadgeBgColor}
+                badgeTextColor={config.cartBadgeTextColor}
+                className={actionIconClass}
+              />
+            )}
+
+            {isMegamenuOpen && (
               <button
                 type="button"
                 suppressHydrationWarning
@@ -517,48 +546,11 @@ export function Header({
                 style={{
                   color: currentTextColor,
                 }}
-                className="hidden lg:flex items-center justify-center h-8 w-8 rounded-full transition-colors cursor-pointer hover:bg-black/5 dark:hover:bg-white/10"
+                className="hidden lg:flex items-center justify-center h-8 w-8 rounded-full transition-colors cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 ml-1"
                 aria-label="Close megamenu"
               >
                 <X className="h-4 w-4 stroke-[1.75]" />
               </button>
-            ) : (
-              <>
-                {config.showSearch !== false && (
-                  <React.Suspense fallback={null}>
-                    <Search className={actionIconClass} />
-                  </React.Suspense>
-                )}
-
-                {/* Desktop Only: ProfileMenu and Wishlist */}
-                {config.showAccount !== false && (
-                  <div className="hidden lg:flex">
-                    <ProfileMenu
-                      buttonType={config.accountButtonType || 'icon'}
-                      iconStyleClass={actionIconClass}
-                    />
-                  </div>
-                )}
-
-                {config.showWishlist !== false && (
-                  <Link
-                    href="/account/wishlist"
-                    className={`hidden lg:flex ${actionIconClass}`}
-                    aria-label="View Wishlist"
-                  >
-                    <Heart className="h-4 w-4" />
-                  </Link>
-                )}
-
-                {/* Cart Button: Visible on mobile and desktop */}
-                {config.showCart !== false && (
-                  <CartButton
-                    badgeBgColor={config.cartBadgeBgColor}
-                    badgeTextColor={config.cartBadgeTextColor}
-                    className={actionIconClass}
-                  />
-                )}
-              </>
             )}
           </div>
         </div>
