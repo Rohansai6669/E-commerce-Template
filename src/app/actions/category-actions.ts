@@ -5,7 +5,7 @@ import { categories } from '@/lib/db/schema/catalog/categories';
 import { products } from '@/lib/db/schema/catalog/products';
 import { eq, and, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
-import { invalidateCategoryCache } from '@/core/performance/cache';
+import { invalidateCategoryCache, invalidateCacheTag } from '@/core/performance/cache';
 
 /**
  * Creates a new category or subcategory.
@@ -39,6 +39,8 @@ export async function createCategoryAction(
 
     console.log(`[Category Created] ${name} (${slug}) - Parent: ${parentId || 'none'}`);
     invalidateCategoryCache();
+    invalidateCacheTag('categories', 'navigation', 'catalog');
+    revalidatePath('/', 'layout');
     revalidatePath('/admin/categories');
     revalidatePath('/admin/products');
     revalidatePath('/products');
@@ -95,6 +97,8 @@ export async function updateCategoryAction(
 
     console.log(`[Category Updated] ID: ${id}, Name: ${name}`);
     invalidateCategoryCache();
+    invalidateCacheTag('categories', 'navigation', 'catalog');
+    revalidatePath('/', 'layout');
     revalidatePath('/admin/categories');
     revalidatePath('/admin/products');
     revalidatePath('/products');
@@ -133,6 +137,8 @@ export async function deleteCategoryAction(id: string): Promise<{ success: boole
 
     console.log(`[Category Soft-Deleted] ID: ${id}`);
     invalidateCategoryCache();
+    invalidateCacheTag('categories', 'navigation', 'catalog');
+    revalidatePath('/', 'layout');
     revalidatePath('/admin/categories');
     revalidatePath('/products');
     return { success: true };

@@ -29,159 +29,7 @@ export interface MegamenuCollection {
 }
 
 export const FALLBACK_MEGAMENU_DATA: Record<string, MegamenuCollection[]> = {
-  WOMEN: [
-    {
-      id: 'streetwear',
-      name: 'STREETWEAR',
-      href: '/women/streetwear',
-      subitems: [
-        { label: 'Boxy Graphic Tees', href: '/women/streetwear/boxy-graphic-tees', columnNumber: 1 },
-        { label: 'Crop Hoodies', href: '/women/streetwear/crop-hoodies', columnNumber: 2 },
-        { label: 'Wide Leg Cargo', href: '/women/streetwear/wide-leg-cargo', columnNumber: 1 },
-        { label: 'Denim Jackets', href: '/women/streetwear/denim-jackets', columnNumber: 2 },
-        { label: 'Varsity Jackets', href: '/women/streetwear/varsity-jackets', columnNumber: 1 },
-      ],
-      featured: {
-        title: 'STREETWEAR',
-        imageUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1200&auto=format&fit=crop',
-        href: '/women/streetwear',
-        actionLabel: 'SHOP THE EDIT',
-      },
-    },
-    {
-      id: 'gymwear',
-      name: 'GYM WEAR',
-      href: '/women/gymwear',
-      subitems: [
-        { label: 'Biker Shorts', href: '/women/gymwear/biker-shorts', columnNumber: 1 },
-        { label: 'Pilates Sets', href: '/women/gymwear/pilates-sets', columnNumber: 2 },
-        { label: 'Running Jackets', href: '/women/gymwear/running-jackets', columnNumber: 1 },
-        { label: 'Seamless Leggings', href: '/women/gymwear/seamless-leggings', columnNumber: 2 },
-        { label: 'Sports Bras', href: '/women/gymwear/sports-bras', columnNumber: 1 },
-      ],
-      featured: {
-        title: 'GYM WEAR',
-        imageUrl: 'https://pub-ae8fd88d076743ec82d6335a981e38e3.r2.dev/categories/activewear.jpg',
-        href: '/women/gymwear',
-        actionLabel: 'SHOP THE EDIT',
-      },
-    },
-    {
-      id: 'old-money',
-      name: 'OLD MONEY',
-      href: '/women/luxury',
-      subitems: [
-        { label: 'Silk Slip Dresses', href: '/women/luxury/silk-slip-dresses', columnNumber: 1 },
-        { label: 'Ribbed Maxi Dresses', href: '/women/luxury/ribbed-maxi-dresses', columnNumber: 2 },
-        { label: 'Linen Co-ord Sets', href: '/women/luxury/linen-coord-sets', columnNumber: 1 },
-        { label: 'Knit Cardigans', href: '/women/luxury/knit-cardigans', columnNumber: 2 },
-        { label: 'Tailored Blazers', href: '/women/luxury/tailored-blazers', columnNumber: 1 },
-        { label: 'Cashmere Sweaters', href: '/women/luxury/cashmere-sweaters', columnNumber: 2 },
-      ],
-      featured: {
-        title: 'OLD MONEY LUXURY',
-        imageUrl: 'https://pub-ae8fd88d076743ec82d6335a981e38e3.r2.dev/categories/luxury.jpg',
-        href: '/women/luxury',
-        actionLabel: 'SHOP THE EDIT',
-      },
-    },
-    {
-      id: 'casual',
-      name: 'CASUAL',
-      href: '/women/casual',
-      subitems: [
-        { label: 'Everyday Tees', href: '/women/casual', columnNumber: 1 },
-        { label: 'Cotton Sweats', href: '/women/casual', columnNumber: 2 },
-        { label: 'Relaxed Denim', href: '/women/casual', columnNumber: 1 },
-        { label: 'Canvas Jackets', href: '/women/casual', columnNumber: 2 },
-        { label: 'Knit Cardigans', href: '/women/casual', columnNumber: 1 },
-        { label: 'Lounge Sets', href: '/women/casual', columnNumber: 2 },
-      ],
-      featured: {
-        title: 'CASUAL ESSENTIALS',
-        imageUrl: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=1200&auto=format&fit=crop',
-        href: '/women/casual',
-        actionLabel: 'SHOP THE EDIT',
-      },
-    },
-    {
-      id: 'formal',
-      name: 'FORMAL',
-      href: '/women/formal',
-      subitems: [
-        { label: 'Evening Gowns', href: '/women/formal', columnNumber: 1 },
-        { label: 'Silk Blouses', href: '/women/formal', columnNumber: 2 },
-        { label: 'Cocktail Dresses', href: '/women/formal', columnNumber: 1 },
-        { label: 'Pencil Skirts', href: '/women/formal', columnNumber: 2 },
-        { label: 'Tuxedo Suits', href: '/women/formal', columnNumber: 1 },
-        { label: 'Structured Coats', href: '/women/formal', columnNumber: 2 },
-      ],
-      featured: {
-        title: 'FORMAL EDIT',
-        imageUrl: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=1200&auto=format&fit=crop',
-        href: '/women/formal',
-        actionLabel: 'SHOP THE EDIT',
-      },
-    },
-    {
-      id: 'winter',
-      name: 'WINTER COLLECTION',
-      href: '/women/winter',
-      subitems: [
-        { label: 'Down Parkas', href: '/women/winter', columnNumber: 1 },
-        { label: 'Thermal Knitwear', href: '/women/winter', columnNumber: 2 },
-        { label: 'Wool Trench Coats', href: '/women/winter', columnNumber: 1 },
-        { label: 'Cashmere Scarves', href: '/women/winter', columnNumber: 2 },
-        { label: 'Shearling Jackets', href: '/women/winter', columnNumber: 1 },
-        { label: 'Winter Boots', href: '/women/winter', columnNumber: 2 },
-      ],
-      featured: {
-        title: 'WINTER COLLECTION',
-        imageUrl: 'https://images.unsplash.com/photo-1544923246-77307dd654cb?q=80&w=1200&auto=format&fit=crop',
-        href: '/women/winter',
-        actionLabel: 'SHOP THE EDIT',
-      },
-    },
-    {
-      id: 'accessories',
-      name: "WOMEN'S ACCESSORIES",
-      href: '/women/accessories',
-      subitems: [
-        { label: 'Leather Handbags', href: '/women/accessories', columnNumber: 1 },
-        { label: 'Silk Bandanas', href: '/women/accessories', columnNumber: 2 },
-        { label: 'Designer Sunglasses', href: '/women/accessories', columnNumber: 1 },
-        { label: 'Leather Belts', href: '/women/accessories', columnNumber: 2 },
-        { label: 'Minimalist Jewelry', href: '/women/accessories', columnNumber: 1 },
-        { label: 'Atelier Perfume', href: '/women/accessories', columnNumber: 2 },
-      ],
-      featured: {
-        title: "WOMEN'S ACCESSORIES",
-        imageUrl: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1200&auto=format&fit=crop',
-        href: '/women/accessories',
-        actionLabel: 'SHOP THE EDIT',
-      },
-    },
-  ],
   MEN: [
-    {
-      id: 'streetwear',
-      name: 'STREETWEAR',
-      href: '/men/streetwear',
-      subitems: [
-        { label: 'Oversized T-Shirts', href: '/men/streetwear/oversized-t-shirts', columnNumber: 1 },
-        { label: 'Cargo Pants', href: '/men/streetwear/cargo-pants', columnNumber: 2 },
-        { label: 'Baggy Jeans', href: '/men/streetwear/baggy-jeans', columnNumber: 1 },
-        { label: 'Graphic Hoodies', href: '/men/streetwear/graphic-hoodies', columnNumber: 2 },
-        { label: 'Bomber Jackets', href: '/men/streetwear/bomber-jackets', columnNumber: 1 },
-        { label: 'Fleece Sweats', href: '/men/streetwear', columnNumber: 2 },
-      ],
-      featured: {
-        title: 'STREETWEAR',
-        imageUrl: 'https://pub-ae8fd88d076743ec82d6335a981e38e3.r2.dev/categories/streetwear.jpg',
-        href: '/men/streetwear',
-        actionLabel: 'SHOP THE EDIT',
-      },
-    },
     {
       id: 'gymwear',
       name: 'GYM WEAR',
@@ -194,7 +42,7 @@ export const FALLBACK_MEGAMENU_DATA: Record<string, MegamenuCollection[]> = {
         { label: 'Training Joggers', href: '/men/gymwear/training-joggers', columnNumber: 1 },
       ],
       featured: {
-        title: 'GYM WEAR',
+        title: 'DISCOVER GYM WEAR',
         imageUrl: 'https://pub-ae8fd88d076743ec82d6335a981e38e3.r2.dev/categories/gymwear.jpg',
         href: '/men/gymwear',
         actionLabel: 'SHOP THE EDIT',
@@ -202,7 +50,7 @@ export const FALLBACK_MEGAMENU_DATA: Record<string, MegamenuCollection[]> = {
     },
     {
       id: 'luxury',
-      name: 'OLD MONEY',
+      name: 'OLD MONEY LUXURY',
       href: '/men/luxury',
       subitems: [
         { label: 'Cashmere Sweaters', href: '/men/luxury/cashmere-sweaters', columnNumber: 1 },
@@ -212,81 +60,101 @@ export const FALLBACK_MEGAMENU_DATA: Record<string, MegamenuCollection[]> = {
         { label: 'Tailored Trousers', href: '/men/luxury/tailored-trousers', columnNumber: 1 },
       ],
       featured: {
-        title: 'OLD MONEY LUXURY',
+        title: 'DISCOVER OLD MONEY LUXURY',
         imageUrl: 'https://pub-ae8fd88d076743ec82d6335a981e38e3.r2.dev/categories/luxury.jpg',
         href: '/men/luxury',
         actionLabel: 'SHOP THE EDIT',
       },
     },
     {
-      id: 'casual',
-      name: 'CASUAL',
-      href: '/men/casual',
+      id: 'streetwear',
+      name: 'STREETWEAR',
+      href: '/men/streetwear',
       subitems: [
-        { label: 'Heavyweight Tees', href: '/men/casual', columnNumber: 1 },
-        { label: 'Classic Chinos', href: '/men/casual', columnNumber: 2 },
-        { label: 'Flannel Overshirts', href: '/men/casual', columnNumber: 1 },
-        { label: 'Denim Jackets', href: '/men/casual', columnNumber: 2 },
-        { label: 'Everyday Polos', href: '/men/casual', columnNumber: 1 },
+        { label: 'Oversized T-Shirts', href: '/men/streetwear/oversized-t-shirts', columnNumber: 1 },
+        { label: 'Graphic Hoodies', href: '/men/streetwear/graphic-hoodies', columnNumber: 2 },
+        { label: 'Baggy Jeans', href: '/men/streetwear/baggy-jeans', columnNumber: 1 },
+        { label: 'Cargo Pants', href: '/men/streetwear/cargo-pants', columnNumber: 2 },
+        { label: 'Bomber Jackets', href: '/men/streetwear/bomber-jackets', columnNumber: 1 },
       ],
       featured: {
-        title: 'CASUAL ESSENTIALS',
-        imageUrl: 'https://images.unsplash.com/photo-1516257984-b1b4d707412e?q=80&w=1200&auto=format&fit=crop',
-        href: '/men/casual',
+        title: 'DISCOVER STREETWEAR',
+        imageUrl: 'https://pub-ae8fd88d076743ec82d6335a981e38e3.r2.dev/categories/streetwear.jpg',
+        href: '/men/streetwear',
+        actionLabel: 'SHOP THE EDIT',
+      },
+    },
+  ],
+  WOMEN: [
+    {
+      id: 'activewear',
+      name: 'ACTIVEWEAR & YOGA',
+      href: '/women/activewear',
+      subitems: [
+        { label: 'Seamless Leggings', href: '/women/activewear/seamless-leggings', columnNumber: 1 },
+        { label: 'Sports Bras', href: '/women/activewear/sports-bras', columnNumber: 2 },
+        { label: 'Pilates Sets', href: '/women/activewear/pilates-sets', columnNumber: 1 },
+        { label: 'Running Jackets', href: '/women/activewear/running-jackets', columnNumber: 2 },
+        { label: 'Biker Shorts', href: '/women/activewear/biker-shorts', columnNumber: 1 },
+      ],
+      featured: {
+        title: 'DISCOVER ACTIVEWEAR & YOGA',
+        imageUrl: 'https://pub-ae8fd88d076743ec82d6335a981e38e3.r2.dev/categories/activewear.jpg',
+        href: '/women/activewear',
         actionLabel: 'SHOP THE EDIT',
       },
     },
     {
-      id: 'formal',
-      name: 'FORMAL',
-      href: '/men/formal',
+      id: 'womens-streetwear',
+      name: 'STREETWEAR',
+      href: '/women/womens-streetwear',
       subitems: [
-        { label: 'Double-Breasted Suits', href: '/men/formal', columnNumber: 1 },
-        { label: 'French Cuff Shirts', href: '/men/formal', columnNumber: 2 },
-        { label: 'Silk Neckties', href: '/men/formal', columnNumber: 1 },
-        { label: 'Wool Blazers', href: '/men/formal', columnNumber: 2 },
-        { label: 'Handcrafted Oxfords', href: '/men/formal', columnNumber: 1 },
+        { label: 'Crop Hoodies', href: '/women/womens-streetwear/crop-hoodies', columnNumber: 1 },
+        { label: 'Wide Leg Cargo', href: '/women/womens-streetwear/wide-leg-cargo', columnNumber: 2 },
+        { label: 'Boxy Graphic Tees', href: '/women/womens-streetwear/boxy-graphic-tees', columnNumber: 1 },
+        { label: 'Denim Jackets', href: '/women/womens-streetwear/denim-jackets', columnNumber: 2 },
+        { label: 'Varsity Jackets', href: '/women/womens-streetwear/varsity-jackets', columnNumber: 1 },
       ],
       featured: {
-        title: 'FORMAL ATELIER',
-        imageUrl: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=1200&auto=format&fit=crop',
-        href: '/men/formal',
+        title: 'DISCOVER STREETWEAR',
+        imageUrl: 'https://pub-ae8fd88d076743ec82d6335a981e38e3.r2.dev/categories/womens-streetwear.jpg',
+        href: '/women/womens-streetwear',
         actionLabel: 'SHOP THE EDIT',
       },
     },
     {
-      id: 'winter',
-      name: 'WINTER COLLECTION',
-      href: '/men/winter',
+      id: 'dresses-loungewear',
+      name: 'DRESSES & LOUNGEWEAR',
+      href: '/women/dresses-loungewear',
       subitems: [
-        { label: 'Puffer Jackets', href: '/men/winter', columnNumber: 1 },
-        { label: 'Wool Overcoats', href: '/men/winter', columnNumber: 2 },
-        { label: 'Thermal Layers', href: '/men/winter', columnNumber: 1 },
-        { label: 'Shearling Coats', href: '/men/winter', columnNumber: 2 },
-        { label: 'Cashmere Beanies', href: '/men/winter', columnNumber: 1 },
+        { label: 'Ribbed Maxi Dresses', href: '/women/dresses-loungewear/ribbed-maxi-dresses', columnNumber: 1 },
+        { label: 'Linen Co-ord Sets', href: '/women/dresses-loungewear/linen-coord-sets', columnNumber: 2 },
+        { label: 'Silk Slip Dresses', href: '/women/dresses-loungewear/silk-slip-dresses', columnNumber: 1 },
+        { label: 'Knit Cardigans', href: '/women/dresses-loungewear/knit-cardigans', columnNumber: 2 },
+        { label: 'Tailored Blazers', href: '/women/dresses-loungewear/tailored-blazers', columnNumber: 1 },
       ],
       featured: {
-        title: 'WINTER COLLECTION',
-        imageUrl: 'https://images.unsplash.com/photo-1544923246-77307dd654cb?q=80&w=1200&auto=format&fit=crop',
-        href: '/men/winter',
+        title: 'DISCOVER DRESSES & LOUNGEWEAR',
+        imageUrl: 'https://pub-ae8fd88d076743ec82d6335a981e38e3.r2.dev/categories/dresses-loungewear.jpg',
+        href: '/women/dresses-loungewear',
         actionLabel: 'SHOP THE EDIT',
       },
     },
+  ],
+  KIDS: [
     {
-      id: 'accessories',
-      name: "MEN'S ACCESSORIES",
-      href: '/men/accessories',
+      id: 'kids',
+      name: 'KIDS COLLECTION',
+      href: '/kids',
       subitems: [
-        { label: 'Leather Wallets', href: '/men/accessories', columnNumber: 1 },
-        { label: 'Automatic Watches', href: '/men/accessories', columnNumber: 2 },
-        { label: 'Italian Leather Belts', href: '/men/accessories', columnNumber: 1 },
-        { label: 'Aviator Sunglasses', href: '/men/accessories', columnNumber: 2 },
-        { label: 'Weekend Duffle Bags', href: '/men/accessories', columnNumber: 1 },
+        { label: 'Shop All Kids', href: '/kids', columnNumber: 1 },
+        { label: 'New Arrivals', href: '/kids?sort=newest', columnNumber: 1 },
+        { label: 'Bestsellers', href: '/kids?sort=popular', columnNumber: 2 },
       ],
       featured: {
-        title: "MEN'S ACCESSORIES",
-        imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1200&auto=format&fit=crop',
-        href: '/men/accessories',
+        title: 'DISCOVER KIDS',
+        imageUrl: 'https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?q=80&w=1200&auto=format&fit=crop',
+        href: '/kids',
         actionLabel: 'SHOP THE EDIT',
       },
     },
@@ -361,14 +229,10 @@ export function MegamenuPanel({ category, onClose, appearance, headerHeight }: M
       try {
         const dbNav = await getStorefrontNavigationAction(category);
         if (isMounted && dbNav && dbNav.length > 0) {
-          // Keep all DB categories and augment with remaining fallback categories from reference
-          const existingNames = new Set(dbNav.map((c) => c.name.toUpperCase().trim()));
-          const extraFallback = currentFallback.filter((f) => !existingNames.has(f.name.toUpperCase().trim()));
-          const combined = [...dbNav, ...extraFallback];
-          setCollections(combined as MegamenuCollection[]);
+          setCollections(dbNav as MegamenuCollection[]);
           setActiveCollectionId((prev) => {
-            const exists = combined.some((c) => c.id === prev);
-            return exists ? prev : combined[0].id;
+            const exists = dbNav.some((c) => c.id === prev);
+            return exists ? prev : dbNav[0].id;
           });
         }
       } catch (err) {

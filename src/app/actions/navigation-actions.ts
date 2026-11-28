@@ -5,6 +5,7 @@ import { navigationMenus, navigationItems, navigationPromotions } from '@/lib/db
 import { categories } from '@/lib/db/schema/catalog/categories';
 import { eq, and, asc, isNull, inArray, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { getOrSetCached } from '@/core/performance/cache';
 
 export interface DbMegamenuCollection {
   id: string;
@@ -41,163 +42,227 @@ function resolveCuratedCategoryImage(labelOrSlug: string, explicitUrl?: string |
 
 /**
  * Fetches database-backed mega menu collections, items, and promotions for a specific audience or menu.
+ * Driven directly by the 3-Tier Category Taxonomy from Admin (/admin/categories):
+ * Tier 1 (Root Category: Men/Women/Kids) -> Tier 2 (Subcategories) -> Tier 3 (Child Categories).
  */
 export async function getStorefrontNavigationAction(categoryOrSlug: string = 'MEN'): Promise<DbMegamenuCollection[]> {
-  try {
-    if (!db) return [];
+  const cleanPattern = categoryOrSlug.toLowerCase().trim();
+  const cacheKey = `storefront_nav_${cleanPattern}`;
 
-    const cleanPattern = categoryOrSlug.toLowerCase().trim();
+  return getOrSetCached(cacheKey, 60 * 1000, ['categories', 'navigation'], async () => {
+    try {
+      if (!db) return [];
 
-    // Query active catalog categories with images
-    const dbCategories = await db
-      .select()
-      .from(categories)
-      .where(and(eq(categories.isActive, true), sql`${categories.deletedAt} IS NULL`))
-      .orderBy(asc(categories.name));
+      // Query active catalog categories from the 3-tier taxonomy tree
+      const dbCategories = await db
+        .select()
+        .from(categories)
+        .where(and(eq(categories.isActive, true), sql`${categories.deletedAt} IS NULL`))
+        .orderBy(asc(categories.name));
 
-    const allMenus = await db
-      .select()
-      .from(navigationMenus)
-      .where(eq(navigationMenus.isActive, true))
-      .orderBy(asc(navigationMenus.name));
+      // 1. Primary source of truth: 3-Tier Categories Taxonomy
+      if (dbCategories.length > 0) {
+        // Find parent audience or root category (e.g. 'men', 'women', 'kids')
+        const audienceParent = dbCategories.find(
+          (c) =>
+            !c.parentId &&
+            (c.slug.toLowerCase() === cleanPattern ||
+              c.name.toLowerCase() === cleanPattern ||
+              c.name.toLowerCase().includes(cleanPattern) ||
+              cleanPattern.includes(c.slug.toLowerCase()))
+        );
 
-    // If navigationMenus table has entries, map them
-    if (allMenus.length > 0) {
-      // Prioritize exact slug/ID match, then slug prefix, then distinct word match
-      const targetMenu =
-        allMenus.find((m) => m.slug.toLowerCase() === cleanPattern || m.id === cleanPattern) ||
-        allMenus.find((m) => m.slug.toLowerCase().startsWith(`${cleanPattern}-`) || m.slug.toLowerCase().endsWith(`-${cleanPattern}`)) ||
-        allMenus.find((m) => {
-          const words = m.name.toLowerCase().split(/\s+/);
-          return words.includes(cleanPattern);
-        }) ||
-        allMenus[0];
+        if (audienceParent) {
+          // Find Tier 2 subcategories belonging to this root category
+          const subcategories = dbCategories.filter((c) => c.parentId === audienceParent.id);
 
-      if (targetMenu) {
-        const items = await db
-          .select()
-          .from(navigationItems)
-          .where(and(eq(navigationItems.menuId, targetMenu.id), eq(navigationItems.isActive, true)))
-          .orderBy(asc(navigationItems.sortOrder));
+          if (subcategories.length > 0) {
+            const audiencePrefix = `/${audienceParent.slug}`;
 
-        const [promo] = await db
-          .select()
-          .from(navigationPromotions)
-          .where(and(eq(navigationPromotions.menuId, targetMenu.id), eq(navigationPromotions.isActive, true)))
-          .limit(1);
+            return subcategories.map((subcat) => {
+              // Find Tier 3 child categories belonging to this Tier 2 subcategory
+              const childCategories = dbCategories.filter((c) => c.parentId === subcat.id);
+              const subcatHref = `${audiencePrefix}/${subcat.slug}`;
+              const categoryImage = subcat.imageUrl || resolveCuratedCategoryImage(subcat.name, subcat.imageUrl);
 
-        const rootParents = items.filter((i) => !i.parentId);
+              return {
+                id: subcat.id,
+                name: subcat.name.toUpperCase(),
+                href: subcatHref,
+                subitems:
+                  childCategories.length > 0
+                    ? childCategories.map((child, idx) => ({
+                        label: child.name,
+                        href: `${subcatHref}/${child.slug}`,
+                        columnNumber: (idx % 2) + 1,
+                      }))
+                    : [
+                        { label: 'Shop All ' + subcat.name, href: subcatHref, columnNumber: 1 },
+                        { label: 'New Arrivals', href: `${subcatHref}?sort=newest`, columnNumber: 1 },
+                        { label: 'Bestsellers', href: `${subcatHref}?sort=popular`, columnNumber: 2 },
+                      ],
+                featured: {
+                  title: `DISCOVER ${subcat.name.toUpperCase()}`,
+                  imageUrl: categoryImage,
+                  href: subcatHref,
+                  actionLabel: 'SHOP THE EDIT',
+                },
+              };
+            });
+          }
+        }
+      }
 
-        if (rootParents.length > 0) {
-          const defaultFeatured = promo
-            ? {
-                title: promo.title,
-                imageUrl: promo.imageUrl || 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=800&auto=format&fit=crop',
-                href: promo.targetUrl || '/products',
-                actionLabel: promo.actionLabel || 'SHOP THE EDIT',
-              }
-            : {
-                title: 'DISCOVER ' + targetMenu.name.toUpperCase(),
-                imageUrl: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=800&auto=format&fit=crop',
-                href: '/products',
+      // 2. Secondary fallback: check navigationMenus / navigationItems for custom menus
+      const allMenus = await db
+        .select()
+        .from(navigationMenus)
+        .where(eq(navigationMenus.isActive, true))
+        .orderBy(asc(navigationMenus.name));
+
+      if (allMenus.length > 0) {
+        const targetMenu =
+          allMenus.find((m) => m.slug.toLowerCase() === cleanPattern || m.id === cleanPattern) ||
+          allMenus.find((m) => m.slug.toLowerCase().startsWith(`${cleanPattern}-`) || m.slug.toLowerCase().endsWith(`-${cleanPattern}`)) ||
+          allMenus.find((m) => {
+            const words = m.name.toLowerCase().split(/\s+/);
+            return words.includes(cleanPattern);
+          }) ||
+          allMenus[0];
+
+        if (targetMenu) {
+          const items = await db
+            .select()
+            .from(navigationItems)
+            .where(and(eq(navigationItems.menuId, targetMenu.id), eq(navigationItems.isActive, true)))
+            .orderBy(asc(navigationItems.sortOrder));
+
+          const [promo] = await db
+            .select()
+            .from(navigationPromotions)
+            .where(and(eq(navigationPromotions.menuId, targetMenu.id), eq(navigationPromotions.isActive, true)))
+            .limit(1);
+
+          const rootParents = items.filter((i) => !i.parentId);
+
+          if (rootParents.length > 0) {
+            const defaultFeatured = promo
+              ? {
+                  title: promo.title,
+                  imageUrl: promo.imageUrl || 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=800&auto=format&fit=crop',
+                  href: promo.targetUrl || '/products',
+                  actionLabel: promo.actionLabel || 'SHOP THE EDIT',
+                }
+              : {
+                  title: 'DISCOVER ' + targetMenu.name.toUpperCase(),
+                  imageUrl: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=800&auto=format&fit=crop',
+                  href: '/products',
+                  actionLabel: 'SHOP THE EDIT',
+                };
+
+            const result: DbMegamenuCollection[] = [];
+            for (const parent of rootParents) {
+              const children = items.filter((i) => i.parentId === parent.id);
+
+              const matchedCategory = dbCategories.find(
+                (c) =>
+                  c.name.toLowerCase() === parent.label.toLowerCase() ||
+                  c.slug.toLowerCase() === parent.label.toLowerCase().replace(/\s+/g, '-') ||
+                  (parent.url && parent.url.includes(c.slug))
+              );
+
+              const categoryImage = resolveCuratedCategoryImage(
+                parent.label,
+                parent.imageUrl || matchedCategory?.imageUrl || (promo?.imageUrl ? defaultFeatured.imageUrl : null)
+              );
+
+              const categoryFeatured = {
+                title: `DISCOVER ${parent.label.toUpperCase()}`,
+                imageUrl: categoryImage,
+                href: parent.url || `/${cleanPattern}/${parent.label.toLowerCase().replace(/\s+/g, '-')}`,
                 actionLabel: 'SHOP THE EDIT',
               };
 
-          const result: DbMegamenuCollection[] = [];
-          for (const parent of rootParents) {
-            const children = items.filter((i) => i.parentId === parent.id);
+              result.push({
+                id: parent.id,
+                name: parent.label,
+                href: parent.url || `/${cleanPattern}/${parent.label.toLowerCase().replace(/\s+/g, '-')}`,
+                subitems: children.map((c, idx) => ({
+                  label: c.label,
+                  href: c.url || `/${cleanPattern}/${parent.label.toLowerCase().replace(/\s+/g, '-')}/${c.label.toLowerCase().replace(/\s+/g, '-')}`,
+                  columnNumber: c.columnNumber || (idx % 2) + 1,
+                })),
+                featured: categoryFeatured,
+              });
+            }
 
-            // Cross-reference with database categories to retrieve category image
-            const matchedCategory = dbCategories.find(
-              (c) =>
-                c.name.toLowerCase() === parent.label.toLowerCase() ||
-                c.slug.toLowerCase() === parent.label.toLowerCase().replace(/\s+/g, '-') ||
-                (parent.url && parent.url.includes(c.slug))
-            );
-
-            const categoryImage = resolveCuratedCategoryImage(
-              parent.label,
-              parent.imageUrl || matchedCategory?.imageUrl || (promo?.imageUrl ? defaultFeatured.imageUrl : null)
-            );
-
-            const categoryFeatured = {
-              title: `DISCOVER ${parent.label.toUpperCase()}`,
-              imageUrl: categoryImage,
-              href: parent.url || `/${cleanPattern}/${parent.label.toLowerCase().replace(/\s+/g, '-')}`,
-              actionLabel: 'SHOP THE EDIT',
-            };
-
-            result.push({
-              id: parent.id,
-              name: parent.label,
-              href: parent.url || `/${cleanPattern}/${parent.label.toLowerCase().replace(/\s+/g, '-')}`,
-              subitems: children.map((c, idx) => ({
-                label: c.label,
-                href: c.url || `/${cleanPattern}/${parent.label.toLowerCase().replace(/\s+/g, '-')}/${c.label.toLowerCase().replace(/\s+/g, '-')}`,
-                columnNumber: c.columnNumber || (idx % 2) + 1,
-              })),
-              featured: categoryFeatured,
-            });
+            if (result.length > 0) return result;
           }
-
-          const hasPopulatedSubitems = result.some((r) => r.subitems.length > 0);
-          if (result.length > 0 && hasPopulatedSubitems) return result;
         }
       }
+
+      return [];
+    } catch (err) {
+      console.warn('getStorefrontNavigationAction DB error:', err);
+      return [];
     }
+  });
+}
 
-    // Dynamic fallback using database categories taxonomy
-    if (dbCategories.length > 0) {
-      // Find parent audience or category matching cleanPattern (e.g. men, women, kids)
-      const audienceParent = dbCategories.find(
-        (c) => !c.parentId && (c.slug.toLowerCase() === cleanPattern || c.name.toLowerCase() === cleanPattern)
-      );
+/**
+ * Returns dynamic top-level navigation links from the database root categories (Tier 1).
+ * High-speed cached with 60s TTL.
+ */
+export async function getStorefrontNavLinksAction(): Promise<
+  Array<{ id: string; label: string; href: string; hasMega: boolean }>
+> {
+  return getOrSetCached('storefront_nav_links_root', 60 * 1000, ['categories', 'navigation'], async () => {
+    try {
+      if (!db) return [];
 
-      // Parent categories to display as vertical tabs
-      const categoryTabs = audienceParent
-        ? dbCategories.filter((c) => c.parentId === audienceParent.id)
-        : dbCategories.filter((c) => !c.parentId);
+      const rootCategories = await db
+        .select()
+        .from(categories)
+        .where(and(eq(categories.isActive, true), isNull(categories.parentId), sql`${categories.deletedAt} IS NULL`))
+        .orderBy(asc(categories.name));
 
-      if (categoryTabs.length > 0) {
-        return categoryTabs.map((cat) => {
-          const subcats = dbCategories.filter((c) => c.parentId === cat.id);
-          const audiencePrefix = audienceParent ? `/${audienceParent.slug}` : `/${cleanPattern}`;
-          const catHref = `${audiencePrefix}/${cat.slug}`;
+      if (rootCategories.length === 0) return [];
 
-          const categoryImage = cat.imageUrl || resolveCuratedCategoryImage(cat.name, cat.imageUrl);
+      // Check which root categories have subcategories to activate hasMega dropdown
+      const allSubs = await db
+        .select({ parentId: categories.parentId })
+        .from(categories)
+        .where(
+          and(
+            eq(categories.isActive, true),
+            sql`${categories.parentId} IS NOT NULL`,
+            sql`${categories.deletedAt} IS NULL`
+          )
+        );
 
-          return {
-            id: cat.id,
-            name: cat.name.toUpperCase(),
-            href: catHref,
-            subitems:
-              subcats.length > 0
-                ? subcats.map((sub, idx) => ({
-                    label: sub.name,
-                    href: `${catHref}/${sub.slug}`,
-                    columnNumber: (idx % 2) + 1,
-                  }))
-                : [
-                    { label: 'Shop All ' + cat.name, href: catHref, columnNumber: 1 },
-                    { label: 'New Arrivals', href: `${catHref}?sort=newest`, columnNumber: 1 },
-                    { label: 'Bestsellers', href: `${catHref}?sort=popular`, columnNumber: 2 },
-                  ],
-            featured: {
-              title: `DISCOVER ${cat.name.toUpperCase()}`,
-              imageUrl: categoryImage,
-              href: catHref,
-              actionLabel: 'SHOP THE EDIT',
-            },
-          };
-        });
-      }
+      const parentIdsWithChildren = new Set(allSubs.map((s) => s.parentId));
+
+      const standardOrder = ['men', 'women', 'kids'];
+      const sorted = [...rootCategories].sort((a, b) => {
+        const idxA = standardOrder.indexOf(a.slug.toLowerCase());
+        const idxB = standardOrder.indexOf(b.slug.toLowerCase());
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return a.name.localeCompare(b.name);
+      });
+
+      return sorted.map((cat) => ({
+        id: `nav-${cat.slug}`,
+        label: cat.name.toUpperCase(),
+        href: `/${cat.slug}`,
+        hasMega: parentIdsWithChildren.has(cat.id),
+      }));
+    } catch (err) {
+      console.warn('getStorefrontNavLinksAction error:', err);
+      return [];
     }
-
-    return [];
-  } catch (err) {
-    console.warn('getStorefrontNavigationAction DB error:', err);
-    return [];
-  }
+  });
 }
 
 /**

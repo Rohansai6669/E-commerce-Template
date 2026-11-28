@@ -264,14 +264,20 @@
     "links": [
       {
         "id": "nav-men",
-        "href": "/products?category=men",
+        "href": "/men",
         "label": "MEN",
         "hasMega": true
       },
       {
         "id": "nav-women",
-        "href": "/products?category=women",
+        "href": "/women",
         "label": "WOMEN",
+        "hasMega": true
+      },
+      {
+        "id": "nav-kids",
+        "href": "/kids",
+        "label": "KIDS",
         "hasMega": true
       }
     ],

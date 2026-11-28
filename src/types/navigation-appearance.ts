@@ -159,6 +159,7 @@ export interface NavAppearanceConfig {
 export const DEFAULT_NAV_LINKS: NavLinkItem[] = [
   { id: 'nav-men', label: 'MEN', href: '/men', hasMega: true },
   { id: 'nav-women', label: 'WOMEN', href: '/women', hasMega: true },
+  { id: 'nav-kids', label: 'KIDS', href: '/kids', hasMega: true },
 ];
 
 export const defaultNavAppearanceConfig: NavAppearanceConfig = {

@@ -14,8 +14,10 @@ import {
   NavAppearanceConfig,
   defaultNavAppearanceConfig,
   DEFAULT_NAV_LINKS,
+  NavLinkItem,
 } from '@/types/navigation-appearance';
 import { useNavAppearance } from '@/hooks/use-nav-appearance';
+import { getStorefrontNavLinksAction } from '@/app/actions/navigation-actions';
 
 export interface HeaderProps {
   initialConfig?: NavAppearanceConfig;
@@ -90,6 +92,22 @@ export function Header({
 
   const [internalActiveCategory, setInternalActiveCategory] = React.useState<string | null>(null);
   const [isScrolled, setIsScrolled] = React.useState(false);
+  const [dynamicLinks, setDynamicLinks] = React.useState<NavLinkItem[] | null>(null);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    getStorefrontNavLinksAction()
+      .then((links) => {
+        if (isMounted && links && links.length > 0) {
+          setDynamicLinks(links);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const activeCategory =
     previewActiveCategory !== undefined ? previewActiveCategory : internalActiveCategory;
@@ -300,9 +318,13 @@ export function Header({
     ? 'sticky top-0 z-[1010]'
     : 'relative z-30';
 
-  // Guaranteed fallback links
+  // Guaranteed fallback links: prioritize dynamic category taxonomy, then custom config, then default links
   const navLinks =
-    config.links && config.links.length > 0 ? config.links : DEFAULT_NAV_LINKS;
+    dynamicLinks && dynamicLinks.length > 0
+      ? dynamicLinks
+      : config.links && config.links.length > 0
+      ? config.links
+      : DEFAULT_NAV_LINKS;
 
   return (
     <div
@@ -364,7 +386,7 @@ export function Header({
           {/* MOBILE VIEW (lg:hidden): Hamburger Menu on Left          */}
           {/* ======================================================== */}
           <div className="flex lg:hidden items-center shrink-0 z-10">
-            <MobileNav appearance={config} />
+            <MobileNav appearance={config} dynamicLinks={dynamicLinks || undefined} />
           </div>
 
           {/* ======================================================== */}

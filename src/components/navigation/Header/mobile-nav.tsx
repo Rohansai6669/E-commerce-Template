@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { cn } from '@/core/utils/cn';
-import { NavAppearanceConfig } from '@/types/navigation-appearance';
+import { DEFAULT_NAV_LINKS, NavAppearanceConfig, NavLinkItem } from '@/types/navigation-appearance';
 import { useNavAppearance } from '@/hooks/use-nav-appearance';
 import { ChevronDown, ChevronRight, X, User, Heart, ShoppingBag } from 'lucide-react';
 import { FALLBACK_MEGAMENU_DATA, MegamenuCollection } from './megamenu-panel';
@@ -15,6 +15,7 @@ import { getStorefrontNavigationAction } from '@/app/actions/navigation-actions'
 
 export interface MobileNavProps {
   appearance?: NavAppearanceConfig;
+  dynamicLinks?: NavLinkItem[];
 }
 
 /**
@@ -22,7 +23,7 @@ export interface MobileNavProps {
  * Uses React Portal to mount directly into document.body, ensuring it is NEVER
  * trapped by parent container transforms, filters, or backdrop-blur styling.
  */
-export function MobileNav({ appearance }: MobileNavProps) {
+export function MobileNav({ appearance, dynamicLinks }: MobileNavProps) {
   const { navConfig } = useNavAppearance(appearance);
   const config = appearance || navConfig;
 
@@ -31,7 +32,12 @@ export function MobileNav({ appearance }: MobileNavProps) {
   const [expandedLinkId, setExpandedLinkId] = React.useState<string | null>(null);
   const [collectionsCache, setCollectionsCache] = React.useState<Record<string, MegamenuCollection[]>>({});
 
-  const links = config?.links || [];
+  const links =
+    dynamicLinks && dynamicLinks.length > 0
+      ? dynamicLinks
+      : config?.links && config.links.length > 0
+      ? config.links
+      : DEFAULT_NAV_LINKS;
 
   // Ensure portal only mounts on the client
   React.useEffect(() => {
