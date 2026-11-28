@@ -4,15 +4,18 @@ import * as React from 'react';
 import { toast } from 'sonner';
 import { getStoreModeClient, type StoreMode } from '@/core/config/store-mode';
 import { setStoreModeAction } from '@/app/actions/set-store-mode';
-import { Store, Users, ShieldCheck, Zap, Camera, Sliders, CreditCard } from 'lucide-react';
+import { Store, Users, ShieldCheck, Zap, Camera, Sliders, CreditCard, Truck } from 'lucide-react';
 import { InstagramSettingsForm } from './instagram-settings';
 import { RazorpaySettingsPanel } from './payment-settings';
+import { ShippingSettingsPanel } from './shipping-settings';
 
 /**
  * Settings Form panel for managing storefront configurations & operating mode.
  */
 export function SettingsForm() {
-  const [activeCategory, setActiveCategory] = React.useState<'general' | 'instagram' | 'payment'>('general');
+  const [activeCategory, setActiveCategory] = React.useState<
+    'general' | 'shipping' | 'instagram' | 'payment'
+  >('general');
   const [storeName, setStoreName] = React.useState('Modern Storefront');
   const [currency, setCurrency] = React.useState('INR');
   const [lowStockThreshold, setLowStockThreshold] = React.useState(5);
@@ -61,6 +64,19 @@ export function SettingsForm() {
 
         <button
           type="button"
+          onClick={() => setActiveCategory('shipping')}
+          className={`px-4 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
+            activeCategory === 'shipping'
+              ? 'bg-slate-950 text-white shadow-xs'
+              : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+          }`}
+        >
+          <Truck className="h-4 w-4" />
+          Shipping &amp; Delivery (COD)
+        </button>
+
+        <button
+          type="button"
           onClick={() => setActiveCategory('instagram')}
           className={`px-4 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer ${
             activeCategory === 'instagram'
@@ -86,7 +102,9 @@ export function SettingsForm() {
         </button>
       </div>
 
-      {activeCategory === 'instagram' ? (
+      {activeCategory === 'shipping' ? (
+        <ShippingSettingsPanel />
+      ) : activeCategory === 'instagram' ? (
         <InstagramSettingsForm />
       ) : activeCategory === 'payment' ? (
         <RazorpaySettingsPanel />

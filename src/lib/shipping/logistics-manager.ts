@@ -42,9 +42,22 @@ export async function getLogisticsConfig(): Promise<LogisticsConfig> {
         .limit(1);
 
       if (res && res.value) {
+        const val = res.value as Partial<LogisticsConfig>;
         return {
           ...defaultLogisticsConfig,
-          ...(res.value as Partial<LogisticsConfig>),
+          ...val,
+          fallbackFlatRate:
+            val.fallbackFlatRate !== undefined
+              ? Number(val.fallbackFlatRate)
+              : defaultLogisticsConfig.fallbackFlatRate,
+          freeShippingThreshold:
+            val.freeShippingThreshold !== undefined
+              ? Number(val.freeShippingThreshold)
+              : defaultLogisticsConfig.freeShippingThreshold,
+          enableCod:
+            val.enableCod !== undefined
+              ? Boolean(val.enableCod)
+              : defaultLogisticsConfig.enableCod,
         };
       }
     }
@@ -69,6 +82,16 @@ export async function saveLogisticsConfig(
     const updated: LogisticsConfig = {
       ...current,
       ...config,
+      fallbackFlatRate:
+        config.fallbackFlatRate !== undefined
+          ? Math.max(0, Number(config.fallbackFlatRate))
+          : current.fallbackFlatRate,
+      freeShippingThreshold:
+        config.freeShippingThreshold !== undefined
+          ? Math.max(0, Number(config.freeShippingThreshold))
+          : current.freeShippingThreshold,
+      enableCod:
+        config.enableCod !== undefined ? Boolean(config.enableCod) : current.enableCod,
     };
 
     await db

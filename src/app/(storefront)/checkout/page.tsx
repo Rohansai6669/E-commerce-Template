@@ -3,6 +3,7 @@ import Script from 'next/script';
 import { connection } from 'next/server';
 import { getCurrentUser, getCurrentProfile } from '@/core/auth/session';
 import { addressRepository } from '@/core/address/address.repository';
+import { getLogisticsConfig } from '@/lib/shipping/logistics-manager';
 import { CheckoutPageContent } from '@/components/storefront/checkout/checkout-page-content';
 
 export const metadata = {
@@ -19,6 +20,7 @@ export default async function CheckoutPage() {
   const user = await getCurrentUser();
   const profile = await getCurrentProfile();
   const addresses = user ? await addressRepository.getAddresses(user.id) : [];
+  const logisticsConfig = await getLogisticsConfig();
 
   return (
     <>
@@ -38,6 +40,7 @@ export default async function CheckoutPage() {
               : null
           }
           initialAddresses={addresses}
+          initialLogisticsConfig={logisticsConfig}
         />
       </React.Suspense>
     </>

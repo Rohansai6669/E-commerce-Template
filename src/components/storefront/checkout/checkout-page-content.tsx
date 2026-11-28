@@ -18,6 +18,7 @@ import { type CheckoutState, type CheckoutAction, type CheckoutTotals } from '@/
 import { type CustomerAddress } from '@/core/address/address.types';
 import { checkoutService } from '@/core/checkout/checkout.service';
 import { type PlacedOrder } from '@/core/order/order.types';
+import { type LogisticsConfig } from '@/lib/shipping/logistics-manager';
 import { placeOrderAction } from '@/app/actions/order';
 import { createRazorpayOrderAction, verifyAndPlaceRazorpayOrderAction } from '@/app/actions/razorpay';
 import { toast } from 'sonner';
@@ -81,6 +82,7 @@ export interface CheckoutPageContentProps {
   user?: { id: string; email: string } | null;
   initialProfile?: { fullName?: string | null; phone?: string | null } | null;
   initialAddresses?: CustomerAddress[];
+  initialLogisticsConfig?: LogisticsConfig;
 }
 
 /**
@@ -92,6 +94,7 @@ export function CheckoutPageContent({
   user,
   initialProfile,
   initialAddresses = [],
+  initialLogisticsConfig,
 }: CheckoutPageContentProps = {}) {
   const { items, coupon, applyCoupon, removeCoupon, clearCart, isHydrated } = useCart();
   const [state, dispatch] = React.useReducer(checkoutReducer, initialState);
@@ -124,18 +127,43 @@ export function CheckoutPageContent({
     }
   }, [savedAddresses, user, state.address]);
 
+  const subtotal = React.useMemo(() => {
+    return items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  }, [items]);
+
+  // Compute dynamic shipping methods based on subtotal and admin logistics settings
+  const availableShippingMethods = React.useMemo(() => {
+    return checkoutService.getDynamicShippingMethods(subtotal, initialLogisticsConfig);
+  }, [subtotal, initialLogisticsConfig]);
+
+  // Compute active shipping method ensuring price reflects latest thresholds
+  const activeShippingMethod = React.useMemo(() => {
+    if (!state.shippingMethod) return availableShippingMethods[0];
+    const matched = availableShippingMethods.find((m) => m.id === state.shippingMethod?.id);
+    return matched || state.shippingMethod;
+  }, [state.shippingMethod, availableShippingMethods]);
+
   // Compute effective totals for the sticky sidebar even before a shipping method is confirmed
-  const activeShippingMethod = state.shippingMethod || checkoutService.getShippingMethods()[0];
   const effectiveTotals: CheckoutTotals | null = React.useMemo(() => {
     if (items.length === 0) return null;
-    return checkoutService.calculateOrderTotals(items, activeShippingMethod, coupon);
-  }, [items, activeShippingMethod, coupon]);
+    return checkoutService.calculateOrderTotals(
+      items,
+      activeShippingMethod,
+      coupon,
+      initialLogisticsConfig
+    );
+  }, [items, activeShippingMethod, coupon, initialLogisticsConfig]);
 
   // Compute strict totals when user confirms their shipping method
   const totals: CheckoutTotals | null = React.useMemo(() => {
     if (!state.shippingMethod || items.length === 0) return null;
-    return checkoutService.calculateOrderTotals(items, state.shippingMethod, coupon);
-  }, [items, state.shippingMethod, coupon]);
+    return checkoutService.calculateOrderTotals(
+      items,
+      activeShippingMethod,
+      coupon,
+      initialLogisticsConfig
+    );
+  }, [items, activeShippingMethod, coupon, initialLogisticsConfig]);
 
   // Handle Razorpay Online Payment Checkout
   const handleRazorpayCheckout = React.useCallback(async () => {
@@ -373,6 +401,7 @@ export function CheckoutPageContent({
           {state.step === 'shipping' && (
             <ShippingMethodSelector
               defaultValue={state.shippingMethod}
+              availableMethods={availableShippingMethods}
               onSubmit={(method) => dispatch({ type: 'SET_SHIPPING_METHOD', method })}
               onBack={() => dispatch({ type: 'GO_TO_STEP', step: 'address' })}
             />
@@ -383,7 +412,7 @@ export function CheckoutPageContent({
             <ReviewOrder
               items={items}
               address={state.address}
-              shippingMethod={state.shippingMethod}
+              shippingMethod={activeShippingMethod}
               coupon={coupon}
               totals={totals}
               orderNotes={state.orderNotes}
@@ -404,6 +433,7 @@ export function CheckoutPageContent({
               totals={totals || effectiveTotals}
               coupon={coupon}
               items={items}
+              enableCod={initialLogisticsConfig?.enableCod ?? true}
               onApplyCoupon={applyCoupon}
               onRemoveCoupon={removeCoupon}
               onSubmit={(method) => {

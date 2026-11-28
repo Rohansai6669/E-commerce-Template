@@ -14,6 +14,7 @@ import { payments } from '@/lib/db/schema/payment';
 import { inArray } from 'drizzle-orm';
 import { couponService } from '@/core/coupon/coupon.service';
 import { getCurrentUser } from '@/core/auth/session';
+import { getLogisticsConfig } from '@/lib/shipping/logistics-manager';
 
 /**
  * Server action to process and persist an order.
@@ -98,11 +99,21 @@ export async function placeOrderAction(params: {
     }
   }
 
-  // 4. Recompute totals with authoritative prices and server-verified coupon
+  // 3.5. Authoritative Logistics & COD Availability Verification
+  const logisticsConfig = await getLogisticsConfig();
+  if (params.paymentMethod.type === 'cod' && !logisticsConfig.enableCod) {
+    return {
+      success: false,
+      error: 'Cash on Delivery is currently disabled by the store. Please choose an online payment method.',
+    };
+  }
+
+  // 4. Recompute totals with authoritative prices, coupon, and store logistics rules
   const totals = checkoutService.calculateOrderTotals(
     verifiedItems,
     params.shippingMethod,
-    serverVerifiedCoupon
+    serverVerifiedCoupon,
+    logisticsConfig
   );
 
   // 5. Build order create parameters

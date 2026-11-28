@@ -145,7 +145,19 @@ export function CheckoutOrderSummary({
             <span>Shipping</span>
             {shippingMethod ? (
               <span className="font-semibold text-foreground font-mono">
-                {shippingMethod.price === 0 ? 'FREE' : `₹${shippingMethod.price.toFixed(2)}`}
+                {shippingMethod.price === 0 ? (
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">FREE</span>
+                ) : (
+                  `₹${shippingMethod.price.toFixed(2)}`
+                )}
+              </span>
+            ) : totals ? (
+              <span className="font-semibold text-foreground font-mono">
+                {totals.shipping === 0 ? (
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">FREE</span>
+                ) : (
+                  totals.formattedShipping
+                )}
               </span>
             ) : (
               <span className="text-[11px] italic text-muted-foreground">

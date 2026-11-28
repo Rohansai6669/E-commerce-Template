@@ -26,6 +26,7 @@ export interface PaymentMethodFormProps {
   totals?: CheckoutTotals | null;
   coupon?: Coupon | null;
   items?: CartItem[];
+  enableCod?: boolean;
   onApplyCoupon?: (coupon: Coupon) => void;
   onRemoveCoupon?: () => void;
   onSubmit: (method: PaymentMethod) => void;
@@ -40,15 +41,33 @@ export interface PaymentMethodFormProps {
 export function PaymentMethodForm({
   defaultValue,
   totals,
+  enableCod = true,
   onSubmit,
   onBack,
   isProcessing = false,
 }: PaymentMethodFormProps) {
-  const [paymentType, setPaymentType] = React.useState<'razorpay' | 'cod' | 'card'>(
-    (defaultValue?.type as any) ?? 'razorpay'
-  );
+  const isCodAvailable = enableCod !== false;
 
-  const options = PAYMENT_TYPES.map((pt) => ({
+  const [paymentType, setPaymentType] = React.useState<'razorpay' | 'cod' | 'card'>(() => {
+    if (defaultValue?.type === 'cod' && !isCodAvailable) {
+      return 'razorpay';
+    }
+    return (defaultValue?.type as any) ?? 'razorpay';
+  });
+
+  // Ensure selection switches away from COD if COD gets disabled
+  React.useEffect(() => {
+    if (!isCodAvailable && paymentType === 'cod') {
+      setPaymentType('razorpay');
+    }
+  }, [isCodAvailable, paymentType]);
+
+  const filteredPaymentTypes = PAYMENT_TYPES.filter((pt) => {
+    if (pt.type === 'cod') return isCodAvailable;
+    return true;
+  });
+
+  const options = filteredPaymentTypes.map((pt) => ({
     value: pt.type,
     label: pt.label,
     description: pt.description,
@@ -56,10 +75,13 @@ export function PaymentMethodForm({
   }));
 
   const handleSubmit = () => {
-    if (paymentType === 'razorpay' || paymentType === 'card') {
-      onSubmit({ type: 'razorpay' });
-    } else {
+    if (paymentType === 'cod') {
+      if (!isCodAvailable) {
+        return;
+      }
       onSubmit({ type: 'cod' });
+    } else {
+      onSubmit({ type: 'razorpay' });
     }
   };
 
@@ -96,6 +118,13 @@ export function PaymentMethodForm({
             value={paymentType}
             onChange={(val) => setPaymentType(val as any)}
           />
+
+          {!isCodAvailable && (
+            <div className="flex items-center gap-2 p-3 bg-amber-50/70 border border-amber-200/80 rounded-lg text-amber-800 text-xs">
+              <Lock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+              <span>Cash on Delivery is currently disabled by store. Please pay securely via Razorpay (UPI, Cards, Netbanking).</span>
+            </div>
+          )}
 
           {/* RAZORPAY PAYMENT DETAILS CARD */}
           {(paymentType === 'razorpay' || paymentType === 'card') && (

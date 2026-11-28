@@ -12,6 +12,7 @@ import { SHIPPING_METHODS } from '@/core/checkout/checkout.constants';
 
 export interface ShippingMethodSelectorProps {
   defaultValue?: ShippingMethod | null;
+  availableMethods?: ShippingMethod[];
   onSubmit: (method: ShippingMethod) => void;
   onBack: () => void;
 }
@@ -19,21 +20,36 @@ export interface ShippingMethodSelectorProps {
 /**
  * Shipping method selection step with radio card selector.
  */
-export function ShippingMethodSelector({ defaultValue, onSubmit, onBack }: ShippingMethodSelectorProps) {
-  const [selected, setSelected] = React.useState<string>(defaultValue?.id ?? SHIPPING_METHODS[0].id);
+export function ShippingMethodSelector({
+  defaultValue,
+  availableMethods,
+  onSubmit,
+  onBack,
+}: ShippingMethodSelectorProps) {
+  const methods = availableMethods && availableMethods.length > 0 ? availableMethods : SHIPPING_METHODS;
+  const [selected, setSelected] = React.useState<string>(defaultValue?.id ?? methods[0].id);
+
+  // Sync selected method if default or available methods change
+  React.useEffect(() => {
+    if (defaultValue?.id) {
+      setSelected(defaultValue.id);
+    } else if (!methods.some((m) => m.id === selected)) {
+      setSelected(methods[0].id);
+    }
+  }, [defaultValue, methods, selected]);
 
   const handleContinue = () => {
-    const method = SHIPPING_METHODS.find((m) => m.id === selected);
+    const method = methods.find((m) => m.id === selected) || methods[0];
     if (method) {
       onSubmit(method);
     }
   };
 
-  const options = SHIPPING_METHODS.map((method) => ({
+  const options = methods.map((method) => ({
     value: method.id,
     label: `${method.name}`,
     description: `${method.carrier} · ${CheckoutPresenter.formatShippingEstimate(method)}`,
-    detail: CheckoutPresenter.formatShippingPrice(method),
+    detail: method.price === 0 ? 'FREE' : CheckoutPresenter.formatShippingPrice(method),
     icon: 'Truck' as const,
   }));
 

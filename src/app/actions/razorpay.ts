@@ -16,6 +16,7 @@ import { inArray, eq, or, sql } from 'drizzle-orm';
 import { couponService } from '@/core/coupon/coupon.service';
 import { logger } from '@/core/logger';
 import { getCurrentUser } from '@/core/auth/session';
+import { getLogisticsConfig } from '@/lib/shipping/logistics-manager';
 
 /**
  * Creates a Razorpay checkout order with authoritative server totals.
@@ -109,11 +110,13 @@ export async function createRazorpayOrderAction(params: {
     }
   }
 
-  // 4. Calculate authoritative order totals
+  // 4. Calculate authoritative order totals with store logistics rules
+  const logisticsConfig = await getLogisticsConfig();
   const totals = checkoutService.calculateOrderTotals(
     verifiedItems,
     params.shippingMethod,
-    serverVerifiedCoupon
+    serverVerifiedCoupon,
+    logisticsConfig
   );
 
   try {
@@ -268,10 +271,12 @@ export async function verifyAndPlaceRazorpayOrderAction(params: {
     }
   }
 
+  const logisticsConfig = await getLogisticsConfig();
   const totals = checkoutService.calculateOrderTotals(
     verifiedItems,
     params.shippingMethod,
-    serverVerifiedCoupon
+    serverVerifiedCoupon,
+    logisticsConfig
   );
 
   const createParams: CreateOrderParams = {
